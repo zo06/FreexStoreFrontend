@@ -154,7 +154,7 @@ export default function ContactPage() {
                     rel="noopener noreferrer"
                     className="text-sm text-cyan-400 hover:text-cyan-300"
                   >
-                    discord.gg/freex
+                    discord.gg/aTEmKr4K7k
                   </a>
                 </div>
               </CardContent>

@@ -8,6 +8,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       {children}
       <Toaster 
         position="top-right"
+        containerStyle={{
+          zIndex: 999999999999999999999,
+        }}
         toastOptions={{
           duration: 4000,
           style: {
@@ -21,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             fontWeight: '500',
             padding: '16px 20px',
             maxWidth: '400px',
+            zIndex: 999999999999999999999,
           },
           success: {
             iconTheme: {
@@ -30,6 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             style: {
               background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
+              zIndex: 999999999999999999999,
             },
           },
           error: {
@@ -40,6 +45,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             style: {
               background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
+              zIndex: 999999999999999999999,
             },
           },
           loading: {
@@ -50,8 +56,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             style: {
               background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)',
               border: '1px solid rgba(59, 130, 246, 0.3)',
+              zIndex: 999999999999999999999,
             },
-          },
+          },  
         }}
       />
     </>

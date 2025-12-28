@@ -99,22 +99,22 @@ export default function Navigation() {
       </div>
       
       {/* Main Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ease-out ${
         isScrolled 
           ? 'py-2' 
           : 'py-3'
       }`}>
         {/* Glass Container */}
-        <div className={`mx-4 sm:mx-6 lg:mx-auto lg:max-w-7xl transition-all duration-700 ${
+        <div className={`mx-2 sm:mx-4 md:mx-6 lg:mx-auto lg:max-w-7xl transition-all duration-700 ${
           isScrolled
             ? 'bg-black/60 backdrop-blur-2xl rounded-2xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]'
             : 'bg-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/[0.05]'
         }`}>
-          <div className="px-4 sm:px-6 py-3 sm:py-4">
+          <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
             <div className="flex justify-between items-center">
               
               {/* Premium Logo */}
-              <Link href="/" className="flex items-center gap-3 group relative">
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 group relative flex-shrink-0">
                 {/* Logo Glow */}
                 <div className="absolute -inset-3 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
                 
@@ -123,20 +123,20 @@ export default function Navigation() {
                   <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-2xl opacity-75 blur-sm group-hover:opacity-100 group-hover:blur-md transition-all duration-500 animate-spin-slow"></div>
                   
                   {/* Logo Container */}
-                  <div className="relative w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 transition-all duration-500 overflow-hidden">
+                  <div className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 transition-all duration-500 overflow-hidden">
                     {/* Inner Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-transparent to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <img src="/FreexLogo.png" alt="FreeX" className="relative z-10 w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-500 group-hover:scale-110" />
+                    <img src="/FreexLogo.png" alt="FreeX" className="relative z-10 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-transform duration-500 group-hover:scale-110" />
                   </div>
                 </div>
                 
                 {/* Brand Text */}
                 <div className="hidden sm:flex flex-col">
-                  <span className="text-xl font-bold tracking-tight">
+                  <span className="text-lg sm:text-xl font-bold tracking-tight">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-white group-hover:from-cyan-300 group-hover:via-white group-hover:to-blue-300 transition-all duration-500">Free</span>
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 group-hover:from-cyan-300 group-hover:to-blue-400 transition-all duration-500">X</span>
                   </span>
-                  <span className="text-[10px] text-gray-500 tracking-widest uppercase">Premium Scripts</span>
+                  <span className="text-[9px] sm:text-[10px] text-gray-500 tracking-widest uppercase">Premium Scripts</span>
                 </div>
               </Link>
 
@@ -385,7 +385,7 @@ export default function Navigation() {
               {/* Mobile Menu Button - Premium */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="relative w-11 h-11 md:hidden rounded-xl transition-all duration-500 group overflow-hidden"
+                className="relative w-10 h-10 sm:w-11 sm:h-11 md:hidden rounded-xl transition-all duration-500 group overflow-hidden flex-shrink-0"
                 aria-label="Toggle menu"
               >
                 <div className="absolute inset-0 bg-white/[0.05] rounded-xl border border-white/10 group-hover:border-cyan-500/30 transition-all duration-300"></div>
@@ -403,13 +403,13 @@ export default function Navigation() {
         </div>
 
         {/* Mobile Menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
+        <div className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out mx-2 sm:mx-4 relative z-[110] ${
           isMenuOpen 
-            ? 'pb-6 mt-6 opacity-100 max-h-[600px]' 
+            ? 'pb-6 mt-4 opacity-100 max-h-[900px]' 
             : 'max-h-0 opacity-0'
         }`}>
-          <div className="pt-6 border-t border-white/10">
-            <div className="flex flex-col space-y-3">
+          <div className="pt-6 border-t border-white/10 bg-black/80 backdrop-blur-xl rounded-2xl">
+            <div className="flex flex-col space-y-3 px-4">
               {navLinks.map((link, index) => (
                 <Link 
                   key={link.href}
@@ -522,7 +522,7 @@ export default function Navigation() {
                   </Link>
                   <Link 
                     href="/auth/register"
-                    className="py-4 w-full text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-2xl transition-all duration-500 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 touch-target font-semibold"
+                    className="block py-4 w-full text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-2xl transition-all duration-500 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 touch-target font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Sign Up
@@ -534,7 +534,7 @@ export default function Navigation() {
               <div className="pt-4" style={{ animationDelay: '0.5s' }}>
                 <Link 
                   href="/scripts" 
-                  className="py-4 w-full text-center bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white rounded-2xl transition-all duration-700 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 touch-target font-semibold"
+                  className="block py-4 w-full text-center bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white rounded-2xl transition-all duration-700 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 touch-target font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                   style={{
                     backgroundSize: '200% auto',
@@ -551,8 +551,9 @@ export default function Navigation() {
       {/* Mobile Menu Backdrop */}
       {isMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-md z-40 animate-fade-in"
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] animate-fade-in"
           onClick={() => setIsMenuOpen(false)}
+          style={{ top: '80px' }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40"></div>
         </div>

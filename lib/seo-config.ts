@@ -6,23 +6,23 @@ import { Metadata } from 'next'
 export const SITE_CONFIG = {
   name: 'FreexStore',
   fullName: 'FreexStore - Premium FiveM Scripts & Resources',
-  description: 'Download premium FiveM scripts, resources, and tools. Best quality scripts for your FiveM server with instant delivery and lifetime support. ESX, QBCore compatible.',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site',
+  description: 'Premium FiveM scripts, resources, and tools. Best quality scripts for your FiveM server with instant delivery and lifetime support.',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://freexstores.com',
   apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   locale: 'en_US',
   defaultLocale: 'en',
   locales: ['en', 'ar'],
   author: {
     name: 'FreexStore Team',
-    url: 'https://freex.site',
-    email: 'support@freex.site'
+    url: 'https://freexstores.com',
+    email: 'freexstores@gmail.com'
   },
   organization: {
     name: 'FreexStore',
     legalName: 'FreexStore LLC',
-    url: 'https://freex.site',
-    logo: 'https://freex.site/images/logo.png',
-    foundingDate: '2024',
+    url: 'https://freexstores.com',
+    logo: 'https://freexstores.com/FreexLogo.png',
+    foundingDate: '2025',
     founders: ['FreexStore Team'],
     address: {
       streetAddress: '',
@@ -34,18 +34,18 @@ export const SITE_CONFIG = {
     contactPoint: {
       telephone: '',
       contactType: 'Customer Support',
-      email: 'support@freex.site',
+      email: 'freexstores@gmail.com',
       availableLanguage: ['English', 'Arabic']
     },
     sameAs: [
-      'https://discord.gg/freexstore',
+      'https://discord.gg/aTEmKr4K7k',
       'https://twitter.com/freexstore',
       'https://github.com/freexstore'
     ]
   },
   social: {
     twitter: '@freexstore',
-    discord: 'https://discord.gg/freexstore',
+    discord: 'https://discord.gg/aTEmKr4K7k',
     github: 'https://github.com/freexstore'
   },
   keywords: {

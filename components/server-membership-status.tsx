@@ -73,7 +73,7 @@ export default function ServerMembershipStatus() {
           <div className="text-sm text-gray-600 dark:text-gray-400">
             <p>Join our Discord server to access exclusive features!</p>
             <a 
-              href="https://discord.gg/your-invite-link" 
+              href="https://discord.gg/aTEmKr4K7k" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-600 dark:text-blue-400 hover:underline"

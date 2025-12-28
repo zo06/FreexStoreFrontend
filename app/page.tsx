@@ -236,12 +236,14 @@ export default function Home() {
                   Explore Scripts
                 </Button>
               </Link>
-              <Link href="/auth/register" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full border-gray-700 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white hover:border-gray-600 transition-all duration-300 backdrop-blur-xl text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 h-auto font-medium rounded-xl">
-                  <Globe className="w-5 h-5 mr-2.5" />
-                  Get Started Free
-                </Button>
-              </Link>
+              {!user && (
+                <Link href="/auth/register" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full border-gray-700 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white hover:border-gray-600 transition-all duration-300 backdrop-blur-xl text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 h-auto font-medium rounded-xl">
+                    <Globe className="w-5 h-5 mr-2.5" />
+                    Get Started Free
+                  </Button>
+                </Link>
+              )}
             </div>
             
             {/* Hero Stats Cards */}
@@ -314,7 +316,7 @@ export default function Home() {
           ) : featuredScripts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
               {featuredScripts.map((script, index) => (
-                <Link href={`/scripts/${script.slug || script.id}`} key={script.id}>
+                <Link href={`/payment/${script.slug || script.id}`} key={script.id}>
                   <div 
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 cursor-pointer"
                     style={{animationDelay: `${index * 0.1}s`}}
@@ -481,7 +483,7 @@ export default function Home() {
         <section ref={ctaRef} className="py-24 sm:py-32 relative overflow-hidden">
           {/* Background */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/30 to-transparent"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-emerald-500/20 rounded-full blur-[120px]"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:w-[600px] md:h-[600px] bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-emerald-500/20 rounded-full blur-[120px]"></div>
         
           <div className="container relative z-10 mx-auto px-4 sm:px-6">
             <div className="cta-content relative overflow-hidden bg-gradient-to-b from-white/[0.1] to-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 sm:p-14 lg:p-20 text-center max-w-4xl mx-auto shadow-2xl">

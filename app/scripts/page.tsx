@@ -392,10 +392,7 @@ function ScriptsPageContent() {
                 </button>
               )}
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-gray-500 text-sm">
-              <Grid3X3 className="w-4 h-4" />
-              Grid View
-            </div>
+
           </div>
         </div>
       </div>
@@ -459,7 +456,7 @@ function ScriptsPageContent() {
                     key={script.id}
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 animate-slide-up cursor-pointer"
                     style={{animationDelay: `${index * 0.1}s`}}
-                    onClick={() => handleScriptAction(script, 'preview')}
+                    onClick={() => window.location.href = `/payment/${script.id}`}
                   >
                     {/* Image/Preview Area */}
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-cyan-600/20 to-blue-600/20">
@@ -641,7 +638,7 @@ function ScriptsPageContent() {
                 key={script.id}
                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 animate-slide-up cursor-pointer"
                 style={{animationDelay: `${index * 0.1}s`}}
-                onClick={() => handleScriptAction(script, 'preview')}
+                onClick={() => window.location.href = `/payment/${script.id}`}
               >
                 {/* Image/Preview Area */}
                 <div className="relative h-48 overflow-hidden bg-gradient-to-br from-cyan-600/20 to-blue-600/20">

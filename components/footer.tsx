@@ -39,7 +39,7 @@ export default function Footer() {
   const supportLinks = [
     { name: 'Contact Us', href: '/contact', external: false },
     { name: 'Custom Request', href: '/custom-request', external: false },
-    { name: 'Discord Server', href: 'https://discord.gg/freexstore', external: true },
+    { name: 'Discord Server', href: 'https://discord.gg/aTEmKr4K7k', external: true },
   ];
 
   const legalLinks = [
@@ -58,7 +58,7 @@ export default function Footer() {
   return (
     <footer className="relative bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950 border-t border-white/5" itemScope itemType="https://schema.org/WPFooter">
       {/* Background glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-t from-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 md:w-[600px] md:h-[300px] bg-gradient-to-t from-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
       
       <div className="container relative z-10 mx-auto px-4 sm:px-6 py-16 lg:py-20">
         {/* Main Footer Content */}
@@ -252,16 +252,16 @@ export default function Footer() {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'FreexStore',
-            url: 'https://freex.site',
-            logo: 'https://freex.site/images/logo.png',
+            url: 'https://freexstores.com',
+            logo: 'https://freexstores.com/FreexLogo.png',
             contactPoint: {
               '@type': 'ContactPoint',
               contactType: 'Customer Support',
-              email: 'support@freex.site',
+              email: 'freexstores@gmail.com',
               availableLanguage: ['English', 'Arabic']
             },
             sameAs: [
-              'https://discord.gg/freexstore',
+              'https://discord.gg/aTEmKr4K7k',
               'https://twitter.com/freexstore',
               'https://github.com/freexstore'
             ]

@@ -175,7 +175,7 @@ function AdminDashboard() {
         <div className="mb-12 text-center">
           <div className="inline-flex gap-2 items-center px-6 py-3 mb-6 bg-gradient-to-r rounded-full border backdrop-blur-sm from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
             <Sparkles className="w-5 h-5 text-cyan-400" />
-            <span className="text-sm font-medium text-purple-200">Admin Control Center</span>
+            <span className="text-sm font-medium text-cyan-200">Admin Control Center</span>
           </div>
           
           <h1 className="mb-4 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">

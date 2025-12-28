@@ -77,7 +77,7 @@ export default function SEOHead({
     logo: `${defaultSEO.siteUrl}/images/logo.png`,
     description: defaultSEO.defaultDescription,
     sameAs: [
-      'https://discord.gg/freexstore',
+      'https://discord.gg/aTEmKr4K7k',
       'https://twitter.com/freexstore',
       'https://github.com/freexstore'
     ],

@@ -858,3 +858,8 @@ button {
     max-height: 67vh;
   } 
 }
+
+/* Override react-hot-toast z-index */
+[data-rht-toaster] {
+  z-index: 999999999999999999999 !important;
+}

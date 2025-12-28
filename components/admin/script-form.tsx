@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/ui/file-upload'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { safeAdminApi } from '@/lib/admin-api'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Save, Upload, Copy, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Save, Upload, Copy, RefreshCw, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 // UUID generation function
@@ -44,6 +44,11 @@ interface ScriptFormData {
   features: string[]
   requirements: string
   discordRoleId: string
+  // SEO Fields
+  seoTitle: string
+  seoDescription: string
+  seoKeywords: string
+  slug: string
 }
 
 interface ScriptFormProps {
@@ -84,7 +89,12 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
     downloadUrl: script?.downloadUrl || '',
     features: script?.features ? script.features.split(',').map(f => f.trim()) : [''],
     requirements: script?.requirements || '',
-    discordRoleId: (script as any)?.discordRoleId || ''
+    discordRoleId: (script as any)?.discordRoleId || '',
+    // SEO Fields
+    seoTitle: (script as any)?.seoTitle || '',
+    seoDescription: (script as any)?.seoDescription || '',
+    seoKeywords: (script as any)?.seoKeywords || '',
+    slug: (script as any)?.slug || ''
   })
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -126,7 +136,12 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         downloadUrl: script.downloadUrl || '',
         features: script.features ? script.features.split(',').map(f => f.trim()) : [''],
         requirements: script.requirements || '',
-        discordRoleId: (script as any)?.discordRoleId || ''
+        discordRoleId: (script as any)?.discordRoleId || '',
+        // SEO Fields
+        seoTitle: (script as any)?.seoTitle || '',
+        seoDescription: (script as any)?.seoDescription || '',
+        seoKeywords: (script as any)?.seoKeywords || '',
+        slug: (script as any)?.slug || ''
       })
     }
   }, [script, mode])
@@ -250,6 +265,11 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         scriptUUID: formData.scriptUUID || null,
         discordRoleId: formData.discordRoleId || null,
         downloadUrl: downloadUrl || undefined,
+        // SEO Fields
+        seoTitle: formData.seoTitle.trim() || formData.name.trim(),
+        seoDescription: formData.seoDescription.trim() || formData.description.trim(),
+        seoKeywords: formData.seoKeywords.trim(),
+        slug: formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
         // Include existing imageUrl only if no new image is selected
         ...(formData.imageUrl && !selectedImage ? { imageUrl: formData.imageUrl } : {})
       }
@@ -336,6 +356,57 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
     } else {
       toast.error('No UUID to copy. Generate one first!');
     }
+  };
+
+  const handleAutoGenerateSEO = () => {
+    if (!formData.name.trim()) {
+      toast.error('Please enter a script name first');
+      return;
+    }
+
+    // Generate slug from name
+    const generatedSlug = formData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    // Generate SEO title (max 60 chars)
+    const generatedTitle = formData.name.length > 60 
+      ? formData.name.substring(0, 57) + '...'
+      : formData.name;
+
+    // Generate SEO description from script description (max 160 chars)
+    let generatedDescription = formData.description.trim();
+    if (generatedDescription.length > 160) {
+      generatedDescription = generatedDescription.substring(0, 157) + '...';
+    } else if (!generatedDescription) {
+      generatedDescription = `${formData.name} - Premium FiveM NUI Script. High-quality, optimized, and easy to use.`;
+      if (generatedDescription.length > 160) {
+        generatedDescription = generatedDescription.substring(0, 157) + '...';
+      }
+    }
+
+    // Generate keywords from name and category
+    const categoryName = dbCategories.find(cat => cat.id === formData.category)?.name || '';
+    const keywords = [
+      'fivem',
+      'script',
+      'nui',
+      formData.name.toLowerCase(),
+      categoryName.toLowerCase(),
+      'custom',
+      'premium'
+    ].filter(Boolean).join(', ');
+
+    setFormData({
+      ...formData,
+      slug: generatedSlug,
+      seoTitle: generatedTitle,
+      seoDescription: generatedDescription,
+      seoKeywords: keywords
+    });
+
+    toast.success('SEO data auto-generated successfully!');
   };
 
   return (
@@ -735,9 +806,104 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
               </div>
             </div>
 
-            
+            {/* SEO Settings Section */}
+            <div className="pt-6 border-t border-white/10">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    SEO Settings
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-400">
+                    Optimize your script for search engines and improve discoverability
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleAutoGenerateSEO}
+                  className="text-white bg-gradient-to-r from-purple-600 to-pink-600 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-pink-500 border-white/10 hover:shadow-xl hover:scale-105"
+                  disabled={!formData.name.trim() || isSubmitting}
+                >
+                  <Sparkles className="mr-2 w-4 h-4" />
+                  Auto-Generate SEO
+                </Button>
+              </div>
 
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="slug" className="text-white">URL Slug</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-') })}
+                    placeholder="my-awesome-script"
+                    className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    URL-friendly version of the script name. Leave empty to auto-generate from script name.
+                    <br />
+                    Preview: <span className="text-cyan-400">/scripts/{formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}</span>
+                  </p>
+                </div>
 
+                <div>
+                  <Label htmlFor="seoTitle" className="text-white">
+                    SEO Title
+                    <span className="ml-2 text-xs text-gray-400">
+                      ({formData.seoTitle.length}/60 characters)
+                    </span>
+                  </Label>
+                  <Input
+                    id="seoTitle"
+                    value={formData.seoTitle}
+                    onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                    placeholder="Enter SEO title (leave empty to use script name)"
+                    maxLength={60}
+                    className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    Recommended: 50-60 characters. This appears in search engine results.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="seoDescription" className="text-white">
+                    SEO Meta Description
+                    <span className="ml-2 text-xs text-gray-400">
+                      ({formData.seoDescription.length}/160 characters)
+                    </span>
+                  </Label>
+                  <Textarea
+                    id="seoDescription"
+                    value={formData.seoDescription}
+                    onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                    placeholder="Enter SEO description (leave empty to use script description)"
+                    rows={3}
+                    maxLength={160}
+                    className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    Recommended: 150-160 characters. This appears as the snippet in search results.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="seoKeywords" className="text-white">SEO Keywords</Label>
+                  <Input
+                    id="seoKeywords"
+                    value={formData.seoKeywords}
+                    onChange={(e) => setFormData({ ...formData, seoKeywords: e.target.value })}
+                    placeholder="fivem, script, nui, hud, menu (comma-separated)"
+                    className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    Enter relevant keywords separated by commas. Example: fivem, nui script, custom hud, roleplay
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <div className="flex items-center space-x-3">

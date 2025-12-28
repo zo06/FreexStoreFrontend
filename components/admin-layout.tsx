@@ -5,21 +5,30 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import {
-  LayoutDashboard,
-  Users,
-  Shield,
-  BarChart3,
-  Key,
-  Menu,
-  X,
-  LogOut,
-  ChevronDown,
+import { 
+  LayoutDashboard, 
+  Users, 
+  Code2, 
+  Key, 
+  Receipt, 
+  Calculator, 
+  MessageSquare, 
+  Settings, 
+  ChevronDown, 
   ChevronRight,
   ChevronLeft,
-  Code2,
+  Menu, 
+  X,
+  LogOut,
+  UserCheck,
+  FolderOpen,
+  Plus,
+  Tags,
+  HelpCircle,
+  Mail,
+  Shield,
+  BarChart3,
   DollarSign,
-  Settings,
   Globe,
   Crown,
   Bell,
@@ -31,15 +40,7 @@ import {
   Clock,
   Star,
   Zap,
-  HelpCircle,
-  ExternalLink,
-  Plus,
-  FolderOpen,
-  Calculator,
-  Tags,
-  MessageSquare,
-  Receipt,
-  UserCheck
+  ExternalLink
 } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
 
@@ -142,44 +143,48 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, [showUserMenu, showSearchResults]);
 
-  // Handle search
+  // Admin pages for quick navigation
+  const adminPages = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', description: 'Overview and statistics' },
+    { icon: Users, label: 'Users', path: '/admin/users', description: 'Manage user accounts' },
+    { icon: UserCheck, label: 'Developers', path: '/admin/developers', description: 'Manage developer accounts' },
+    { icon: Code2, label: 'Scripts', path: '/admin/scripts', description: 'Manage all scripts' },
+    { icon: Plus, label: 'Create Script', path: '/admin/scripts/create', description: 'Add new script' },
+    { icon: Tags, label: 'Categories', path: '/admin/categories', description: 'Manage script categories' },
+    { icon: Key, label: 'Licenses', path: '/admin/licenses', description: 'Manage user licenses' },
+    { icon: Receipt, label: 'Transactions', path: '/admin/transactions', description: 'View payment history' },
+    { icon: Calculator, label: 'Accounting', path: '/admin/accounting', description: 'Financial analytics' },
+    { icon: Mail, label: 'Contact Messages', path: '/admin/contact-messages', description: 'View contact inquiries' },
+    { icon: MessageSquare, label: 'Custom Requests', path: '/admin/custom-requests', description: 'Handle custom requests' },
+    { icon: HelpCircle, label: 'FAQ', path: '/admin/faq', description: 'Manage FAQ content' },
+  ];
+
+  // Filter admin pages based on search query
+  const filteredPages = searchQuery.trim()
+    ? adminPages.filter(page => 
+        page.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        page.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : adminPages;
+
+  // Handle search - navigate to page on Enter
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      performSearch();
+    if (e.key === 'Enter' && filteredPages.length > 0) {
+      router.push(filteredPages[0].path);
+      setSearchQuery('');
+      setShowSearchResults(false);
+    } else if (e.key === 'Escape') {
+      setSearchQuery('');
+      setShowSearchResults(false);
     }
   };
 
-  const performSearch = () => {
-    if (!searchQuery.trim()) return;
-    
-    // Determine which page to search based on current location or show all results
-    const searchPages = [
-      { path: '/admin/users', label: 'Users' },
-      { path: '/admin/scripts', label: 'Scripts' },
-      { path: '/admin/licenses', label: 'Licenses' },
-      { path: '/admin/transactions', label: 'Transactions' },
-      { path: '/admin/developers', label: 'Developers' },
-    ];
-
-    // If on a specific admin page, search within that page
-    const currentPage = searchPages.find(page => pathname.startsWith(page.path));
-    if (currentPage) {
-      router.push(`${currentPage.path}?search=${encodeURIComponent(searchQuery)}`);
-    } else {
-      // Default to users page for global search
-      router.push(`/admin/users?search=${encodeURIComponent(searchQuery)}`);
-    }
-    
+  // Navigate to page
+  const navigateToPage = (path: string) => {
+    router.push(path);
+    setSearchQuery('');
     setShowSearchResults(false);
   };
-
-  const searchSuggestions = [
-    { icon: UserCheck, label: 'Search Users', path: '/admin/users' },
-    { icon: Code2, label: 'Search Scripts', path: '/admin/scripts' },
-    { icon: Key, label: 'Search Licenses', path: '/admin/licenses' },
-    { icon: Receipt, label: 'Search Transactions', path: '/admin/transactions' },
-    { icon: Users, label: 'Search Developers', path: '/admin/developers' },
-  ];
 
   const sidebarItems = [
     { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
@@ -199,8 +204,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/licenses', icon: Key, label: 'Licenses' },
     { href: '/admin/transactions', icon: Receipt, label: 'Transactions' },
     { href: '/admin/accounting', icon: Calculator, label: 'Accounting' },
+    { href: '/admin/contact-messages', icon: Mail, label: 'Contact Messages' },
     { href: '/admin/custom-requests', icon: MessageSquare, label: 'Custom Requests' },
-    { href: '/admin/settings', icon: Settings, label: 'Settings' },
+    { href: '/admin/faq', icon: HelpCircle, label: 'FAQ' },
   ];
 
   const isActive = (href: string) => {
@@ -223,9 +229,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_50%_50%_at_100%_100%,rgba(147,197,253,0.08),transparent)]"></div>
         
         {/* Floating orbs - baby blue theme */}
-        <div className="absolute top-20 left-20 w-[500px] h-[500px] bg-sky-400/[0.07] rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute top-1/2 right-20 w-[400px] h-[400px] bg-blue-400/[0.05] rounded-full blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-20 left-1/3 w-[600px] h-[600px] bg-sky-300/[0.04] rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-20 left-20 md:w-[500px] md:h-[500px] bg-sky-400/[0.07] rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-1/2 right-20 md:w-[400px] md:h-[400px] bg-blue-400/[0.05] rounded-full blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-20 left-1/3 md:w-[600px] md:h-[600px] bg-sky-300/[0.04] rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
         
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(147,197,253,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(147,197,253,0.03)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
@@ -267,43 +273,91 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       <Search className="absolute left-4 top-1/2 w-4 h-4 text-gray-500 transition-colors -translate-y-1/2 group-focus-within:text-sky-400" />
                       <input
                         type="text"
-                        placeholder="Search anything... (Press Enter)"
+                        placeholder="Quick navigation... (Type to search pages)"
                         value={searchQuery}
                         onChange={(e) => {
                           setSearchQuery(e.target.value);
-                          setShowSearchResults(e.target.value.length > 0);
+                          setShowSearchResults(true);
                         }}
                         onKeyDown={handleSearch}
-                        onFocus={() => searchQuery && setShowSearchResults(true)}
-                        className="w-full h-11 pl-11 pr-4 bg-white/[0.03] border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:border-sky-500/50 focus:bg-white/[0.05] focus:outline-none transition-all"
+                        onFocus={() => setShowSearchResults(true)}
+                        className="w-full h-11 pl-11 pr-20 bg-white/[0.03] border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:border-sky-500/50 focus:bg-white/[0.05] focus:outline-none transition-all"
                       />
-                      <kbd className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 text-[10px] text-gray-500 bg-white/5 rounded-md border border-white/10">Enter</kbd>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <kbd className="px-2 py-1 text-[10px] text-gray-500 bg-white/5 rounded-md border border-white/10">⏎</kbd>
+                        <kbd className="px-2 py-1 text-[10px] text-gray-500 bg-white/5 rounded-md border border-white/10">ESC</kbd>
+                      </div>
                       
-                      {/* Search Results Dropdown */}
-                      {showSearchResults && searchQuery && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                      {/* Quick Navigation Dropdown */}
+                      {showSearchResults && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 max-h-[500px] overflow-y-auto">
                           <div className="p-2">
-                            <div className="text-xs text-gray-400 px-3 py-2 mb-1">Search in:</div>
-                            {searchSuggestions.map((suggestion, index) => {
-                              const Icon = suggestion.icon;
-                              return (
-                                <button
-                                  key={index}
-                                  onClick={() => {
-                                    router.push(`${suggestion.path}?search=${encodeURIComponent(searchQuery)}`);
-                                    setShowSearchResults(false);
-                                  }}
-                                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-gray-300 hover:bg-white/[0.05] hover:text-white transition-all group"
-                                >
-                                  <Icon className="w-4 h-4 text-gray-500 group-hover:text-sky-400 transition-colors" />
-                                  <span>{suggestion.label}</span>
-                                  <span className="ml-auto text-xs text-gray-500">"{searchQuery}"</span>
-                                </button>
-                              );
-                            })}
+                            <div className="flex items-center justify-between px-3 py-2 mb-1">
+                              <div className="flex items-center gap-2">
+                                <Zap className="w-3.5 h-3.5 text-sky-400" />
+                                <span className="text-xs text-gray-400 font-medium">Quick Actions</span>
+                              </div>
+                              {searchQuery && (
+                                <span className="text-xs text-gray-500">{filteredPages.length} results</span>
+                              )}
+                            </div>
+                            {filteredPages.length > 0 ? (
+                              filteredPages.map((page, index) => {
+                                const Icon = page.icon;
+                                const isCurrentPage = pathname === page.path;
+                                return (
+                                  <button
+                                    key={index}
+                                    onClick={() => navigateToPage(page.path)}
+                                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all group ${
+                                      isCurrentPage
+                                        ? 'bg-sky-500/15 border border-sky-500/30'
+                                        : 'hover:bg-white/[0.05] border border-transparent'
+                                    }`}
+                                  >
+                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                                      isCurrentPage
+                                        ? 'bg-sky-500/20 text-sky-400'
+                                        : 'bg-white/[0.03] text-gray-500 group-hover:bg-white/[0.06] group-hover:text-sky-400'
+                                    }`}>
+                                      <Icon className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className={`text-sm font-medium ${
+                                        isCurrentPage ? 'text-sky-400' : 'text-gray-300 group-hover:text-white'
+                                      }`}>
+                                        {page.label}
+                                      </div>
+                                      <div className="text-xs text-gray-500 truncate">{page.description}</div>
+                                    </div>
+                                    {isCurrentPage && (
+                                      <div className="flex items-center gap-1 px-2 py-1 bg-sky-500/20 rounded-md">
+                                        <Star className="w-3 h-3 text-sky-400" />
+                                        <span className="text-[10px] text-sky-400 font-medium">Current</span>
+                                      </div>
+                                    )}
+                                    {index === 0 && searchQuery && (
+                                      <kbd className="px-2 py-1 text-[10px] text-gray-500 bg-white/5 rounded-md border border-white/10">⏎</kbd>
+                                    )}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                                <Search className="w-12 h-12 text-gray-600 mb-3" />
+                                <p className="text-sm text-gray-400 mb-1">No pages found</p>
+                                <p className="text-xs text-gray-600">Try a different search term</p>
+                              </div>
+                            )}
                           </div>
-                          <div className="border-t border-white/10 px-3 py-2 bg-white/[0.02]">
-                            <div className="text-xs text-gray-500">Press <kbd className="px-1.5 py-0.5 bg-white/5 rounded border border-white/10">Enter</kbd> to search in current page</div>
+                          <div className="border-t border-white/10 px-3 py-2.5 bg-white/[0.02]">
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <div className="flex items-center gap-4">
+                                <span>Press <kbd className="px-1.5 py-0.5 bg-white/5 rounded border border-white/10 text-gray-400">⏎</kbd> to navigate</span>
+                                <span>Press <kbd className="px-1.5 py-0.5 bg-white/5 rounded border border-white/10 text-gray-400">ESC</kbd> to close</span>
+                              </div>
+                              <span className="text-gray-600">Click to navigate</span>
+                            </div>
                           </div>
                         </div>
                       )}

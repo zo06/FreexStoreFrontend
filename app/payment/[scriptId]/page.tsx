@@ -110,6 +110,11 @@ export default function PaymentPage() {
         const parsed = JSON.parse(features);
         return Array.isArray(parsed) ? parsed : [features];
       } catch {
+        // Split by comma for comma-separated features (supports Arabic text)
+        if (features.includes(',')) {
+          return features.split(',').map(f => f.trim()).filter(f => f);
+        }
+        // Fallback to newline split
         return features.split('\n').filter(f => f.trim());
       }
     }
@@ -140,11 +145,11 @@ export default function PaymentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin text-purple-500" />
-            <div className="absolute inset-0 h-12 w-12 animate-ping text-purple-500 opacity-20">
+            <Loader2 className="h-12 w-12 animate-spin text-cyan-500" />
+            <div className="absolute inset-0 h-12 w-12 animate-ping text-cyan-500 opacity-20">
               <Loader2 className="h-12 w-12" />
             </div>
           </div>
@@ -156,7 +161,7 @@ export default function PaymentPage() {
 
   if (error || !script) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-red-500/30 backdrop-blur-xl shadow-2xl">
           <CardHeader className="text-center">
             <CardTitle className="text-red-400 text-2xl">Error</CardTitle>
@@ -166,7 +171,7 @@ export default function PaymentPage() {
           </CardHeader>
           <CardContent className="text-center">
             <Link href="/scripts">
-              <Button variant="outline" className="border-purple-500/30 text-purple-400 hover:bg-purple-500/20">
+              <Button variant="outline" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Scripts
               </Button>
@@ -179,25 +184,25 @@ export default function PaymentPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-yellow-500/30 backdrop-blur-xl shadow-2xl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-cyan-500/30 backdrop-blur-xl shadow-2xl">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-white" />
             </div>
-            <CardTitle className="text-yellow-400 text-2xl">Authentication Required</CardTitle>
+            <CardTitle className="text-cyan-400 text-2xl">Authentication Required</CardTitle>
             <CardDescription className="text-gray-300 mt-2">
               Please log in to purchase this script
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <Link href="/auth/login">
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg">
+              <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg">
                 Log In
               </Button>
             </Link>
             <Link href="/scripts">
-              <Button variant="outline" className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/20">
+              <Button variant="outline" className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Scripts
               </Button>
@@ -211,24 +216,44 @@ export default function PaymentPage() {
   const features = formatFeatures(script.features);
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen relative overflow-x-hidden bg-[#030712]">
+      {/* Enhanced Background Elements - Match Landing Page */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]"></div>
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(16,185,129,0.1),transparent)]"></div>
+      </div>
+      
+      {/* Floating Orbs */}
+      <div className="fixed top-20 left-10 w-32 h-32 bg-cyan-500/20 rounded-full blur-[80px] animate-pulse pointer-events-none"></div>
+      <div className="fixed top-40 right-20 w-24 h-24 bg-blue-500/15 rounded-full blur-[60px] animate-pulse pointer-events-none" style={{animationDelay: '2s'}}></div>
+      <div className="fixed bottom-20 left-1/4 w-40 h-40 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{animationDelay: '4s'}}></div>
+      
+      {/* Grid Pattern Overlay */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none opacity-30"></div>
+      
+      <div className="container relative z-10 mx-auto px-4 py-8">
+        {/* Header - Modern Style */}
+        <div className="mb-12 mt-4">
           <Link href="/scripts">
-            <Button variant="ghost" className="text-purple-300 hover:text-white hover:bg-purple-800/30 mb-4 transition-all">
+            <Button variant="ghost" className="text-cyan-300 hover:text-white hover:bg-white/5 mb-6 transition-all backdrop-blur-sm border border-white/10 rounded-xl">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Scripts
             </Button>
           </Link>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+          
+
+          
+          <div className="flex items-center gap-4 mb-3">
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-75"></div>
+              <div className="relative p-3 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-xl">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Complete Your Purchase</h1>
+            <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">Complete Your Purchase</h1>
           </div>
-          <p className="text-gray-400 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-400" />
+          <p className="text-gray-400 flex items-center gap-2 text-lg">
+            <Shield className="w-5 h-5 text-green-400" />
             Secure payment processing with 256-bit encryption
           </p>
         </div>
@@ -236,14 +261,15 @@ export default function PaymentPage() {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Script Details */}
           <div className="space-y-6">
-            <Card className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-purple-500/20 backdrop-blur-xl shadow-2xl overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+            <Card className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden hover:border-cyan-500/30 transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"></div>
               <CardHeader className="relative">
                 <div className="flex items-start space-x-4">
                   <div className="flex-1">
                     <CardTitle className="text-white text-2xl mb-3 font-bold">{script.name}</CardTitle>
                     <div className="flex gap-2">
-                      <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+                      <Badge className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white border-0">
                         {(script.category as { name?: string })?.name || 'General'}
                       </Badge>
                       <Badge variant="outline" className="border-green-500/30 text-green-400">
@@ -268,18 +294,22 @@ export default function PaymentPage() {
               <p className="text-gray-300 leading-relaxed">{script.description}</p>
               
               {features.length > 0 && (
-                <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/10 border border-green-500/20 rounded-xl p-4">
-                  <h3 className="text-white font-semibold mb-4 flex items-center text-lg">
-                    <div className="p-1.5 bg-green-500/20 rounded-lg mr-2">
-                      <Zap className="h-5 w-5 text-green-400" />
+                <div className="relative group/features bg-gradient-to-br from-green-900/20 to-emerald-900/10 border border-green-500/20 rounded-xl p-5 hover:border-green-500/40 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover/features:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+                  <h3 className="relative text-white font-bold mb-5 flex items-center text-lg">
+                    <div className="relative">
+                      <div className="absolute -inset-1 bg-green-500/30 rounded-lg blur"></div>
+                      <div className="relative p-2 bg-green-500/20 rounded-lg">
+                        <Zap className="h-5 w-5 text-green-400" />
+                      </div>
                     </div>
-                    Key Features
+                    <span className="ml-3 bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">Key Features</span>
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 relative">
                     {features.map((feature, index) => (
-                      <li key={index} className="text-gray-300 flex items-start group">
-                        <CheckCircle className="mr-3 h-5 w-5 text-green-400 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                        <span className="flex-1">{feature}</span>
+                      <li key={index} className="text-gray-300 flex items-start group/item hover:text-white transition-colors">
+                        <CheckCircle className="mr-3 h-5 w-5 text-green-400 mt-0.5 flex-shrink-0 group-hover/item:scale-110 group-hover/item:text-green-300 transition-all" />
+                        <span className="flex-1 leading-relaxed" dir="auto">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -313,7 +343,7 @@ export default function PaymentPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg">
                 <span className="text-gray-300 font-medium">License Type:</span>
-                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+                <Badge className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white border-0">
                   {script.licenseType === 'forever' ? '♾️ Lifetime' : '⏱️ Time-based'}
                 </Badge>
               </div>
@@ -328,21 +358,22 @@ export default function PaymentPage() {
                 </div>
               )}
               
-              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-cyan-500/10 rounded-lg">
                 <span className="text-gray-300 font-medium">Support:</span>
-                <span className="text-purple-400 font-semibold">✓ Included</span>
+                <span className="text-cyan-400 font-semibold">✓ Included</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Payment Section */}
-        <div className="space-y-6">
-          <Card className="bg-gradient-to-br from-gray-900/60 to-gray-800/30 border-purple-500/20 backdrop-blur-xl shadow-2xl overflow-hidden">
-            <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="space-y-6 mt-8">
+          <Card className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden hover:border-cyan-500/30 transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute top-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"></div>
             <CardHeader className="relative">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-lg">
                   <CreditCard className="w-5 h-5 text-white" />
                 </div>
                 <CardTitle className="text-white text-2xl font-bold">Payment Method</CardTitle>
@@ -364,9 +395,9 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 p-6 rounded-xl">
+              <div className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/30 p-6 rounded-xl">
                 <div className="flex items-center justify-center mb-6">
-                  <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg mr-3">
+                  <div className="p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg mr-3">
                     <CreditCard className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-white font-semibold text-lg">Pay with Card</h3>
@@ -390,7 +421,7 @@ export default function PaymentPage() {
                   <span>All major credit cards accepted</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
-                  <CheckCircle className="w-4 h-4 text-purple-400" />
+                  <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Receipt will be sent to your email address</span>
                 </div>
               </div>
