@@ -75,6 +75,26 @@ function FAQManagement() {
       return;
     }
 
+    if (formData.question.trim().length < 5) {
+      toast.error('Question must be at least 5 characters long');
+      return;
+    }
+
+    if (formData.answer.trim().length < 10) {
+      toast.error('Answer must be at least 10 characters long');
+      return;
+    }
+
+    if (formData.question.length > 500) {
+      toast.error('Question must not exceed 500 characters');
+      return;
+    }
+
+    if (formData.category.length > 100) {
+      toast.error('Category must not exceed 100 characters');
+      return;
+    }
+
     try {
       if (editingId) {
         await apiClient.put(`/admin/faqs/${editingId}`, formData);
@@ -86,9 +106,16 @@ function FAQManagement() {
       
       resetForm();
       fetchFAQs();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save FAQ:', error);
-      toast.error('Failed to save FAQ');
+      const errorMessage = error?.response?.data?.message;
+      if (Array.isArray(errorMessage)) {
+        errorMessage.forEach((msg: string) => toast.error(msg));
+      } else if (typeof errorMessage === 'string') {
+        toast.error(errorMessage);
+      } else {
+        toast.error('Failed to save FAQ');
+      }
     }
   };
 
@@ -171,25 +198,36 @@ function FAQManagement() {
               <div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="question" className="text-white font-medium">Question</Label>
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="question" className="text-white font-medium">Question</Label>
+                      <span className={`text-xs ${formData.question.length < 5 ? 'text-red-400' : formData.question.length > 500 ? 'text-red-400' : 'text-gray-500'}`}>
+                        {formData.question.length}/500 {formData.question.length < 5 && '(min 5)'}
+                      </span>
+                    </div>
                     <Input
                       id="question"
                       value={formData.question}
                       onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                       className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                      placeholder="Enter question"
+                      placeholder="Enter question (min 5 characters)"
                       required
+                      maxLength={500}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="answer" className="text-white font-medium">Answer</Label>
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="answer" className="text-white font-medium">Answer</Label>
+                      <span className={`text-xs ${formData.answer.length < 10 ? 'text-red-400' : 'text-gray-500'}`}>
+                        {formData.answer.length} chars {formData.answer.length < 10 && '(min 10)'}
+                      </span>
+                    </div>
                     <Textarea
                       id="answer"
                       value={formData.answer}
                       onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                       className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                      placeholder="Enter answer"
+                      placeholder="Enter answer (min 10 characters)"
                       required
                     />
                   </div>
