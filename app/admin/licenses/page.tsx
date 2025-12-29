@@ -148,10 +148,11 @@ function AdminLicenses() {
     if (!selectedLicense) return
 
     try {
-      await patchLicense(selectedLicense.id, { isActive: false })
+      await safeAdminApi.licenses.revoke(selectedLicense.id)
       toast.success('License revoked successfully')
       setIsRevokeDialogOpen(false)
       setSelectedLicense(null)
+      await getLicenses()
     } catch (error) {
       console.error('Failed to revoke license:', error)
       toast.error('Failed to revoke license')

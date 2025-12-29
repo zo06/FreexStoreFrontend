@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { useScriptsStore, useCategoriesStore, Script, Category } from '@/lib/stores'
+import { safeAdminApi } from '@/lib/admin-api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -196,8 +197,9 @@ function AdminScripts() {
 
   const handleToggleActive = async (script: Script) => {
     try {
-      await patchScript(script.id, { isActive: !script.isActive })
+      await safeAdminApi.scripts.toggleActive(script.id)
       toast.success(`${script.name} ${script.isActive ? 'deactivated' : 'activated'}`)
+      await getScripts()
     } catch (error) {
       console.error('Failed to toggle script status:', error)
       toast.error('Failed to update script status')
