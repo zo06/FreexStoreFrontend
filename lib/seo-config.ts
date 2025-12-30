@@ -162,11 +162,6 @@ export const defaultMetadata: Metadata = {
   manifest: '/site.webmanifest',
   alternates: {
     canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site',
-    languages: {
-      'en': SITE_CONFIG.url,
-      'ar': `${SITE_CONFIG.url}/ar`,
-      'x-default': SITE_CONFIG.url,
-    },
   },
   verification: {
     google: 'your-google-verification-code', // Add your Google Search Console verification

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from '@/components/theme-provider';
 import Navigation from '@/components/navigation';
@@ -63,7 +64,14 @@ export default function RootLayout({
             __html: JSON.stringify(generateGEOFAQSchema()),
           }}
         />
-        
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-MX27P5WHQ4"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-MX27P5WHQ4');
+        </script>
         {/* GEO - Generative Engine Optimization for AI Search */}
         {/* Structured content signals for AI citation */}
         <meta name="ai.content.type" content="marketplace" />
@@ -72,10 +80,7 @@ export default function RootLayout({
         <meta name="ai.summary" content="FreexStore is a premium marketplace for FiveM NUI scripts including HUDs, menus, shops, and UI systems. Offers secure licensing, instant delivery, and free trials." />
         
         {/* Language and Locale */}
-        <meta httpEquiv="content-language" content="en-US, ar" />
-        <link rel="alternate" hrefLang="en" href={SITE_CONFIG.url} />
-        <link rel="alternate" hrefLang="ar" href={`${SITE_CONFIG.url}/ar`} />
-        <link rel="alternate" hrefLang="x-default" href={SITE_CONFIG.url} />
+        <meta httpEquiv="content-language" content="en-US" />
         
         {/* Additional Search Engine Meta Tags */}
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
@@ -106,6 +111,20 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MX27P5WHQ4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MX27P5WHQ4');
+          `}
+        </Script>
+
         <Providers>
           <AuthProvider>
               <ThemeProvider

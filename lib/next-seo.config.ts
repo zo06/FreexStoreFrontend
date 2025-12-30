@@ -16,20 +16,7 @@ export const defaultSEOConfig = {
   canonical: SITE_CONFIG.url,
   
   // Language & Locale
-  languageAlternates: [
-    {
-      hrefLang: 'en',
-      href: SITE_CONFIG.url,
-    },
-    {
-      hrefLang: 'ar',
-      href: `${SITE_CONFIG.url}/ar`,
-    },
-    {
-      hrefLang: 'x-default',
-      href: SITE_CONFIG.url,
-    },
-  ],
+  languageAlternates: [],
   
   // Open Graph (Facebook, LinkedIn, WhatsApp)
   openGraph: {

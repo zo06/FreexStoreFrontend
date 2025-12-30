@@ -145,8 +145,8 @@ export default function TermsOfService() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="animate-element text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">Legal</h2>
-              <h3 className="animate-element text-lg sm:text-xl lg:text-2xl font-light text-slate-300 mb-4 sm:mb-6">Transparency.</h3>
+              <div className="animate-element text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">Legal & Compliance</div>
+              <p className="animate-element text-lg sm:text-xl lg:text-2xl font-light text-slate-300 mb-4 sm:mb-6">Built on Transparency</p>
               <p className="animate-element text-slate-400 max-w-sm sm:max-w-md mx-auto leading-relaxed text-sm sm:text-base px-4 sm:px-0">
                 Clear and transparent terms to ensure you understand your rights and responsibilities when using our automation platform.
               </p>
