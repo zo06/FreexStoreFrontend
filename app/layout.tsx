@@ -64,14 +64,7 @@ export default function RootLayout({
             __html: JSON.stringify(generateGEOFAQSchema()),
           }}
         />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-MX27P5WHQ4"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'G-MX27P5WHQ4');
-        </script>
+        
         {/* GEO - Generative Engine Optimization for AI Search */}
         {/* Structured content signals for AI citation */}
         <meta name="ai.content.type" content="marketplace" />
