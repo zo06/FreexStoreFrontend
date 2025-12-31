@@ -316,7 +316,7 @@ export default function Home() {
           ) : featuredScripts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
               {featuredScripts.map((script, index) => (
-                <Link href={`/payment/${script.slug || script.id}`} key={script.id}>
+                <Link href={`/script/${script.slug || script.id}`} key={script.id}>
                   <div 
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 cursor-pointer"
                     style={{animationDelay: `${index * 0.1}s`}}

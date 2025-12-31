@@ -34,8 +34,8 @@ export default function PayPalBuyButton({
     setIsLoading(true);
     
     try {
-      // Redirect to payment page with script details
-      router.push(`/payment/${scriptId}?amount=${amount}&name=${encodeURIComponent(scriptName)}`);
+      // Redirect to script purchase page with script details
+      router.push(`/script/${scriptId}?amount=${amount}&name=${encodeURIComponent(scriptName)}`);
       onSuccess?.();
     } catch (error) {
       console.error('Error initiating purchase:', error);

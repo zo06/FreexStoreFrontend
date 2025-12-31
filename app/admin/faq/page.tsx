@@ -172,8 +172,8 @@ function FAQManagement() {
         {/* Header */}
         <div className="p-6 mb-8 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
           <div className="flex gap-4 items-center">
-            <div className="p-3 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg">
-              <HelpCircle className="w-8 h-8 text-white" />
+            <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-purple-500/20 to-pink-500/20 border-white/10">
+              <HelpCircle className="w-8 h-8 text-purple-400" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">FAQ Management</h1>

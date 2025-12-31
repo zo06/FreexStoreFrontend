@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
-import { Plus, Trash2, CheckCircle, XCircle, RefreshCw, Download, Eye, Key, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, XCircle, RefreshCw, Download, Eye, Key, ArrowLeft, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
 
@@ -34,6 +34,8 @@ function AdminLicenses() {
   const [filteredLicenses, setFilteredLicenses] = useState<License[]>([])
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null)
   const [isRevokeDialogOpen, setIsRevokeDialogOpen] = useState(false)
+  const [isDeleteRevokedDialogOpen, setIsDeleteRevokedDialogOpen] = useState(false)
+  const [deletingRevoked, setDeletingRevoked] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [limit] = useState(10)
@@ -160,6 +162,49 @@ function AdminLicenses() {
     }
   }
 
+  const handleDeleteAllRevoked = async () => {
+    setDeletingRevoked(true)
+    try {
+      const revokedLicenses = licenses.filter(l => !l.isActive)
+      
+      if (revokedLicenses.length === 0) {
+        toast.error('No revoked licenses to delete')
+        setIsDeleteRevokedDialogOpen(false)
+        setDeletingRevoked(false)
+        return
+      }
+
+      // Delete each revoked license
+      let successCount = 0
+      let failCount = 0
+      
+      for (const license of revokedLicenses) {
+        try {
+          await safeAdminApi.licenses.delete(license.id)
+          successCount++
+        } catch (err) {
+          console.error(`Failed to delete license ${license.id}:`, err)
+          failCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully deleted ${successCount} revoked license(s)`)
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to delete ${failCount} license(s)`)
+      }
+
+      setIsDeleteRevokedDialogOpen(false)
+      await getLicenses()
+    } catch (error) {
+      console.error('Failed to delete revoked licenses:', error)
+      toast.error('Failed to delete revoked licenses')
+    } finally {
+      setDeletingRevoked(false)
+    }
+  }
+
   const getStatusBadge = (license: License) => {
     if (!license.isActive) {
       return <Badge variant="destructive">Revoked</Badge>
@@ -193,30 +238,30 @@ function AdminLicenses() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="p-8 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="mx-auto w-16 h-16 rounded-full border-4 animate-spin border-blue-500/30 border-t-blue-500"></div>
-          <p className="mt-4 font-medium text-center text-white/80">Loading licenses...</p>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
+        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
       </div>
     )
   }
 
   return (
-    <div className="overflow-hidden relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>      
+    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
+      {/* Background Effects */}
+<div className="absolute inset-0">
+  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
+</div>
+  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>      
       <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
         {/* Header */}
         <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
-                <Key className="w-8 h-8 text-white" />
+              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
+                <Key className="w-8 h-8 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">License Management</h1>
-                <p className="text-gray-400">Manage all script licenses and their validity</p>
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">License Management</h1>
+                <p className="mt-1 text-gray-400">Manage all script licenses and their validity</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -227,6 +272,15 @@ function AdminLicenses() {
                 <ArrowLeft className="mr-2 w-4 h-4" />
                 Back to Dashboard
               </Button>
+              {licenses.filter(l => !l.isActive).length > 0 && (
+                <Button 
+                  onClick={() => setIsDeleteRevokedDialogOpen(true)}
+                  className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                >
+                  <Trash2 className="mr-2 w-4 h-4" />
+                  Delete Revoked ({licenses.filter(l => !l.isActive).length})
+                </Button>
+              )}
               <Button 
                 onClick={() => router.push('/admin/licenses/manage')}
                 className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
@@ -250,11 +304,14 @@ function AdminLicenses() {
         />
 
         {/* Licenses Table */}
-        <div className="overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="p-6 border-b border-white/10">
-            <h2 className="text-xl font-semibold text-white">Licenses ({filteredLicenses.length} of {licenses.length})</h2>
+        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+              Licenses ({filteredLicenses.length} of {licenses.length})
+            </h2>
             <p className="mt-1 text-gray-400">List of all script licenses on the platform</p>
           </div>
+          
           <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -367,8 +424,52 @@ function AdminLicenses() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-    </div>
-    </div>
+
+        {/* Delete All Revoked Licenses Confirmation Dialog */}
+        <AlertDialog open={isDeleteRevokedDialogOpen} onOpenChange={setIsDeleteRevokedDialogOpen}>
+          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-white">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+                Delete All Revoked Licenses
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                <div className="space-y-2">
+                  <p>You are about to permanently delete <strong className="text-red-400">{licenses.filter(l => !l.isActive).length}</strong> revoked license(s).</p>
+                  <p className="text-yellow-400">⚠️ This action cannot be undone and will remove all revoked licenses from the database forever.</p>
+                  <p>Are you sure you want to continue?</p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                disabled={deletingRevoked}
+                className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteAllRevoked}
+                disabled={deletingRevoked}
+                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10"
+              >
+                {deletingRevoked ? (
+                  <>
+                    <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 w-4 h-4" />
+                    Delete Forever
+                  </>
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </main>
   )
 }
 

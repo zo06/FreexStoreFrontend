@@ -168,8 +168,8 @@ export default function AdminContactMessagesPage() {
         <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg">
-                <Envelope size={32} className="text-white" weight="duotone" />
+              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-purple-500/20 to-pink-500/20 border-white/10">
+                <Envelope size={32} className="text-purple-400" weight="duotone" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Contact Messages</h1>

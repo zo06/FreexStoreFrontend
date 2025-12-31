@@ -126,6 +126,10 @@ function LicenseManagementContent() {
       const expirationDate = new Date(formData.expiresAt);
 
       if (isCreating) {
+        // Get user and script details for logging
+        const selectedUser = users.find(u => u.id === formData.userId);
+        const selectedScript = scripts.find(s => s.id === formData.scriptId);
+        
         // Create new license
         const createData = {
           userId: formData.userId.trim(),
@@ -136,7 +140,20 @@ function LicenseManagementContent() {
         const result = await safeAdminApi.licenses.create(createData);
         console.log(result)
         if (result) {
-          toast.success('License created successfully');
+          // Show success message with activity log details
+          const expiryDateFormatted = isForeverScript 
+            ? 'Forever (No Expiration)' 
+            : new Date(formData.expiresAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+          
+          toast.success(
+            `License created successfully!\n\n✓ Admin gave ${selectedUser?.username || 'User'} access to "${selectedScript?.name || 'Script'}"\n✓ License Type: ${isForeverScript ? 'Forever' : 'Date-based'}\n✓ Expires: ${expiryDateFormatted}\n✓ Status: Active\n\n📝 Activity logged in user's Recent Activity`,
+            { duration: 5000 }
+          );
+          
           setTimeout(() => {
             router.push('/admin/licenses');
           }, 1500);

@@ -164,7 +164,7 @@ export function AnimatedSelect({
         onChange={(option) => onChange(option?.value || '')}
         placeholder={placeholder}
         isDisabled={isDisabled}
-        isSearchable={false}
+        isSearchable={true}
         closeMenuOnScroll={false}
         styles={customStyles}
         components={{

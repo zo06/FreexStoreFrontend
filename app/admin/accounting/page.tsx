@@ -131,8 +131,8 @@ function AdminAccounting() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-32 h-32 rounded-full border-b-2 animate-spin border-primary"></div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
+        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
       </div>
     )
   }

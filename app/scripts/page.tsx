@@ -248,7 +248,7 @@ function ScriptsPageContent() {
       }
     } else if (confirmModal.type === 'buy') {
       setConfirmModal({ isOpen: false, type: 'buy', script: null });
-      window.location.href = `/payment/${confirmModal.script.id}`;
+      window.location.href = `/script/${confirmModal.script.id}`;
     }
   };
 
@@ -456,7 +456,7 @@ function ScriptsPageContent() {
                     key={script.id}
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 animate-slide-up cursor-pointer"
                     style={{animationDelay: `${index * 0.1}s`}}
-                    onClick={() => window.location.href = `/payment/${script.id}`}
+                    onClick={() => window.location.href = `/script/${script.id}`}
                   >
                     {/* Image/Preview Area */}
                     <div className="relative h-48 overflow-hidden bg-gradient-to-br from-cyan-600/20 to-blue-600/20">
@@ -638,7 +638,7 @@ function ScriptsPageContent() {
                 key={script.id}
                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 animate-slide-up cursor-pointer"
                 style={{animationDelay: `${index * 0.1}s`}}
-                onClick={() => window.location.href = `/payment/${script.id}`}
+                onClick={() => window.location.href = `/script/${script.id}`}
               >
                 {/* Image/Preview Area */}
                 <div className="relative h-48 overflow-hidden bg-gradient-to-br from-cyan-600/20 to-blue-600/20">
@@ -990,7 +990,7 @@ function ScriptsPageContent() {
                   if (licenseStatus && licenseStatus.isTrial) {
                     return (
                       <Link 
-                        href={`/payment/${selectedScript.id}`}
+                        href={`/script/${selectedScript.id}`}
                         className="flex-1 py-3.5 text-center font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25 hover:-translate-y-0.5 animate-pulse"
                       >
                         ⬆️ Upgrade from Trial - {selectedScript.price}
@@ -1001,7 +1001,7 @@ function ScriptsPageContent() {
                   // No license - show normal buy button
                   return (
                     <Link 
-                      href={`/payment/${selectedScript.id}`}
+                      href={`/script/${selectedScript.id}`}
                       className="flex-1 py-3.5 text-center font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 hover:-translate-y-0.5"
                     >
                       Buy Now - {selectedScript.price}

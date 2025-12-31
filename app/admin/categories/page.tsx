@@ -128,11 +128,8 @@ export default function AdminCategoriesPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="p-8 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-full border-b-2 border-white animate-spin"></div>
-          <p className="text-center text-white">Loading categories...</p>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
+        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
       </div>
     );
   }
@@ -140,19 +137,21 @@ export default function AdminCategoriesPage() {
   return (
     <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
+<div className="absolute inset-0">
+  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
+</div>
+  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
       
       <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
         {/* Header */}
         <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-xl shadow-lg">
-                <Folder className="w-8 h-8 text-white" />
+              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
+                <Folder className="w-8 h-8 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">Category Management</h1>
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Category Management</h1>
                 <p className="mt-1 text-gray-400">Organize and manage script categories</p>
               </div>
             </div>

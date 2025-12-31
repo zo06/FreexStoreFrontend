@@ -50,7 +50,7 @@ function isUUID(str: string): boolean {
   return uuidRegex.test(str);
 }
 
-export default function PaymentPage() {
+export default function ScriptPurchasePage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
