@@ -73,7 +73,8 @@ export const SITE_CONFIG = {
     ]
   },
   themeColor: '#8B5CF6',
-  backgroundColor: '#1F2937'
+  backgroundColor: '#1F2937',
+  defaultBanner: 'https://res.cloudinary.com/dhkbb074q/image/upload/v1767223625/banner-_0-00-01-17.png'
 }
 
 // ============================================
@@ -114,10 +115,10 @@ export const defaultMetadata: Metadata = {
     description: SITE_CONFIG.description,
     images: [
       {
-        url: `${SITE_CONFIG.url}/images/og-image.png`,
+        url: SITE_CONFIG.defaultBanner,
         width: 1200,
         height: 630,
-        alt: `${SITE_CONFIG.name} - Premium FiveM Scripts`,
+        alt: `${SITE_CONFIG.name} - Premium FiveM Scripts & Resources`,
         type: 'image/png',
       },
     ],
@@ -129,7 +130,7 @@ export const defaultMetadata: Metadata = {
     title: SITE_CONFIG.fullName,
     description: SITE_CONFIG.description,
     images: {
-      url: `${SITE_CONFIG.url}/images/twitter-image.png`,
+      url: SITE_CONFIG.defaultBanner,
       alt: SITE_CONFIG.fullName,
     },
   },
@@ -161,7 +162,7 @@ export const defaultMetadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site',
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://freexstores.com',
   },
   verification: {
     google: 'your-google-verification-code', // Add your Google Search Console verification

@@ -876,7 +876,7 @@ function AdminTransactions() {
                     <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
                       <div className="flex items-center gap-3 pb-3 border-b border-slate-700/50">
                         {selectedTransaction.user.discordAvatar ? (
-                          <img src={selectedTransaction.user.discordAvatar} alt="Avatar" className="w-12 h-12 rounded-full" />
+                          <img src={selectedTransaction.user.discordAvatar} alt={`${selectedTransaction.user.username} User Avatar - Transaction Details | FreexStore`} className="w-12 h-12 rounded-full" />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-cyan-600 flex items-center justify-center">
                             <User className="w-6 h-6" />
@@ -924,7 +924,7 @@ function AdminTransactions() {
                     <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
                       {selectedTransaction.script.imageUrl && (
                         <div className="pb-3 border-b border-slate-700/50">
-                          <img src={selectedTransaction.script.imageUrl} alt="Script" className="w-full h-32 object-cover rounded-lg" />
+                          <img src={selectedTransaction.script.imageUrl} alt={`${selectedTransaction.script.name} Script Preview - Transaction Item | FreexStore Premium FiveM Resource`} className="w-full h-32 object-cover rounded-lg" />
                         </div>
                       )}
                       <div className="flex justify-between items-center py-2 border-b border-slate-700/50">

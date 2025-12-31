@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 // Use centralized configuration
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freexstores.com'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

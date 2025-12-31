@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 // Use centralized configuration
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = SITE_URL

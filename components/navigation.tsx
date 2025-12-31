@@ -126,7 +126,7 @@ export default function Navigation() {
                   <div className="relative w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 transition-all duration-500 overflow-hidden">
                     {/* Inner Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-transparent to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <img src="/FreexLogo.png" alt="FreeX" className="relative z-10 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-transform duration-500 group-hover:scale-110" />
+                    <img src="/FreexLogo.png" alt="FreexStore Logo - Premium FiveM Scripts & Resources Marketplace" className="relative z-10 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 transition-transform duration-500 group-hover:scale-110" />
                   </div>
                 </div>
                 
@@ -224,7 +224,7 @@ export default function Navigation() {
                             : 'bg-gradient-to-br from-cyan-500 to-blue-600'
                         }`}>
                           {user.avatar ? (
-                            <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            <img src={user.avatar} alt={`${user.discordUsername || user.username || 'User'} Profile Avatar - FreexStore Account`} className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-white font-bold">{(user.discordUsername || user.username || 'U').charAt(0).toUpperCase()}</span>
                           )}
@@ -268,7 +268,7 @@ export default function Navigation() {
                                   : 'bg-gradient-to-br from-cyan-500 to-blue-600'
                               }`}>
                                 {user.avatar ? (
-                                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                  <img src={user.avatar} alt={`${user.discordUsername || user.username || 'User'} Profile Avatar - FreexStore Account`} className="w-full h-full object-cover" />
                                 ) : (
                                   <span className="text-white text-xl font-bold">{(user.discordUsername || user.username || 'U').charAt(0).toUpperCase()}</span>
                                 )}
@@ -451,7 +451,7 @@ export default function Navigation() {
                       {user.avatar ? (
                         <img 
                           src={user.avatar}
-                          alt="Avatar Discord"
+                          alt={`${user.discordUsername || user.username || 'User'} Discord Avatar - FreexStore Profile Picture`}
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (

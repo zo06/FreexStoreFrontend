@@ -326,7 +326,7 @@ export default function Home() {
                       {script.imageUrl ? (
                         <img 
                           src={script.imageUrl.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${script.imageUrl}` : script.imageUrl}
-                          alt={script.name}
+                          alt={`${script.name} - Premium FiveM Script | ${script.description?.substring(0, 100) || 'High Quality Resource'} | FreexStore`}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (

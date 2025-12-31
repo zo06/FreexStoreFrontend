@@ -85,13 +85,13 @@ export function JsonLd({ type, data }: JsonLdProps) {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'FreexStore',
-        url: data.url || 'https://freex.site',
+        url: data.url || 'https://freexstores.com',
         description: data.description || 'Premium FiveM NUI Scripts Marketplace',
         potentialAction: {
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: `${data.url || 'https://freex.site'}/scripts?search={search_term_string}`,
+            urlTemplate: `${data.url || 'https://freexstores.com'}/scripts?search={search_term_string}`,
           },
           'query-input': 'required name=search_term_string',
         },

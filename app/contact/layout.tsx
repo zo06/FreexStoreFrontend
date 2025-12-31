@@ -10,6 +10,21 @@ export const metadata: Metadata = {
     description: pageMetadata.contact.description,
     url: `${SITE_CONFIG.url}/contact`,
     type: 'website',
+    images: [
+      {
+        url: SITE_CONFIG.defaultBanner,
+        width: 1200,
+        height: 630,
+        alt: 'FreexStore - Contact Us | Premium FiveM Scripts Support',
+      },
+    ],
+    siteName: SITE_CONFIG.name,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: pageMetadata.contact.title,
+    description: pageMetadata.contact.description,
+    images: [SITE_CONFIG.defaultBanner],
   },
   alternates: {
     canonical: `${SITE_CONFIG.url}/contact`,

@@ -134,7 +134,7 @@ export function ImageUpload({
           <div className="relative">
             <img
               src={previewUrl.startsWith('blob:') || previewUrl.startsWith('http') ? previewUrl : `${process.env.NEXT_PUBLIC_BACKEND_URL}${previewUrl}`}
-              alt="Preview"
+              alt="Image Upload Preview - Selected File for Upload | FreexStore Admin Panel"
               className="object-cover w-full h-48"
             />
             <button

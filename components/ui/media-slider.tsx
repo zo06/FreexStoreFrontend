@@ -137,7 +137,7 @@ export function MediaSlider({ imageUrl, imageUrls, youtubeUrl, className = '' }:
           {currentItem.type === 'image' ? (
             <img
               src={currentItem.url.startsWith('http') ? currentItem.url : `${process.env.NEXT_PUBLIC_BACKEND_URL}${currentItem.url}`}
-              alt={`Preview ${currentIndex + 1}`}
+              alt={`FiveM Script Preview Image ${currentIndex + 1} - High Quality Screenshot | FreexStore Premium Resource`}
               className={`object-cover w-full h-full transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
@@ -151,7 +151,7 @@ export function MediaSlider({ imageUrl, imageUrls, youtubeUrl, className = '' }:
                 <>
                   <img
                     src={currentItem.thumbnail?.startsWith('http') ? currentItem.thumbnail : `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${currentItem.thumbnail || ''}`}
-                    alt="Video thumbnail"
+                    alt="FiveM Script Video Preview Thumbnail - Watch Demo & Features | FreexStore"
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -231,7 +231,7 @@ export function MediaSlider({ imageUrl, imageUrls, youtubeUrl, className = '' }:
               {item.type === 'image' ? (
                 <img
                   src={item.url.startsWith('http') ? item.url : `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${item.url}`}
-                  alt={`Thumbnail ${index + 1}`}
+                  alt={`FiveM Script Gallery Thumbnail ${index + 1} - Preview Image | FreexStore`}
                   className="object-cover w-full h-full"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -242,7 +242,7 @@ export function MediaSlider({ imageUrl, imageUrls, youtubeUrl, className = '' }:
                 <div className="relative w-full h-full">
                   <img
                     src={item.thumbnail?.startsWith('http') ? item.thumbnail : `${process.env.NEXT_PUBLIC_BACKEND_URL || ''}${item.thumbnail || ''}`}
-                    alt="Video thumbnail"
+                    alt="FiveM Script Video Thumbnail - Click to Watch Demo | FreexStore"
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;

@@ -29,7 +29,7 @@ export function SEOHead({
   publishedTime,
   modifiedTime,
 }: SEOHeadProps) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://freex.site'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://freexstores.com'
   const defaultImage = `${siteUrl}/images/og-default.png`
   const imageUrl = ogImage || defaultImage
   const canonicalUrl = canonical || siteUrl

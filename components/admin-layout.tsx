@@ -386,7 +386,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <div className="relative">
                           <div className="flex overflow-hidden justify-center items-center w-9 h-9 bg-gradient-to-br from-sky-400 via-blue-500 to-sky-600 rounded-xl">
                             {user?.avatar ? (
-                              <img src={user.avatar} alt="Avatar" className="object-cover w-full h-full" />
+                              <img src={user.avatar} alt={`${user?.discordUsername || user?.username || 'Admin'} Profile Avatar - FreexStore Admin Panel`} className="object-cover w-full h-full" />
                             ) : (
                               <span className="text-sm font-bold text-white">{(user?.discordUsername || user?.username || 'A').charAt(0).toUpperCase()}</span>
                             )}
@@ -407,7 +407,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             <div className="flex gap-3 items-center">
                               <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-600 rounded-xl">
                                 {user?.avatar ? (
-                                  <img src={user.avatar} alt="Avatar" className="object-cover w-full h-full rounded-xl" />
+                                  <img src={user.avatar} alt={`${user?.discordUsername || user?.username || 'Admin'} Profile Picture - FreexStore Administrator Account`} className="object-cover w-full h-full rounded-xl" />
                                 ) : (
                                   <span className="text-lg font-bold text-white">{(user?.discordUsername || user?.username || 'A').charAt(0).toUpperCase()}</span>
                                 )}
