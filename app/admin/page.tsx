@@ -17,6 +17,10 @@ interface AnalyticsData {
     totalViews: number
     totalLicenses: number
     totalLogins: number
+    usersGrowth?: string
+    viewsGrowth?: string
+    licensesGrowth?: string
+    loginsGrowth?: string
   }
 }
 
@@ -117,28 +121,28 @@ function AdminDashboard() {
       title: 'Total Users',
       value: analyticsData.stats.totalUsers.toLocaleString(),
       icon: Users,
-      change: '+12.5%',
+      change: analyticsData.stats.usersGrowth || '0%',
       color: 'from-blue-500 to-cyan-500'
     },
     {
       title: 'Total Views',
       value: analyticsData.stats.totalViews.toLocaleString(),
       icon: Eye,
-      change: '+23.1%',
+      change: analyticsData.stats.viewsGrowth || '0%',
       color: 'from-purple-500 to-pink-500'
     },
     {
       title: 'Total Licenses',
       value: analyticsData.stats.totalLicenses.toString(),
       icon: Key,
-      change: '+15.7%',
+      change: analyticsData.stats.licensesGrowth || '0%',
       color: 'from-orange-500 to-red-500'
     },
     {
       title: 'Total Logins',
       value: analyticsData.stats.totalLogins.toString(),
       icon: LogIn,
-      change: '+8.2%',
+      change: analyticsData.stats.loginsGrowth || '0%',
       color: 'from-green-500 to-emerald-500'
     }
   ]
