@@ -5,6 +5,7 @@ import { X, User as UserIcon, Mail, Calendar, Shield, Globe, Server, Activity, P
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
+import { ModalPortal } from '@/components/ui/modal-portal'
 
 interface AdminUserInfoModalProps {
   isOpen: boolean
@@ -112,7 +113,8 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
   if (!isOpen) return null
 
   return (
-    <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black/60 backdrop-blur-sm">
+    <ModalPortal isOpen={isOpen}>
+      <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="overflow-hidden relative w-full max-w-6xl max-h-[90vh] bg-gradient-to-br rounded-2xl border shadow-2xl from-slate-900 via-slate-900 to-slate-800 border-cyan-500/30">
         {/* Header */}
         <div className="flex sticky top-0 z-10 justify-between items-center p-6 bg-gradient-to-r border-b backdrop-blur-xl from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
@@ -483,5 +485,6 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
         </div>
       </div>
     </div>
+    </ModalPortal>
   )
 }

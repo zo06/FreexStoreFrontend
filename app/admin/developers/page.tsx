@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Users, Plus, Edit, Trash2, Mail, Globe, CheckCircle, XCircle, User, BarChart3, Package, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useDevelopersStore, Developer } from '@/lib/stores'
+import { ModalPortal } from '@/components/ui/modal-portal'
 
 export default function AdminDevelopers() {
   const router = useRouter()
@@ -257,7 +258,8 @@ export default function AdminDevelopers() {
       )}
 
       {/* Scripts Modal */}
-      {showScriptsModal && selectedDeveloper && (
+      <ModalPortal isOpen={showScriptsModal && !!selectedDeveloper}>
+        {selectedDeveloper && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-4xl max-h-[80vh] overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border-gray-500/30">
             <CardHeader className="border-b border-gray-700">
@@ -290,7 +292,9 @@ export default function AdminDevelopers() {
             <CardContent className="overflow-y-auto max-h-[60vh] p-6">
               {selectedDeveloper.scripts && selectedDeveloper.scripts.length > 0 ? (
                 <div className="space-y-4">
-                  {selectedDeveloper.scripts.map((script: any) => (
+                  {selectedDeveloper.scripts.map((scriptDev: any) => {
+                    const script = scriptDev.script || scriptDev;
+                    return (
                     <div key={script.id} className="p-4 rounded-lg border bg-gradient-to-r from-gray-800/40 to-gray-700/20 border-gray-600/20 hover:border-cyan-500/40 transition-all">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -299,7 +303,7 @@ export default function AdminDevelopers() {
                               <Package className="w-5 h-5 text-cyan-400" />
                             </div>
                             <div>
-                              <h3 className="text-white font-semibold">{script.name || script.title}</h3>
+                              <h3 className="text-white font-semibold">{script.name || script.title || 'Unnamed Script'}</h3>
                               <p className="text-sm text-gray-400">{script.category?.name || 'Uncategorized'}</p>
                             </div>
                           </div>
@@ -332,7 +336,7 @@ export default function AdminDevelopers() {
                         </Button>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -344,10 +348,11 @@ export default function AdminDevelopers() {
             </CardContent>
           </Card>
         </div>
-      )}
+        )}
+      </ModalPortal>
 
       {/* Modal */}
-      {showModal && (
+      <ModalPortal isOpen={showModal}>
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-gradient-to-br from-gray-900 to-gray-800 border-gray-500/30">
             <CardHeader>
@@ -453,7 +458,7 @@ export default function AdminDevelopers() {
             </CardContent>
           </Card>
         </div>
-      )}
+      </ModalPortal>
       </div>
     </main>
   )
