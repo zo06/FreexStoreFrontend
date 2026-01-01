@@ -45,23 +45,23 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
 
       // Fetch user details
       const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, { headers })
-      const user = await userResponse.json()
-      setUserData(user)
+      const userResult = await userResponse.json()
+      setUserData(userResult.data || userResult)
 
       // Fetch user licenses
       const licensesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/licenses/user/${userId}`, { headers })
-      const licensesData = await licensesResponse.json()
-      setLicenses(licensesData || [])
+      const licensesResult = await licensesResponse.json()
+      setLicenses(licensesResult.data || licensesResult || [])
 
       // Fetch user transactions
       const transactionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/user/${userId}`, { headers })
-      const transactionsData = await transactionsResponse.json()
-      setTransactions(transactionsData || [])
+      const transactionsResult = await transactionsResponse.json()
+      setTransactions(transactionsResult.data || transactionsResult || [])
 
       // Fetch user activity
       const activityResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/activity/user/${userId}?limit=50`, { headers })
-      const activityData = await activityResponse.json()
-      setActivities(activityData?.data || [])
+      const activityResult = await activityResponse.json()
+      setActivities(activityResult.data || [])
 
     } catch (error) {
       console.error('Failed to fetch user data:', error)
