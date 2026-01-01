@@ -8,7 +8,7 @@ export const SITE_CONFIG = {
   fullName: 'FreexStore - Premium FiveM Scripts & Resources',
   description: 'Premium FiveM scripts, resources, and tools. Best quality scripts for your FiveM server with instant delivery and lifetime support.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://freexstores.com',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://api.freexstores.com',
   locale: 'en_US',
   defaultLocale: 'en',
   locales: ['en', 'ar'],
@@ -72,7 +72,7 @@ export const SITE_CONFIG = {
       'fivem script store'
     ]
   },
-  themeColor: '#8B5CF6',
+  themeColor: '#05AFF2',
   backgroundColor: '#1F2937',
   defaultBanner: 'https://res.cloudinary.com/dhkbb074q/image/upload/v1767223625/banner-_0-00-01-17.png'
 }

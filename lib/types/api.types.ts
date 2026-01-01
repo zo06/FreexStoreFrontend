@@ -37,6 +37,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
+  lastLoginIp?: string;
+  licensesIpAddress?: string;
 }
 
 export interface CreateUserDto {
@@ -107,11 +109,15 @@ export interface License {
   privateKey: string;
   isActive: boolean;
   isRevoked: boolean;
+  isTrial?: boolean;
   expiresAt?: string | null;
+  lastUsedIp?: string;
+  lastUsedAt?: string;
   createdAt: string;
   updatedAt: string;
   user?: User;
   script?: Script;
+  price?: number;
 }
 
 export interface CreateLicenseDto {

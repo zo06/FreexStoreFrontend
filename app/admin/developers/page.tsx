@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Plus, Edit, Trash2, Mail, Globe, CheckCircle, XCircle, User, BarChart3 } from 'lucide-react'
+import { Users, Plus, Edit, Trash2, Mail, Globe, CheckCircle, XCircle, User, BarChart3, Package, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useDevelopersStore, Developer } from '@/lib/stores'
 
@@ -27,6 +27,8 @@ export default function AdminDevelopers() {
   
   const [showModal, setShowModal] = useState(false)
   const [editingDeveloper, setEditingDeveloper] = useState<Developer | null>(null)
+  const [showScriptsModal, setShowScriptsModal] = useState(false)
+  const [selectedDeveloper, setSelectedDeveloper] = useState<Developer | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -101,6 +103,11 @@ export default function AdminDevelopers() {
     setEditingDeveloper(null)
     setFormData({ name: '', email: '', website: '', bio: '', avatarUrl: '', isActive: true })
     setShowModal(true)
+  }
+
+  const handleShowScripts = (developer: Developer) => {
+    setSelectedDeveloper(developer)
+    setShowScriptsModal(true)
   }
 
   if (loading) {
@@ -206,6 +213,15 @@ export default function AdminDevelopers() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={() => handleShowScripts(developer)}
+                    className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20"
+                    title="View Scripts"
+                  >
+                    <Package className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
                     onClick={() => handleEdit(developer)}
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
                   >
@@ -238,6 +254,96 @@ export default function AdminDevelopers() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Scripts Modal */}
+      {showScriptsModal && selectedDeveloper && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-4xl max-h-[80vh] overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border-gray-500/30">
+            <CardHeader className="border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {selectedDeveloper.avatarUrl ? (
+                    <img src={selectedDeveloper.avatarUrl} alt={selectedDeveloper.name} className="w-10 h-10 rounded-full" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <CardTitle className="text-white text-xl">{selectedDeveloper.name}'s Scripts</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      {selectedDeveloper.scripts?.length || 0} script(s) found
+                    </CardDescription>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowScriptsModal(false)}
+                  className="text-gray-400 hover:text-white hover:bg-gray-700"
+                >
+                  ✕
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="overflow-y-auto max-h-[60vh] p-6">
+              {selectedDeveloper.scripts && selectedDeveloper.scripts.length > 0 ? (
+                <div className="space-y-4">
+                  {selectedDeveloper.scripts.map((script: any) => (
+                    <div key={script.id} className="p-4 rounded-lg border bg-gradient-to-r from-gray-800/40 to-gray-700/20 border-gray-600/20 hover:border-cyan-500/40 transition-all">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                              <Package className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <div>
+                              <h3 className="text-white font-semibold">{script.name || script.title}</h3>
+                              <p className="text-sm text-gray-400">{script.category?.name || 'Uncategorized'}</p>
+                            </div>
+                          </div>
+                          {script.description && (
+                            <p className="text-sm text-gray-300 mb-3 line-clamp-2">{script.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="text-gray-400">Version: <span className="text-white">{script.version || 'N/A'}</span></span>
+                            <span className="text-gray-400">Price: <span className="text-cyan-400 font-semibold">${script.price || 0}</span></span>
+                            {script.isActive ? (
+                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Active
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-gray-500/20 text-gray-400">
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Inactive
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => router.push(`/admin/scripts/${script.id}`)}
+                          className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Package className="w-16 h-16 text-gray-600 mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Scripts Yet</h3>
+                  <p className="text-gray-400">This developer hasn't created any scripts</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Modal */}

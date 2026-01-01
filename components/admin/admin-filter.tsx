@@ -118,23 +118,23 @@ export function AdminFilter({
   }
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 bg-white/5 backdrop-blur-xl border-white/10">
       <CardHeader>
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center">
-            <CardTitle className="flex gap-2 items-center">
+            <CardTitle className="flex gap-2 items-center text-white">
               <Filter className="w-5 h-5" />
               Search & Filters
             </CardTitle>
             {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-2 bg-cyan-500/20 text-cyan-400">
                 {activeFiltersCount} Active Filters
               </Badge>
             )}
           </div>
           <div className="flex gap-2 items-center">
             {totalCount > 0 && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-gray-400">
                 Showing {filteredCount} of {totalCount}
               </div>
             )}
@@ -142,6 +142,7 @@ export function AdminFilter({
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
+              className="text-gray-300 hover:text-white hover:bg-white/10"
             >
               <SlidersHorizontal className="w-4 h-4" />
               {isExpanded ? 'Hide' : 'Show'} Filters
@@ -154,15 +155,15 @@ export function AdminFilter({
         {/* Search Bar - Always Visible */}
         <div className="flex gap-4">
           <div className="flex-1">
-            <Label htmlFor="search">Search</Label>
+            <Label htmlFor="search" className="text-gray-300">Search</Label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-gray-500" />
               <Input
                 id="search"
                 placeholder={config.searchPlaceholder || "Search..."}
                 value={filters.search}
                 onChange={(e) => updateFilters({ search: e.target.value })}
-                className="pl-10"
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:bg-white/[0.15]"
               />
             </div>
           </div>
@@ -174,6 +175,7 @@ export function AdminFilter({
                 variant="outline"
                 size="sm"
                 disabled={loading}
+                className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
               >
                 <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
                 Refresh
@@ -185,6 +187,7 @@ export function AdminFilter({
                 onClick={onExport}
                 variant="outline"
                 size="sm"
+                className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
               >
                 <Download className="w-4 h-4" />
                 Export
@@ -196,6 +199,7 @@ export function AdminFilter({
                 onClick={clearAllFilters}
                 variant="outline"
                 size="sm"
+                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
               >
                 <X className="w-4 h-4" />
                 Clear All
@@ -213,22 +217,22 @@ export function AdminFilter({
               {/* Status Filter */}
               {config.statusOptions && (
                 <div>
-                  <Label>Status</Label>
+                  <Label className="text-gray-300">Status</Label>
                   <Select
                     value={filters.status}
                     onValueChange={(value: string) => updateFilters({ status: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
                       <SelectValue placeholder="Select Status" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectContent className="bg-slate-900 border-white/20 text-white">
+                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Statuses</SelectItem>
                       {config.statusOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
                           <div className="flex justify-between items-center w-full">
                             <span>{option.label}</span>
                             {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2">
+                              <Badge variant="outline" className="ml-2 border-white/20">
                                 {option.count}
                               </Badge>
                             )}
@@ -243,22 +247,22 @@ export function AdminFilter({
               {/* Category Filter */}
               {config.categoryOptions && (
                 <div>
-                  <Label>Category</Label>
+                  <Label className="text-gray-300">Category</Label>
                   <Select
                     value={filters.category}
                     onValueChange={(value: string) => updateFilters({ category: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
                       <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
+                    <SelectContent className="bg-slate-900 border-white/20 text-white">
+                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Categories</SelectItem>
                       {config.categoryOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
                           <div className="flex justify-between items-center w-full">
                             <span>{option.label}</span>
                             {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2">
+                              <Badge variant="outline" className="ml-2 border-white/20">
                                 {option.count}
                               </Badge>
                             )}
@@ -273,22 +277,22 @@ export function AdminFilter({
               {/* Role Filter */}
               {config.roleOptions && (
                 <div>
-                  <Label>Role</Label>
+                  <Label className="text-gray-300">Role</Label>
                   <Select
                     value={filters.role}
                     onValueChange={(value: string) => updateFilters({ role: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
                       <SelectValue placeholder="Select Role" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
+                    <SelectContent className="bg-slate-900 border-white/20 text-white">
+                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Roles</SelectItem>
                       {config.roleOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
                           <div className="flex justify-between items-center w-full">
                             <span>{option.label}</span>
                             {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2">
+                              <Badge variant="outline" className="ml-2 border-white/20">
                                 {option.count}
                               </Badge>
                             )}
@@ -303,7 +307,7 @@ export function AdminFilter({
               {/* Active Status Filter */}
               {config.showActiveFilter && (
                 <div>
-                  <Label>Active Status</Label>
+                  <Label className="text-gray-300">Active Status</Label>
                   <Select
                     value={filters.isActive === null ? 'all' : filters.isActive.toString()}
                     onValueChange={(value: string) => 
@@ -312,13 +316,13 @@ export function AdminFilter({
                       })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
                       <SelectValue placeholder="Select Status" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="true">Active</SelectItem>
-                      <SelectItem value="false">Inactive</SelectItem>
+                    <SelectContent className="bg-slate-900 border-white/20 text-white">
+                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All</SelectItem>
+                      <SelectItem value="true" className="focus:bg-white/10 focus:text-white">Active</SelectItem>
+                      <SelectItem value="false" className="focus:bg-white/10 focus:text-white">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

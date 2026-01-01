@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useScripts, useLicenses, useUserLicenses } from '@/lib/simple-data-fetcher'
 import { UserStats, Script, License } from '@/lib/types/api.types'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import ServerMembershipStatus from '@/components/server-membership-status'
-import { Download, Activity, DollarSign, FileText, TrendingUp, Clock, Globe, Server } from 'lucide-react'
+import { Download, Activity, DollarSign, FileText, TrendingUp, Clock, Globe, Server, User as UserIcon } from 'lucide-react'
 import { 
   ShoppingCart, 
   ArrowsClockwise, 
@@ -35,9 +36,11 @@ import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
 import PaymentHistory from '@/components/dashboard/payment-history'
 import LicensesIpModal from '@/components/licenses-ip-modal'
+import UserInfoModal from '@/components/user-info-modal'
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const router = useRouter()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const { data: scripts, loading: scriptsLoading, error: scriptsError } = useScripts()
   const { data: licenses, loading: licensesLoading, error: licensesError } = useUserLicenses()
   const [userStats, setUserStats] = useState<UserStats | null>(null)
@@ -50,6 +53,14 @@ export default function Dashboard() {
   const [licensesIpAddress, setLicensesIpAddress] = useState<string | null>(null)
   const [trialLoading, setTrialLoading] = useState(false)
   const [showIpModal, setShowIpModal] = useState(false)
+  const [showUserInfoModal, setShowUserInfoModal] = useState(false)
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated, isLoading, router])
 
   const handleStartFreeTrial = async () => {
     try {
@@ -325,9 +336,12 @@ export default function Dashboard() {
 
   const handleValidateLicense = async (privateKey: string) => {
     try {
-      const result = await apiClient.validateLicenseByPrivateKey(privateKey);
+      // Pass the user's licenses IP address for validation
+      const result = await apiClient.validateLicenseByPrivateKey(privateKey, licensesIpAddress || undefined);
       if (result.valid) {
         toast.success('License is valid!');
+        // Refresh licenses to show updated lastUsedIp
+        window.location.reload();
       } else {
         toast.error('License is invalid or expired');
       }
@@ -358,6 +372,14 @@ export default function Dashboard() {
               <p className="text-sm text-muted lg:text-lg">Here's what's happening with your scripts today.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowUserInfoModal(true)} 
+                className="px-4 py-2 text-sm cursor-pointer lg:px-6 lg:py-3 lg:text-base bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30"
+              >
+                <UserIcon className="mr-2 w-4 h-4" />
+                My Info
+              </Button>
               <Button variant="outline" onClick={() => window.location.href = '/scripts'} className="px-4 py-2 text-sm cursor-pointer lg:px-6 lg:py-3 lg:text-base">
                 New Offers
               </Button>
@@ -737,6 +759,12 @@ export default function Dashboard() {
       <LicensesIpModal 
         isOpen={showIpModal} 
         onClose={() => setShowIpModal(false)} 
+      />
+
+      {/* User Info Modal */}
+      <UserInfoModal 
+        isOpen={showUserInfoModal} 
+        onClose={() => setShowUserInfoModal(false)} 
       />
     </main>
   );

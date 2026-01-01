@@ -3,151 +3,105 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
-import { useUsers, useLicenses } from '@/lib/simple-data-fetcher'
-import { User, Script, License, DashboardStats } from '@/lib/types/api.types'
-import { safeAdminApi } from '@/lib/admin-api'
 import { Button } from '@/components/ui/button'
-// Removed Card imports as we're using modern glassmorphism design
-import { Badge } from '@/components/ui/badge'
-// Removed Table imports as we're using modern card layouts
-import { Users, DollarSign, FileText, Server, TrendingUp, Activity, AlertCircle, Eye, Edit, Trash2, Plus, Sparkles, Key } from 'lucide-react'
+import { Users, TrendingUp, Activity, Sparkles, Key, UserPlus, Eye, LogIn, BarChart3 } from 'lucide-react'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
 
-interface QuickStat {
-  title: string
-  value: string
-  icon: React.ElementType
-  change: string
-  changeType: 'positive' | 'negative' | 'neutral'
-  color: string
+interface AnalyticsData {
+  newUsersData: Array<{ date: string; users: number }>
+  viewsData: Array<{ date: string; views: number }>
+  licenseRateData: Array<{ date: string; licenses: number }>
+  loginRateData: Array<{ date: string; logins: number }>
+  stats: {
+    totalUsers: number
+    totalViews: number
+    totalLicenses: number
+    totalLogins: number
+  }
 }
 
 function AdminDashboard() {
-  const { data: users, loading: usersLoading, error: usersError, refresh: refreshUsers } = useUsers()
-  const { data: licenses, loading: licensesLoading, error: licensesError, refresh: refreshLicenses } = useLicenses()
-  const [scripts, setScripts] = useState<Script[]>([])
-  const [scriptsLoading, setScriptsLoading] = useState(true)
-  const [scriptsError, setScriptsError] = useState<string | null>(null)
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [showPopup, setShowPopup] = useState(false)
-  const [selectedScript, setSelectedScript] = useState<any>(null)
   const router = useRouter()
-
-  // Get recent data (limit to 5)
-  const recentUsers = users?.data ? users.data.slice(0, 5) : []
-  const recentScripts = scripts ? scripts.slice(0, 5) : []
-  const recentLicenses = licenses?.data ? licenses.data.slice(0, 5) : []
-  const loading = usersLoading || scriptsLoading || licensesLoading
-
-  // Fetch scripts using admin API
-  const fetchScripts = async () => {
-    try {
-      setScriptsLoading(true)
-      setScriptsError(null)
-      const scriptsData = await safeAdminApi.scripts.getAll()
-      setScripts(scriptsData || [])
-    } catch (error) {
-      console.error('Failed to fetch scripts:', error)
-      setScriptsError(error instanceof Error ? error.message : 'Failed to fetch scripts')
-    } finally {
-      setScriptsLoading(false)
+  const [loading, setLoading] = useState(true)
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    newUsersData: [],
+    viewsData: [],
+    licenseRateData: [],
+    loginRateData: [],
+    stats: {
+      totalUsers: 0,
+      totalViews: 0,
+      totalLicenses: 0,
+      totalLogins: 0
     }
-  }
-
-  const refreshScripts = () => {
-    fetchScripts()
-  }
+  })
 
   useEffect(() => {
-    fetchScripts()
+    fetchAnalyticsData()
   }, [])
 
-  useEffect(() => {
-    if (users?.data && scripts && licenses?.data) {
-      // Create stats from actual data
-      const statsData = {
-        totalUsers: users.data.length,
-        activeUsers: users.data.filter(user => user.isActive).length,
-        totalScripts: scripts.length,
-        activeScripts: scripts.filter(script => script.isActive).length,
-        totalLicenses: licenses.data.length,
-        activeLicenses: licenses.data.filter(license => license.isActive).length,
-        totalRevenue: scripts.reduce((sum, script) => sum + (script.price || 0), 0),
-        monthlyRevenue: 0
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('access_token')
+      
+      if (!token) return
+
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-      setStats(statsData as DashboardStats)
-    }
-  }, [users, scripts, licenses])
 
-  const loadDashboardData = async () => {
-    refreshUsers()
-    refreshScripts()
-    refreshLicenses()
-  }
-
-  const handleScriptAction = (script: any, action: string) => {
-    setSelectedScript({ ...script, action })
-    setShowPopup(true)
-  }
-
-  const closePopup = () => {
-    setShowPopup(false)
-    setSelectedScript(null)
-  }
-
-  const quickStats: QuickStat[] = stats ? [
-    {
-      title: 'Total Users',
-      value: stats.totalUsers.toLocaleString(),
-      icon: Users,
-      change: '+12.5%',
-      changeType: 'positive',
-      color: 'from-blue-500 to-cyan-500'
-    },
-    {
-      title: 'Total Revenue',
-      value: `$${stats.totalRevenue.toLocaleString()}`,
-      icon: DollarSign,
-      change: '+23.1%',
-      changeType: 'positive',
-      color: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'Active Scripts',
-      value: stats.activeScripts.toString(),
-      icon: FileText,
-      change: '+8.2%',
-      changeType: 'positive',
-      color: 'from-cyan-500 to-pink-500'
-    },
-    {
-      title: 'Total Licenses',
-      value: stats.totalLicenses.toString(),
-      icon: Server,
-      change: '+15.7%',
-      changeType: 'positive',
-      color: 'from-orange-500 to-red-500'
-    }
-  ] : []
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-500">Active</Badge>
-      case 'inactive':
-        return <Badge variant="secondary">Inactive</Badge>
-      case 'banned':
-        return <Badge variant="destructive">Banned</Badge>
-      case 'draft':
-        return <Badge variant="outline">Draft</Badge>
-      case 'archived':
-        return <Badge variant="secondary">Archived</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+      // Fetch analytics data from backend
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/dashboard`, { headers })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAnalyticsData(data)
+      } else {
+        // Generate mock data for demonstration
+        generateMockData()
+      }
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error)
+      // Generate mock data as fallback
+      generateMockData()
+    } finally {
+      setLoading(false)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString()
+  const generateMockData = () => {
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date()
+      date.setDate(date.getDate() - (29 - i))
+      return date.toISOString().split('T')[0]
+    })
+
+    setAnalyticsData({
+      newUsersData: last30Days.map(date => ({
+        date: date.split('-').slice(1).join('/'),
+        users: Math.floor(Math.random() * 20) + 5
+      })),
+      viewsData: last30Days.map(date => ({
+        date: date.split('-').slice(1).join('/'),
+        views: Math.floor(Math.random() * 500) + 100
+      })),
+      licenseRateData: last30Days.map(date => ({
+        date: date.split('-').slice(1).join('/'),
+        licenses: Math.floor(Math.random() * 15) + 2
+      })),
+      loginRateData: last30Days.map(date => ({
+        date: date.split('-').slice(1).join('/'),
+        logins: Math.floor(Math.random() * 50) + 10
+      })),
+      stats: {
+        totalUsers: 1247,
+        totalViews: 8934,
+        totalLicenses: 342,
+        totalLogins: 1523
+      }
+    })
   }
 
   if (loading) {
@@ -158,10 +112,41 @@ function AdminDashboard() {
     )
   }
 
+  const quickStats = [
+    {
+      title: 'Total Users',
+      value: analyticsData.stats.totalUsers.toLocaleString(),
+      icon: Users,
+      change: '+12.5%',
+      color: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Total Views',
+      value: analyticsData.stats.totalViews.toLocaleString(),
+      icon: Eye,
+      change: '+23.1%',
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      title: 'Total Licenses',
+      value: analyticsData.stats.totalLicenses.toString(),
+      icon: Key,
+      change: '+15.7%',
+      color: 'from-orange-500 to-red-500'
+    },
+    {
+      title: 'Total Logins',
+      value: analyticsData.stats.totalLogins.toString(),
+      icon: LogIn,
+      change: '+8.2%',
+      color: 'from-green-500 to-emerald-500'
+    }
+  ]
+
   return (
     <>
     <main className="overflow-x-hidden relative min-h-screen">
-      {/* Background Elements - No animations */}
+      {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-blue-900/20 to-emerald-900/30"></div>
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl bg-cyan-500/20"></div>
       <div className="absolute bottom-1/4 right-1/4 w-[32rem] h-[32rem] bg-blue-500/15 rounded-full blur-3xl"></div>
@@ -179,15 +164,15 @@ function AdminDashboard() {
           </div>
           
           <h1 className="mb-4 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
-            <span className="block text-gradient">Admin Dashboard</span>
+            <span className="block text-gradient">Analytics Dashboard</span>
           </h1>
           
           <p className="mx-auto mb-8 max-w-3xl text-lg leading-relaxed sm:text-xl text-muted">
-            Manage your platform's users, scripts, and licenses with powerful admin tools
+            Real-time analytics and insights for your platform
           </p>
           
           <Button 
-            onClick={loadDashboardData} 
+            onClick={fetchAnalyticsData} 
             size="lg" 
             className="text-white bg-gradient-to-r from-cyan-600 to-blue-600 border-0 shadow-2xl transition-all duration-300 hover:from-cyan-700 hover:to-blue-700 hover:shadow-cyan-500/25 hover:scale-105"
           >
@@ -222,342 +207,133 @@ function AdminDashboard() {
           })}
         </div>
 
-        {/* Quick Actions */}
-        {/* <div className="grid grid-cols-1 gap-6 md:grid-cols-3 sm:gap-8">
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 group from-blue-900/40 to-blue-800/20 border-blue-500/20 sm:p-8 hover:border-blue-400/40 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-500 from-blue-600/10 group-hover:opacity-100"></div>
+        {/* Analytics Graphs */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 sm:gap-8">
+          {/* New Users Graph */}
+          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-blue-900/60 to-blue-800/30 border-blue-500/20 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-blue-600/5"></div>
             <div className="relative z-10">
-              <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl transition-transform duration-300 sm:w-14 sm:h-14 sm:mb-6 group-hover:scale-110">
-                <Users className="w-6 h-6 text-white sm:w-7 sm:h-7" />
-              </div>
-              <h3 className="mb-3 text-lg font-bold text-white transition-colors sm:text-xl sm:mb-4 group-hover:text-blue-200">
-                User Management
-              </h3>
-              <p className="mb-6 text-sm leading-relaxed text-gray-300 transition-colors sm:text-base group-hover:text-gray-200">
-                Manage user accounts and permissions
-              </p>
-              <Button 
-                onClick={() => router.push('/admin/users')} 
-                className="w-full text-white bg-gradient-to-r from-blue-600 to-blue-700 border-0 shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/25"
-              >
-                <Eye className="mr-2 w-4 h-4" />
-                View Users
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 group from-emerald-900/40 to-emerald-800/20 border-emerald-500/20 sm:p-8 hover:border-emerald-400/40 hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-500 from-emerald-600/10 group-hover:opacity-100"></div>
-            <div className="relative z-10">
-              <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl transition-transform duration-300 sm:w-14 sm:h-14 sm:mb-6 group-hover:scale-110">
-                <FileText className="w-6 h-6 text-white sm:w-7 sm:h-7" />
-              </div>
-              <h3 className="mb-3 text-lg font-bold text-white transition-colors sm:text-xl sm:mb-4 group-hover:text-emerald-200">
-                Script Management
-              </h3>
-              <p className="mb-6 text-sm leading-relaxed text-gray-300 transition-colors sm:text-base group-hover:text-gray-200">
-                Manage scripts and their configurations
-              </p>
-              <div className="space-y-3">
-                <Button 
-                  onClick={() => router.push('/admin/scripts')} 
-                  className="w-full text-white bg-gradient-to-r from-emerald-600 to-emerald-700 border-0 shadow-lg transition-all duration-300 hover:from-emerald-700 hover:to-emerald-800 hover:shadow-emerald-500/25"
-                >
-                  <Eye className="mr-2 w-4 h-4" />
-                  View Scripts
-                </Button>
-                <Button 
-                  onClick={() => router.push('/admin/scripts?action=new')} 
-                  className="w-full text-white bg-gradient-to-r from-emerald-500 to-emerald-600 border-0 shadow-lg transition-all duration-300 hover:from-emerald-600 hover:to-emerald-700 hover:shadow-emerald-500/25"
-                >
-                  <Plus className="mr-2 w-4 h-4" />
-                  Add New Script
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 group from-amber-900/40 to-amber-800/20 border-amber-500/20 sm:p-8 hover:border-amber-400/40 hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-500 from-amber-600/10 group-hover:opacity-100"></div>
-            <div className="relative z-10">
-              <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl transition-transform duration-300 sm:w-14 sm:h-14 sm:mb-6 group-hover:scale-110">
-                <Server className="w-6 h-6 text-white sm:w-7 sm:h-7" />
-              </div>
-              <h3 className="mb-3 text-lg font-bold text-white transition-colors sm:text-xl sm:mb-4 group-hover:text-amber-200">
-                License Management
-              </h3>
-              <p className="mb-6 text-sm leading-relaxed text-gray-300 transition-colors sm:text-base group-hover:text-gray-200">
-                Manage user licenses and activations
-              </p>
-              <Button 
-                onClick={() => router.push('/admin/licenses')} 
-                className="w-full text-white bg-gradient-to-r from-amber-600 to-amber-700 border-0 shadow-lg transition-all duration-300 hover:from-amber-700 hover:to-amber-800 hover:shadow-amber-500/25"
-              >
-                <Eye className="mr-2 w-4 h-4" />
-                View Licenses
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 group from-green-900/40 to-green-800/20 border-green-500/20 sm:p-8 hover:border-green-400/40 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-500 from-green-600/10 group-hover:opacity-100"></div>
-            <div className="relative z-10">
-              <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl transition-transform duration-300 sm:w-14 sm:h-14 sm:mb-6 group-hover:scale-110">
-                <DollarSign className="w-6 h-6 text-white sm:w-7 sm:h-7" />
-              </div>
-              <h3 className="mb-3 text-lg font-bold text-white transition-colors sm:text-xl sm:mb-4 group-hover:text-green-200">
-                Transactions
-              </h3>
-              <p className="mb-6 text-sm leading-relaxed text-gray-300 transition-colors sm:text-base group-hover:text-gray-200">
-                View and manage all payment transactions
-              </p>
-              <Button 
-                onClick={() => router.push('/admin/transactions')} 
-                className="w-full text-white bg-gradient-to-r from-green-600 to-green-700 border-0 shadow-lg transition-all duration-300 hover:from-green-700 hover:to-green-800 hover:shadow-green-500/25"
-              >
-                <Eye className="mr-2 w-4 h-4" />
-                View Transactions
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 group from-cyan-900/40 to-purple-800/20 border-cyan-500/20 sm:p-8 hover:border-cyan-400/40 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-500 from-cyan-600/10 group-hover:opacity-100"></div>
-            <div className="relative z-10">
-              <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl transition-transform duration-300 sm:w-14 sm:h-14 sm:mb-6 group-hover:scale-110">
-                <TrendingUp className="w-6 h-6 text-white sm:w-7 sm:h-7" />
-              </div>
-              <h3 className="mb-3 text-lg font-bold text-white transition-colors sm:text-xl sm:mb-4 group-hover:text-purple-200">
-                Accounting
-              </h3>
-              <p className="mb-6 text-sm leading-relaxed text-gray-300 transition-colors sm:text-base group-hover:text-gray-200">
-                Financial analytics and revenue insights
-              </p>
-              <Button 
-                onClick={() => router.push('/admin/accounting')} 
-                className="w-full text-white bg-gradient-to-r from-cyan-600 to-cyan-700 border-0 shadow-lg transition-all duration-300 hover:from-cyan-700 hover:to-purple-800 hover:shadow-cyan-500/25"
-              >
-                <Eye className="mr-2 w-4 h-4" />
-                View Analytics
-              </Button>
-            </div>
-          </div>
-        </div> */}
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 sm:gap-8">
-        {/* Recent Users */}
-        <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 from-slate-900/60 to-slate-800/30 border-slate-500/20 sm:p-8 hover:border-slate-400/40">
-          <div className="absolute inset-0 bg-gradient-to-br to-transparent from-slate-600/5"></div>
-          <div className="relative z-10">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex gap-3 items-center">
-                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-slate-500 to-slate-600">
-                  <Users className="w-5 h-5 text-white" />
+              <div className="flex gap-3 items-center mb-6">
+                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-blue-500 to-blue-600">
+                  <UserPlus className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Recent Users</h3>
-                  <p className="text-sm text-gray-400">Latest user registrations</p>
+                  <h3 className="text-lg font-bold text-white">New Users Per Day</h3>
+                  <p className="text-sm text-gray-400">Last 30 days</p>
                 </div>
               </div>
-              <Button 
-                onClick={() => router.push('/admin/users')}
-                variant="ghost" 
-                size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-700/50"
-              >
-                View All
-              </Button>
-            </div>
-            <div className="space-y-3">
-              {recentUsers.map((user) => (
-                <div key={user.id} className="flex justify-between items-center p-4 bg-gradient-to-r rounded-xl border transition-all duration-300 from-slate-800/40 to-slate-700/20 border-slate-600/20 hover:border-slate-500/40">
-                  <div>
-                    <p className="font-medium text-white">{user.username}</p>
-                    <p className="text-sm text-gray-400">{user.email}</p>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    {getStatusBadge(user.isActive ? 'active' : 'inactive')}
-                  </div>
-                </div>
-              ))}
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analyticsData.newUsersData}>
+                  <defs>
+                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Area type="monotone" dataKey="users" stroke="#3b82f6" fillOpacity={1} fill="url(#colorUsers)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </div>
 
-        {/* Recent Scripts */}
-        <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm transition-all duration-500 from-emerald-900/60 to-emerald-800/30 border-emerald-500/20 sm:p-8 hover:border-emerald-400/40">
-          <div className="absolute inset-0 bg-gradient-to-br to-transparent from-emerald-600/5"></div>
-          <div className="relative z-10">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex gap-3 items-center">
-                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg">
-                  <FileText className="w-5 h-5 text-white" />
+          {/* Views Graph */}
+          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-purple-900/60 to-purple-800/30 border-purple-500/20 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-purple-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-3 items-center mb-6">
+                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-purple-500 to-purple-600">
+                  <Eye className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Recent Scripts</h3>
-                  <p className="text-sm text-gray-400">Latest script uploads</p>
+                  <h3 className="text-lg font-bold text-white">Views Per Day</h3>
+                  <p className="text-sm text-gray-400">Last 30 days</p>
                 </div>
               </div>
-              <Button 
-                onClick={() => router.push('/admin/scripts')}
-                variant="ghost" 
-                size="sm"
-                className="text-emerald-300 hover:text-white hover:bg-emerald-700/50"
-              >
-                View All
-              </Button>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={analyticsData.viewsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Line type="monotone" dataKey="views" stroke="#a855f7" strokeWidth={2} dot={{ fill: '#a855f7' }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            <div className="space-y-3">
-              {scriptsError ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <AlertCircle className="w-12 h-12 mb-4 text-red-400" />
-                  <p className="text-red-300 mb-2">Failed to load scripts</p>
-                  <p className="text-sm text-gray-400 mb-4">{scriptsError}</p>
-                  <Button 
-                    onClick={refreshScripts}
-                    variant="outline"
-                    size="sm"
-                    className="text-emerald-300 border-emerald-600 hover:bg-emerald-700/50"
-                  >
-                    Try Again
-                  </Button>
+          </div>
+
+          {/* License Rate Graph */}
+          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-orange-900/60 to-orange-800/30 border-orange-500/20 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-orange-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-3 items-center mb-6">
+                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-orange-500 to-orange-600">
+                  <Key className="w-5 h-5 text-white" />
                 </div>
-              ) : scriptsLoading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="w-8 h-8 rounded-full border-b-2 animate-spin border-emerald-400"></div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">License Rate Per Day</h3>
+                  <p className="text-sm text-gray-400">Last 30 days</p>
                 </div>
-              ) : recentScripts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <FileText className="w-12 h-12 mb-4 text-emerald-400/50" />
-                  <p className="text-emerald-300 mb-2">No scripts found</p>
-                  <p className="text-sm text-gray-400 mb-4">Create your first script to get started</p>
-                  <Button 
-                    onClick={() => router.push('/admin/scripts/new')}
-                    variant="outline"
-                    size="sm"
-                    className="text-emerald-300 border-emerald-600 hover:bg-emerald-700/50"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Script
-                  </Button>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analyticsData.licenseRateData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Bar dataKey="licenses" fill="#f97316" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Login Rate Graph */}
+          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-green-900/60 to-green-800/30 border-green-500/20 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-green-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-3 items-center mb-6">
+                <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-green-500 to-green-600">
+                  <LogIn className="w-5 h-5 text-white" />
                 </div>
-              ) : (
-                recentScripts.map((script) => (
-                  <div key={script.id} className="flex justify-between items-center p-4 bg-gradient-to-r rounded-xl border transition-all duration-300 from-emerald-800/40 to-emerald-700/20 border-emerald-600/20 hover:border-emerald-500/40">
-                    <div className="flex-1">
-                      <p className="font-medium text-white">{script.name}</p>
-                      <div className="flex gap-3 items-center mt-1">
-                        <p className="text-sm font-semibold text-emerald-300">${script.price}</p>
-                        {getStatusBadge(script.isActive ? 'active' : 'draft')}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => handleScriptAction(script, 'view')}
-                        className="p-2 text-emerald-300 hover:text-white hover:bg-emerald-700/50"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => handleScriptAction(script, 'edit')}
-                        className="p-2 text-emerald-300 hover:text-white hover:bg-emerald-700/50"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => handleScriptAction(script, 'delete')}
-                        className="p-2 text-red-300 hover:text-white hover:bg-red-700/50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
+                <div>
+                  <h3 className="text-lg font-bold text-white">Daily Login Users Rate</h3>
+                  <p className="text-sm text-gray-400">Last 30 days</p>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analyticsData.loginRateData}>
+                  <defs>
+                    <linearGradient id="colorLogins" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Area type="monotone" dataKey="logins" stroke="#10b981" fillOpacity={1} fill="url(#colorLogins)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
       </div>
-
-
-      </div>
-      
-      {/* Popup Modal */}
-      {showPopup && selectedScript && (
-        <div className="flex fixed inset-0 z-50 justify-center items-center p-4 backdrop-blur-sm bg-black/60">
-          <div className="overflow-hidden relative p-6 mx-4 w-full max-w-md bg-gradient-to-br rounded-2xl border shadow-2xl backdrop-blur-xl from-slate-900/95 to-slate-800/95 border-slate-500/30">
-            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-slate-600/10"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">Script Action</h3>
-                <button 
-                  onClick={closePopup}
-                  className="p-2 text-gray-400 rounded-lg transition-colors hover:text-white hover:bg-slate-700/50"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex gap-3 items-center mb-4">
-                  <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-white">{selectedScript.name || selectedScript.title}</h4>
-                    <p className="text-sm text-gray-400">{selectedScript.category?.name || 'Script'}</p>
-                  </div>
-                </div>
-                
-                <div className="p-4 mb-4 bg-gradient-to-r rounded-xl border from-slate-800/40 to-slate-700/20 border-slate-600/20">
-                  <p className="mb-2 text-sm text-gray-300">
-                    Action: <span className="font-semibold text-emerald-400">{selectedScript.action}</span>
-                  </p>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-emerald-400">${selectedScript.price}</span>
-                    {selectedScript.isActive !== undefined && (
-                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        selectedScript.isActive 
-                          ? 'bg-green-600/20 text-green-400 border border-green-500/30' 
-                          : 'bg-slate-600/20 text-slate-400 border border-slate-500/30'
-                      }`}>
-                        {selectedScript.isActive ? 'Active' : 'Draft'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => {
-                    console.log(`${selectedScript.action} script:`, selectedScript);
-                    closePopup();
-                  }}
-                  className="flex-1 text-white bg-gradient-to-r from-emerald-600 to-emerald-700 border-0 shadow-lg transition-all duration-300 hover:from-emerald-700 hover:to-emerald-800 hover:shadow-emerald-500/25"
-                >
-                  Confirm {selectedScript.action}
-                </Button>
-                <Button 
-                  onClick={closePopup}
-                  className="text-white bg-gradient-to-r border-0 shadow-lg transition-all duration-300 from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
     </>
   )

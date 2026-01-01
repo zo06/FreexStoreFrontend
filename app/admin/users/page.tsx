@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Edit, Trash2, Shield, UserX, UserCheck, Eye, Users, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
+import AdminUserInfoModal from '@/components/admin-user-info-modal'
 
 function AdminUsers() {
   // Use Zustand store
@@ -27,6 +28,8 @@ function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [showUserInfoModal, setShowUserInfoModal] = useState(false)
+  const [selectedUserForInfo, setSelectedUserForInfo] = useState<User | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [limit] = useState(10)
@@ -109,9 +112,9 @@ function AdminUsers() {
 
   const handleExport = () => {
     const csvContent = "data:text/csv;charset=utf-8," + 
-      "Username,Discord Username,Role,Status,Join Date,Last Login\n" +
+      "Username,Discord Username,Role,Status,Join Date,Last Login,Last IP\n" +
       filteredUsers.map(user => 
-        `${user.username},${user.discordUsername || 'N/A'},${user.isAdmin ? 'Admin' : 'User'},${user.isActive ? 'Active' : 'Inactive'},${formatDate(user.createdAt || '')},${user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}`
+        `${user.username},${user.discordUsername || 'N/A'},${user.isAdmin ? 'Admin' : 'User'},${user.isActive ? 'Active' : 'Inactive'},${formatDate(user.createdAt || '')},${user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'},${(user as any).lastLoginIp || 'N/A'}`
       ).join("\n")
     
     const encodedUri = encodeURI(csvContent)
@@ -231,6 +234,7 @@ function AdminUsers() {
                   <TableHead className="font-semibold text-gray-300">Role</TableHead>
                   <TableHead className="font-semibold text-gray-300">Join Date</TableHead>
                   <TableHead className="font-semibold text-gray-300">Last Login</TableHead>
+                  <TableHead className="font-semibold text-gray-300">Last IP</TableHead>
                   <TableHead className="font-semibold text-gray-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -242,8 +246,20 @@ function AdminUsers() {
                     <TableCell>{getStatusBadge(user)}</TableCell>
                     <TableCell className="text-gray-300">{user.createdAt ? formatDate(user.createdAt) : 'N/A'}</TableCell>
                     <TableCell className="text-gray-300">{user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never logged in'}</TableCell>
+                    <TableCell className="font-mono text-gray-300 text-sm">{(user as any).lastLoginIp || 'N/A'}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedUserForInfo(user)
+                            setShowUserInfoModal(true)
+                          }}
+                          size="sm"
+                          className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          title="View User Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         <Button
                           onClick={() => handleToggleAdmin(user)}
                           size="sm"
@@ -322,6 +338,19 @@ function AdminUsers() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* User Info Modal */}
+        {selectedUserForInfo && (
+          <AdminUserInfoModal
+            isOpen={showUserInfoModal}
+            onClose={() => {
+              setShowUserInfoModal(false)
+              setSelectedUserForInfo(null)
+            }}
+            userId={selectedUserForInfo.id}
+            userName={selectedUserForInfo.username}
+          />
+        )}
       </div>
     </main>
   )

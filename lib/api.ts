@@ -258,8 +258,9 @@ class ApiClient {
     });
   }
 
-  async validateLicenseByPrivateKey(privateKey: string) {
-    return this.request<any>(`/licenses/validate/${privateKey}`);
+  async validateLicenseByPrivateKey(privateKey: string, ipAddress?: string) {
+    const params = ipAddress ? `?ipAddress=${encodeURIComponent(ipAddress)}` : '';
+    return this.request<any>(`/licenses/validate/${privateKey}${params}`);
   }
 
   async getUserScripts() {

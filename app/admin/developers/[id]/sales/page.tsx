@@ -151,11 +151,13 @@ function DeveloperSalesDetailContent() {
     )
   }
 
-  const scriptSalesData = Object.entries(salesStats.scriptSales).map(([name, data]) => ({
-    name,
-    revenue: data.revenue,
-    sales: data.count
-  }))
+  const scriptSalesData = salesStats.scriptSales 
+    ? Object.entries(salesStats.scriptSales).map(([name, data]) => ({
+        name,
+        revenue: data.revenue,
+        sales: data.count
+      }))
+    : []
 
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
@@ -272,7 +274,7 @@ function DeveloperSalesDetailContent() {
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesStats.dailySales}>
+                <LineChart data={salesStats.dailySales || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis 
                     dataKey="date" 
@@ -367,16 +369,24 @@ function DeveloperSalesDetailContent() {
                 </tr>
               </thead>
               <tbody>
-                {scriptSalesData.map((script, index) => (
-                  <tr key={index} className="border-b border-gray-800 hover:bg-gray-800/50">
-                    <td className="py-3 px-4 text-white">{script.name}</td>
-                    <td className="py-3 px-4 text-right text-blue-400">{script.sales}</td>
-                    <td className="py-3 px-4 text-right text-green-400">{formatCurrency(script.revenue)}</td>
-                    <td className="py-3 px-4 text-right text-purple-400">
-                      {formatCurrency(script.revenue / script.sales)}
+                {scriptSalesData.length > 0 ? (
+                  scriptSalesData.map((script, index) => (
+                    <tr key={index} className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="py-3 px-4 text-white">{script.name}</td>
+                      <td className="py-3 px-4 text-right text-blue-400">{script.sales}</td>
+                      <td className="py-3 px-4 text-right text-green-400">{formatCurrency(script.revenue)}</td>
+                      <td className="py-3 px-4 text-right text-purple-400">
+                        {formatCurrency(script.revenue / script.sales)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-gray-400">
+                      No script sales data available
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -393,7 +403,8 @@ function DeveloperSalesDetailContent() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {salesStats.recentTransactions.map((transaction) => (
+            {salesStats.recentTransactions && salesStats.recentTransactions.length > 0 ? (
+              salesStats.recentTransactions.map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg border border-gray-700">
                 <div>
                   <p className="text-white font-medium">{transaction.scriptName}</p>
@@ -405,7 +416,12 @@ function DeveloperSalesDetailContent() {
                   <p className="text-green-400 font-semibold">{formatCurrency(transaction.amount)}</p>
                 </div>
               </div>
-            ))}
+            ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                No recent transactions
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
