@@ -329,7 +329,7 @@ export default function AdminDevelopers() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => router.push(`/admin/scripts/${script.id}`)}
+                          onClick={() => router.push(`/admin/scripts/${script.id}/edit`)}
                           className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20"
                         >
                           <Eye className="w-4 h-4" />

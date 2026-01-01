@@ -14,7 +14,11 @@ import {
   ArrowLeft,
   User,
   BarChart3,
-  LineChart
+  LineChart,
+  Infinity,
+  CalendarDays,
+  CalendarRange,
+  CalendarClock
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart as RechartsLineChart, Line } from 'recharts'
@@ -38,11 +42,11 @@ interface SalesData {
 }
 
 const PERIOD_OPTIONS = [
-  { value: 'alltime', label: 'All Time', icon: '♾️' },
-  { value: 'year', label: 'This Year', icon: '📅' },
-  { value: 'month', label: 'This Month', icon: '📆' },
-  { value: '14days', label: 'Last 14 Days', icon: '🗓️' },
-  { value: 'custom', label: 'Custom Range', icon: '🎯' },
+  { value: 'alltime', label: 'All Time', icon: Infinity },
+  { value: 'year', label: 'This Year', icon: Calendar },
+  { value: 'month', label: 'This Month', icon: CalendarDays },
+  { value: '14days', label: 'Last 14 Days', icon: CalendarRange },
+  { value: 'custom', label: 'Custom Range', icon: Target },
 ]
 
 export default function DeveloperAnalytics() {
@@ -181,7 +185,9 @@ export default function DeveloperAnalytics() {
                     : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:border-cyan-400 hover:text-white'
                 }`}
               >
-                <div className="text-2xl mb-2">{option.icon}</div>
+                <div className="mb-2 flex justify-center">
+                  <option.icon className="w-8 h-8" />
+                </div>
                 <div className="text-sm font-semibold">{option.label}</div>
               </button>
             ))}

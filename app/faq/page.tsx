@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ChevronDown, ChevronUp, HelpCircle, Sparkles, MessageCircle } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, CircleHelp, Sparkles, MessageCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 
@@ -24,7 +24,6 @@ export default function FAQPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchFAQs();
@@ -45,13 +44,10 @@ export default function FAQPage() {
     }
   };
 
-  const categories = ['all', ...Array.from(new Set(faqs.map(faq => faq.category)))];
-
   const filteredFaqs = faqs.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || faq.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   const toggleExpand = (id: string) => {
@@ -82,7 +78,7 @@ export default function FAQPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
             </div>
-            <HelpCircle className="w-4 h-4 text-cyan-400" />
+            <CircleHelp className="w-4 h-4 text-cyan-400" />
             <span className="text-xs sm:text-sm font-medium bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">Help Center</span>
           </div>
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 sm:mb-8 leading-[0.9] tracking-tight">
@@ -109,23 +105,6 @@ export default function FAQPage() {
               className="relative pl-12 h-14 bg-white/5 backdrop-blur-xl border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 rounded-2xl"
             />
           </div>
-
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 backdrop-blur-xl ${
-                  selectedCategory === category
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/20 scale-105'
-                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/10 hover:scale-105 hover:shadow-lg'
-                }`}
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* FAQ List */}
@@ -144,7 +123,7 @@ export default function FAQPage() {
                 <MessageCircle className="w-10 h-10 text-cyan-400" />
               </div>
               <p className="text-gray-300 text-xl font-semibold mb-2">No FAQs found</p>
-              <p className="text-gray-500">Try adjusting your search or browse all categories</p>
+              <p className="text-gray-500">Try adjusting your search</p>
             </div>
           ) : (
             filteredFaqs.map((faq, index) => (
@@ -161,15 +140,12 @@ export default function FAQPage() {
                   className="relative w-full text-left p-6 flex items-start gap-4"
                 >
                   <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/20">
-                    <Sparkles className="w-6 h-6 text-cyan-400" />
+                    <CircleHelp className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 group-hover:text-cyan-400 transition-colors duration-300">{faq.question}</h3>
-                        <Badge className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border-cyan-500/30 text-xs font-medium">
-                          {faq.category}
-                        </Badge>
                       </div>
                       <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors duration-300">
                         {expandedId === faq.id ? (
@@ -206,7 +182,7 @@ export default function FAQPage() {
               
               <div className="relative z-10">
                 <div className="w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/20">
-                  <HelpCircle className="w-8 h-8 text-cyan-400" />
+                  <CircleHelp className="w-8 h-8 text-cyan-400" />
                 </div>
                 <h3 className="text-3xl sm:text-4xl font-bold mb-4">
                   <span className="bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent">Still have questions?</span>

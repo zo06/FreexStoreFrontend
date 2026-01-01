@@ -102,7 +102,8 @@ function DeveloperSalesDetailContent() {
       }
 
       const data = await response.json()
-      setSalesStats(data)
+      console.log(data)
+      setSalesStats(data.data)
     } catch (error) {
       console.error('Error loading sales stats:', error)
       toast.error('Failed to load sales statistics')
@@ -173,7 +174,7 @@ function DeveloperSalesDetailContent() {
         </Button>
         
         <div className="flex items-center gap-4 mb-4">
-          {salesStats.developer.avatarUrl ? (
+          {salesStats.developer?.avatarUrl ? (
             <img src={salesStats.developer.avatarUrl} alt={salesStats.developer.name} className="w-16 h-16 rounded-full" />
           ) : (
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
@@ -181,7 +182,7 @@ function DeveloperSalesDetailContent() {
             </div>
           )}
           <div>
-            <h1 className="text-3xl font-bold text-white">{salesStats.developer.name}</h1>
+            <h1 className="text-3xl font-bold text-white">{salesStats.developer?.name || 'Developer'}</h1>
             <p className="text-gray-400">Sales Performance Dashboard</p>
           </div>
         </div>
