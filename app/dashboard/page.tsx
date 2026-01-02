@@ -36,7 +36,6 @@ import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
 import PaymentHistory from '@/components/dashboard/payment-history'
 import LicensesIpModal from '@/components/licenses-ip-modal'
-import UserInfoModal from '@/components/user-info-modal'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -372,14 +371,6 @@ export default function Dashboard() {
               <p className="text-sm text-muted lg:text-lg">Here's what's happening with your scripts today.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowUserInfoModal(true)} 
-                className="px-4 py-2 text-sm cursor-pointer lg:px-6 lg:py-3 lg:text-base bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30"
-              >
-                <UserIcon className="mr-2 w-4 h-4" />
-                My Info
-              </Button>
               <Button variant="outline" onClick={() => window.location.href = '/scripts'} className="px-4 py-2 text-sm cursor-pointer lg:px-6 lg:py-3 lg:text-base">
                 New Offers
               </Button>
@@ -762,10 +753,7 @@ export default function Dashboard() {
       />
 
       {/* User Info Modal */}
-      <UserInfoModal 
-        isOpen={showUserInfoModal} 
-        onClose={() => setShowUserInfoModal(false)} 
-      />
+
     </main>
   );
 }
