@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { X, Server, Info, Loader2, Save, Globe, Shield, CheckCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 interface LicensesIpModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface LicensesIpModalProps {
 }
 
 export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProps) {
+  const t = useTranslations('ipSettings');
   const [licensesIpAddress, setLicensesIpAddress] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -40,18 +42,18 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
 
   const handleSave = async () => {
     if (!licensesIpAddress.trim()) {
-      toast.error('Please enter a valid IP address');
+      toast.error(t('enterValidIp'));
       return;
     }
 
     try {
       setIsSaving(true);
       await apiClient.updateLicensesIp({ licensesIpAddress: licensesIpAddress.trim() });
-      toast.success('Licenses IP address updated successfully');
+      toast.success(t('ipUpdated'));
       onClose();
     } catch (error) {
       console.error('Failed to update licenses IP:', error);
-      toast.error('Please enter a valid IP address format (e.g. 192.168.1.100)');
+      toast.error(t('invalidIpFormat'));
     } finally {
       setIsSaving(false);
     }
@@ -62,10 +64,10 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
       setIsSaving(true);
       await apiClient.updateLicensesIp({ licensesIpAddress: '' });
       setLicensesIpAddress('');
-      toast.success('Licenses IP address cleared');
+      toast.success(t('ipCleared'));
     } catch (error) {
       console.error('Failed to clear licenses IP:', error);
-      toast.error('Failed to clear IP address');
+      toast.error(t('clearFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -90,8 +92,8 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
               <Globe className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Quick IP Settings</h2>
-              <p className="text-sm text-gray-400">Configure your server IP address</p>
+              <h2 className="text-lg font-bold text-white">{t('title')}</h2>
+              <p className="text-sm text-gray-400">{t('subtitle')}</p>
             </div>
           </div>
           <button
@@ -107,7 +109,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-3" />
-              <p className="text-gray-400 text-sm">Loading settings...</p>
+              <p className="text-gray-400 text-sm">{t('loading')}</p>
             </div>
           ) : (
             <div className="space-y-5">
@@ -116,8 +118,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
                 <div className="flex gap-3">
                   <Info className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-gray-400">
-                    This IP address will be used for all your license validations. 
-                    Set your FiveM server&apos;s public IP here.
+                    {t('infoMessage')}
                   </p>
                 </div>
               </div>
@@ -127,7 +128,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-2.5 h-2.5 rounded-full ${licensesIpAddress ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-gray-500'}`}></div>
-                    <span className="text-gray-400 text-sm">Status:</span>
+                    <span className="text-gray-400 text-sm">{t('status')}:</span>
                   </div>
                   {licensesIpAddress ? (
                     <div className="flex items-center gap-2">
@@ -135,7 +136,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
                       <span className="text-emerald-400 font-mono text-sm">{licensesIpAddress}</span>
                     </div>
                   ) : (
-                    <span className="text-gray-500 text-sm">Not configured</span>
+                    <span className="text-gray-500 text-sm">{t('notConfigured')}</span>
                   )}
                 </div>
               </div>
@@ -143,13 +144,13 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
               {/* Input */}
               <div>
                 <label className="block text-white text-sm font-medium mb-2">
-                  Server IP Address
+                  {t('serverIpLabel')}
                 </label>
                 <div className="relative">
                   <Server className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <Input
                     type="text"
-                    placeholder="Enter IP (e.g., 192.168.1.100)"
+                    placeholder={t('placeholder')}
                     value={licensesIpAddress}
                     onChange={(e) => setLicensesIpAddress(e.target.value)}
                     className="pl-10 h-11 bg-white/5 border-white/10 rounded-xl font-mono text-white placeholder:text-gray-500 focus:border-cyan-500/50"
@@ -171,7 +172,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
                 className="h-10 px-4 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl"
               >
                 <Trash2 className="w-4 h-4 mr-1.5" />
-                Clear
+                {t('clear')}
               </Button>
             )}
           </div>
@@ -182,7 +183,7 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
               disabled={isSaving}
               className="h-10 px-4 border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button 
               onClick={handleSave} 
@@ -192,12 +193,12 @@ export default function LicensesIpModal({ isOpen, onClose }: LicensesIpModalProp
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                  Saving...
+                  {t('saving')}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-1.5" />
-                  Save
+                  {t('save')}
                 </>
               )}
             </Button>

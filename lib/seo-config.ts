@@ -202,7 +202,7 @@ export function generateScriptMetadata(script: any): Metadata {
       title: `${script.name} - Premium FiveM Script`,
       description: script.description,
       type: 'website',
-      url: `${SITE_CONFIG.url}/scripts/${scriptUrl}`,
+      url: `${SITE_CONFIG.url}/script/${scriptUrl}`,
       images: [
         {
           url: script.imageUrl || `${SITE_CONFIG.url}/images/default-script.png`,
@@ -220,7 +220,7 @@ export function generateScriptMetadata(script: any): Metadata {
       images: [script.imageUrl || `${SITE_CONFIG.url}/images/default-script.png`],
     },
     alternates: {
-      canonical: `${SITE_CONFIG.url}/scripts/${scriptUrl}`,
+      canonical: `${SITE_CONFIG.url}/script/${scriptUrl}`,
     },
   }
 }
@@ -398,7 +398,7 @@ export function generateProductSchema(script: any) {
     },
     offers: {
       '@type': 'Offer',
-      url: `${SITE_CONFIG.url}/scripts/${script.id}`,
+      url: `${SITE_CONFIG.url}/script/${script.id}`,
       priceCurrency: 'USD',
       price: script.price || script.foreverPrice || 0,
       availability: script.isActive ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -431,7 +431,7 @@ export function generateSoftwareSchema(script: any) {
       priceCurrency: 'USD'
     },
     softwareRequirements: 'FiveM Server',
-    downloadUrl: `${SITE_CONFIG.url}/scripts/${script.id}`,
+    downloadUrl: `${SITE_CONFIG.url}/script/${script.id}`,
     screenshot: script.imageUrl || script.imageUrls?.[0],
     author: {
       '@type': 'Organization',
@@ -484,7 +484,7 @@ export function generateItemListSchema(scripts: any[], listName: string) {
         '@type': 'Product',
         name: script.name,
         description: script.description,
-        url: `${SITE_CONFIG.url}/scripts/${script.id}`,
+        url: `${SITE_CONFIG.url}/script/${script.id}`,
         image: script.imageUrl || script.imageUrls?.[0]
       }
     }))

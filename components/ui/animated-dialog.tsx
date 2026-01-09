@@ -69,7 +69,7 @@ const AnimatedDialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col space-y-1.5 text-center sm:text-start",
       "animate-in slide-in-from-top-2 duration-300 delay-100",
       className
     )}

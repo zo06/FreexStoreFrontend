@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Sparkles, Zap, Home, Package, LayoutDashboard, Command } from 'lucide-react';
+import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Star, Zap, Home, Package, LayoutDashboard, Command } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
+import LanguageSwitcher from '@/components/language-switcher';
+import { useTranslations } from 'next-intl';
 
 export default function Navigation() {
+  const t = useTranslations('nav');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -57,10 +60,10 @@ export default function Navigation() {
   const isActive = (path: string) => pathname === path;
   
   const navLinks = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/scripts', label: 'Scripts', icon: Package },
-    ...(user ? [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }] : []),
-    ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: Command }] : [])
+    { href: '/', label: t('home'), icon: Home },
+    { href: '/scripts', label: t('scripts'), icon: Package },
+    ...(user ? [{ href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard }] : []),
+    ...(isAdmin ? [{ href: '/admin', label: t('admin'), icon: Command }] : [])
   ];
 
   // Don't render navigation on admin pages
@@ -142,7 +145,7 @@ export default function Navigation() {
 
               {/* Desktop Navigation - Floating Pills */}
               <div className="hidden lg:flex items-center">
-                <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/[0.05]">
+                <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
                   {navLinks.map((link, index) => {
                     const Icon = link.icon;
                     return (
@@ -204,6 +207,9 @@ export default function Navigation() {
 
           {/* Auth Section - Ultra Premium */}
               <div className="hidden items-center gap-3 md:flex">
+                {/* Language Switcher */}
+                <LanguageSwitcher />
+
                 {user ? (
                   <div className="relative user-menu-container">
                     {/* Premium User Button */}
@@ -212,7 +218,7 @@ export default function Navigation() {
                       className="relative flex items-center gap-3 pl-1.5 pr-4 py-1.5 rounded-2xl transition-all duration-500 group overflow-hidden"
                     >
                       {/* Button Background */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/[0.08] to-white/[0.04] backdrop-blur-sm rounded-2xl border border-white/10 group-hover:border-cyan-500/30 transition-all duration-500"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/[0.08] to-white/[0.04] rounded-2xl border border-white/10 group-hover:border-cyan-500/30 transition-all duration-500"></div>
                       <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-blue-500/0 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 rounded-2xl transition-all duration-500"></div>
                       
                       {/* Avatar with Glow */}
@@ -241,7 +247,7 @@ export default function Navigation() {
                         <span className={`text-sm font-semibold ${userNameClassName}`}>{user.discordUsername || user.username}</span>
                         <div className="flex items-center gap-1">
                           <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-cyan-400' : 'bg-emerald-400'} animate-pulse`}></div>
-                          <span className="text-[10px] text-gray-500 uppercase tracking-wider">{isAdmin ? 'Admin' : 'Online'}</span>
+                          <span className="text-[10px] text-gray-500 uppercase tracking-wider">{isAdmin ? t('administrator') : t('online')}</span>
                         </div>
                       </div>
                       
@@ -252,7 +258,7 @@ export default function Navigation() {
                     {showUserMenu && (
                       <div className="absolute right-0 z-50 mt-3 w-72 overflow-hidden rounded-3xl animate-fade-in">
                         {/* Dropdown Glass Effect */}
-                        <div className="absolute inset-0 bg-black/80 backdrop-blur-2xl rounded-3xl"></div>
+                        <div className="absolute inset-0 bg-black/40 rounded-3xl"></div>
                         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent rounded-3xl"></div>
                         <div className="absolute inset-px bg-gradient-to-b from-white/[0.05] to-transparent rounded-[23px]"></div>
                         <div className="absolute inset-0 rounded-3xl border border-white/10"></div>
@@ -275,7 +281,7 @@ export default function Navigation() {
                               </div>
                               <div className="flex-1">
                                 <p className={`font-semibold ${userNameClassName}`}>{user.discordUsername || user.username}</p>
-                                <p className="text-xs text-gray-500 mt-0.5">{isAdmin ? 'Administrator' : 'Member'}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{isAdmin ? t('administrator') : t('member')}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                   <span className="px-2 py-0.5 text-[10px] rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">PRO</span>
                                   {isAdmin && <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">ADMIN</span>}
@@ -293,9 +299,9 @@ export default function Navigation() {
                               <div className="w-9 h-9 rounded-xl bg-white/[0.05] flex items-center justify-center group-hover/item:bg-cyan-500/20 transition-colors">
                                 <LayoutDashboard className="w-4 h-4 group-hover/item:text-cyan-400 transition-colors" />
                               </div>
-                              <div className="flex-1 text-left">
-                                <span className="text-sm font-medium">Dashboard</span>
-                                <p className="text-[10px] text-gray-600">View your overview</p>
+                              <div className="flex-1 text-start">
+                                <span className="text-sm font-medium">{t('dashboard')}</span>
+                                <p className="text-[10px] text-gray-600">{t('viewOverview')}</p>
                               </div>
                             </button>
                             
@@ -306,9 +312,9 @@ export default function Navigation() {
                               <div className="w-9 h-9 rounded-xl bg-white/[0.05] flex items-center justify-center group-hover/item:bg-blue-500/20 transition-colors">
                                 <Globe className="w-4 h-4 group-hover/item:text-blue-400 transition-colors" />
                               </div>
-                              <div className="flex-1 text-left">
-                                <span className="text-sm font-medium">IP Settings</span>
-                                <p className="text-[10px] text-gray-600">Configure server IP</p>
+                              <div className="flex-1 text-start">
+                                <span className="text-sm font-medium">{t('ipSettings')}</span>
+                                <p className="text-[10px] text-gray-600">{t('configureServerIp')}</p>
                               </div>
                             </button>
                             
@@ -322,11 +328,10 @@ export default function Navigation() {
                                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
                                     <Shield className="w-4 h-4 text-cyan-400" />
                                   </div>
-                                  <div className="flex-1 text-left">
-                                    <span className="text-sm font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Admin Panel</span>
-                                    <p className="text-[10px] text-gray-600">Manage everything</p>
+                                  <div className="flex-1 text-start">
+                                    <span className="text-sm font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">{t('adminPanel')}</span>
+                                    <p className="text-[10px] text-gray-600">{t('manageEverything')}</p>
                                   </div>
-                                  <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
                                 </button>
                               </>
                             )}
@@ -341,7 +346,7 @@ export default function Navigation() {
                               <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
                                 <LogOut className="w-4 h-4" />
                               </div>
-                              <span className="text-sm font-medium">Sign Out</span>
+                              <span className="text-sm font-medium">{t('signOut')}</span>
                             </button>
                           </div>
                         </div>
@@ -362,7 +367,7 @@ export default function Navigation() {
                       className="relative px-5 py-2.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl transition-all duration-500 group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-white/[0.05] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <span className="relative z-10">Login</span>
+                      <span className="relative z-10">{t('login')}</span>
                     </Link>
                     
                     {/* Sign Up Button - Premium */}
@@ -376,7 +381,7 @@ export default function Navigation() {
                       <div className="absolute inset-0 rounded-xl overflow-hidden">
                         <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700"></div>
                       </div>
-                      <span className="relative z-10 text-white">Get Started</span>
+                      <span className="relative z-10 text-white">{t('getStarted')}</span>
                     </Link>
                   </div>
                 )}
@@ -408,7 +413,7 @@ export default function Navigation() {
             ? 'pb-6 mt-4 opacity-100 max-h-[900px]' 
             : 'max-h-0 opacity-0'
         }`}>
-          <div className="pt-6 border-t border-white/10 bg-black/80 backdrop-blur-xl rounded-2xl">
+          <div className="pt-6 border-t border-white/10 bg-black/40 rounded-2xl">
             <div className="flex flex-col space-y-3 px-4">
               {navLinks.map((link, index) => (
                 <Link 
@@ -416,8 +421,8 @@ export default function Navigation() {
                   href={link.href} 
                   className={`relative px-5 py-4 rounded-2xl font-medium transition-all duration-500 touch-target overflow-hidden group ${
                     isActive(link.href)
-                      ? 'text-white bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm border border-cyan-500/30 shadow-lg shadow-cyan-500/20'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm'
+                      ? 'text-white bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 shadow-lg shadow-cyan-500/20'
+                      : 'text-gray-300 hover:text-white hover:bg-white/10'
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                   onClick={() => setIsMenuOpen(false)}
@@ -437,12 +442,20 @@ export default function Navigation() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform translate-x-full group-hover:translate-x-0"></div>
                 </Link>
               ))}
-              
+
+              {/* Mobile Language Switcher Section */}
+              <div className="pt-6 mt-6 space-y-3 border-t border-white/10" style={{ animationDelay: '0.35s' }}>
+                <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/10">
+                  <span className="text-sm font-medium text-gray-400">Language</span>
+                  <LanguageSwitcher />
+                </div>
+              </div>
+
               {/* Mobile Auth Section */}
               {user ? (
                 <div className="pt-6 mt-6 space-y-3 border-t border-white/10" style={{ animationDelay: '0.4s' }}>
                   {/* Mobile Avatar Header */}
-                  <div className="flex items-center gap-4 px-5 py-4 mb-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] backdrop-blur-sm border border-white/10">
+                  <div className="flex items-center gap-4 px-5 py-4 mb-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10">
                     <div className={`relative w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
                       isAdmin 
                         ? 'bg-gradient-to-br from-cyan-500 via-pink-500 to-orange-400 ring-2 ring-cyan-400/50' 
@@ -465,35 +478,35 @@ export default function Navigation() {
                     </div>
                     <div className="flex-1">
                       <p className={`font-semibold text-white ${userNameClassName}`}>{user.discordUsername || user.username}</p>
-                      <p className="text-sm text-gray-500">{isAdmin ? 'Administrator' : 'Member'}</p>
+                      <p className="text-sm text-gray-500">{isAdmin ? t('administrator') : t('member')}</p>
                     </div>
                   </div>
                   <Link 
                     href="/dashboard"
-                    className="flex items-center gap-3 px-5 py-4 text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm touch-target group"
+                    className="flex items-center gap-3 px-5 py-4 text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 touch-target group"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Settings className="w-5 h-5 text-gray-400 group-hover:text-cyan-400 transition-colors" />
-                    <span className="font-medium">Dashboard</span>
+                    <span className="font-medium">{t('dashboard')}</span>
                   </Link>
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
                       setShowIpModal(true);
                     }}
-                    className="flex items-center gap-3 px-5 py-4 text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm touch-target group text-left w-full"
+                    className="flex items-center gap-3 px-5 py-4 text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 touch-target group text-start w-full"
                   >
                     <Globe className="w-5 h-5 text-gray-400 group-hover:text-cyan-400 transition-colors" />
-                    <span className="font-medium">IP Settings</span>
+                    <span className="font-medium">{t('ipSettings')}</span>
                   </button>
                   {isAdmin && (
                     <Link 
                       href="/admin"
-                      className="flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-500 hover:bg-white/10 hover:backdrop-blur-sm touch-target bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 group"
+                      className="flex items-center gap-3 px-5 py-4 rounded-2xl transition-all duration-500 hover:bg-white/10 touch-target bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 group"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <Shield className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                      <span className="font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Admin Panel</span>
+                      <span className="font-medium text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">{t('adminPanel')}</span>
                     </Link>
                   )}
                   <button
@@ -501,10 +514,10 @@ export default function Navigation() {
                       logout();
                       setIsMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-5 py-4 w-full text-left text-red-400 rounded-2xl transition-all duration-500 hover:bg-red-500/10 hover:backdrop-blur-sm hover:text-red-300 touch-target group"
+                    className="flex items-center gap-3 px-5 py-4 w-full text-start text-red-400 rounded-2xl transition-all duration-500 hover:bg-red-500/10 hover:text-red-300 touch-target group"
                   >
                     <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="font-medium">Logout</span>
+                    <span className="font-medium">{t('signOut')}</span>
                   </button>
                 </div>
               ) : isLoading ? (
@@ -515,17 +528,17 @@ export default function Navigation() {
                 <div className="pt-6 mt-6 space-y-3 border-t border-white/10" style={{ animationDelay: '0.4s' }}>
                   <Link 
                     href="/auth/login"
-                    className="block px-5 py-4 text-center text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 hover:backdrop-blur-sm touch-target font-medium"
+                    className="block px-5 py-4 text-center text-gray-300 rounded-2xl transition-all duration-500 hover:text-white hover:bg-white/10 touch-target font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Login
+                    {t('login')}
                   </Link>
                   <Link 
                     href="/auth/register"
                     className="block py-4 w-full text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-2xl transition-all duration-500 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 touch-target font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Sign Up
+                    {t('getStarted')}
                   </Link>
                 </div>
               )}
@@ -551,7 +564,7 @@ export default function Navigation() {
       {/* Mobile Menu Backdrop */}
       {isMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] animate-fade-in"
+          className="md:hidden fixed inset-0 bg-black/40 z-[90] animate-fade-in"
           onClick={() => setIsMenuOpen(false)}
           style={{ top: '80px' }}
         >

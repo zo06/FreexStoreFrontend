@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
   Users, 
@@ -33,7 +34,6 @@ import {
   Crown,
   Bell,
   Search,
-  Sparkles,
   Home,
   TrendingUp,
   Calendar,
@@ -54,6 +54,10 @@ interface TodayStats {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
+  const t = useTranslations('admin');
+  const params = useParams();
+  const lang = params?.lang as string || 'en';
+  const isRTL = lang === 'ar';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [scriptsDropdownOpen, setScriptsDropdownOpen] = useState(false);
   const [showIpModal, setShowIpModal] = useState(false);
@@ -145,18 +149,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Admin pages for quick navigation
   const adminPages = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', description: 'Overview and statistics' },
-    { icon: Users, label: 'Users', path: '/admin/users', description: 'Manage user accounts' },
-    { icon: UserCheck, label: 'Developers', path: '/admin/developers', description: 'Manage developer accounts' },
-    { icon: Code2, label: 'Scripts', path: '/admin/scripts', description: 'Manage all scripts' },
-    { icon: Plus, label: 'Create Script', path: '/admin/scripts/create', description: 'Add new script' },
-    { icon: Tags, label: 'Categories', path: '/admin/categories', description: 'Manage script categories' },
-    { icon: Key, label: 'Licenses', path: '/admin/licenses', description: 'Manage user licenses' },
-    { icon: Receipt, label: 'Transactions', path: '/admin/transactions', description: 'View payment history' },
-    { icon: Calculator, label: 'Accounting', path: '/admin/accounting', description: 'Financial analytics' },
-    { icon: Mail, label: 'Contact Messages', path: '/admin/contact-messages', description: 'View contact inquiries' },
-    { icon: MessageSquare, label: 'Custom Requests', path: '/admin/custom-requests', description: 'Handle custom requests' },
-    { icon: HelpCircle, label: 'FAQ', path: '/admin/faq', description: 'Manage FAQ content' },
+    { icon: LayoutDashboard, label: t('dashboard'), path: '/admin', description: t('overview') },
+    { icon: Users, label: t('usersLabel'), path: '/admin/users', description: t('manageUsers') },
+    { icon: UserCheck, label: t('developersLabel'), path: '/admin/developers', description: t('manageDevelopers') },
+    { icon: Code2, label: t('scriptsLabel'), path: '/admin/scripts', description: t('manageScripts') },
+    { icon: Plus, label: t('addNew'), path: '/admin/scripts/create', description: t('addNew') },
+    { icon: Tags, label: t('categoriesLabel'), path: '/admin/categories', description: t('manageCategories') },
+    { icon: Key, label: t('licensesLabel'), path: '/admin/licenses', description: t('manageLicenses') },
+    { icon: Receipt, label: t('transactionsLabel'), path: '/admin/transactions', description: t('viewTransactions') },
+    { icon: Calculator, label: t('accountingLabel'), path: '/admin/accounting', description: t('financialReports') },
+    { icon: Mail, label: t('contactMessagesLabel'), path: '/admin/contact-messages', description: t('viewMessages') },
+    { icon: MessageSquare, label: t('customRequestsLabel'), path: '/admin/custom-requests', description: t('viewRequests') },
+    { icon: HelpCircle, label: t('faqLabel'), path: '/admin/faq', description: t('faqLabel') },
   ];
 
   // Filter admin pages based on search query
@@ -187,26 +191,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const sidebarItems = [
-    { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/admin/users', icon: Users, label: 'Users' },
-    { href: '/admin/developers', icon: UserCheck, label: 'Developers' },
+    { href: '/admin', icon: LayoutDashboard, label: t('dashboard') },
+    { href: '/admin/users', icon: Users, label: t('usersLabel') },
+    { href: '/admin/developers', icon: UserCheck, label: t('developersLabel') },
     { 
       href: '/admin/scripts', 
       icon: Code2, 
-      label: 'Scripts',
+      label: t('scriptsLabel'),
       hasDropdown: true,
       dropdownItems: [
-        { href: '/admin/scripts', label: 'All Scripts', icon: FolderOpen },
-        { href: '/admin/scripts/create', label: 'Create New', icon: Plus },
-        { href: '/admin/categories', label: 'Categories', icon: Tags },
+        { href: '/admin/scripts', label: t('scriptsLabel'), icon: FolderOpen },
+        { href: '/admin/scripts/create', label: t('addNew'), icon: Plus },
+        { href: '/admin/categories', label: t('categoriesLabel'), icon: Tags },
       ],
     },
-    { href: '/admin/licenses', icon: Key, label: 'Licenses' },
-    { href: '/admin/transactions', icon: Receipt, label: 'Transactions' },
-    { href: '/admin/accounting', icon: Calculator, label: 'Accounting' },
-    { href: '/admin/contact-messages', icon: Mail, label: 'Contact Messages' },
-    { href: '/admin/custom-requests', icon: MessageSquare, label: 'Custom Requests' },
-    { href: '/admin/faq', icon: HelpCircle, label: 'FAQ' },
+    { href: '/admin/licenses', icon: Key, label: t('licensesLabel') },
+    { href: '/admin/transactions', icon: Receipt, label: t('transactionsLabel') },
+    { href: '/admin/accounting', icon: Calculator, label: t('accountingLabel') },
+    { href: '/admin/contact-messages', icon: Mail, label: t('contactMessagesLabel') },
+    { href: '/admin/custom-requests', icon: MessageSquare, label: t('customRequestsLabel') },
+    { href: '/admin/faq', icon: HelpCircle, label: t('faqLabel') },
   ];
 
   const isActive = (href: string) => {
@@ -215,7 +219,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const sidebarWidth = isSidebarCollapsed ? 'w-20' : 'w-72';
-  const mainMargin = isSidebarCollapsed ? 'ml-20' : 'ml-72';
+  const mainMargin = isRTL 
+    ? (isSidebarCollapsed ? 'mr-20' : 'mr-72')
+    : (isSidebarCollapsed ? 'ml-20' : 'ml-72');
 
   return (
     <>
@@ -249,7 +255,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                       className="flex justify-center items-center w-10 h-10 text-sky-400 rounded-xl border transition-all duration-300 bg-sky-500/10 border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300"
                     >
-                      {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+                      {isRTL 
+                        ? (isSidebarCollapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)
+                        : (isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />)
+                      }
                     </button>
                     
                     {/* Logo & Brand */}
@@ -273,7 +282,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       <Search className="absolute left-4 top-1/2 w-4 h-4 text-gray-500 transition-colors -translate-y-1/2 group-focus-within:text-sky-400" />
                       <input
                         type="text"
-                        placeholder="Quick navigation... (Type to search pages)"
+                        placeholder={t('layout.searchPages')}
                         value={searchQuery}
                         onChange={(e) => {
                           setSearchQuery(e.target.value);
@@ -295,10 +304,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             <div className="flex items-center justify-between px-3 py-2 mb-1">
                               <div className="flex items-center gap-2">
                                 <Zap className="w-3.5 h-3.5 text-sky-400" />
-                                <span className="text-xs text-gray-400 font-medium">Quick Actions</span>
+                                <span className="text-xs text-gray-400 font-medium">{t('layout.quickActions')}</span>
                               </div>
                               {searchQuery && (
-                                <span className="text-xs text-gray-500">{filteredPages.length} results</span>
+                                <span className="text-xs text-gray-500">{filteredPages.length} {t('layout.results')}</span>
                               )}
                             </div>
                             {filteredPages.length > 0 ? (
@@ -309,7 +318,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                   <button
                                     key={index}
                                     onClick={() => navigateToPage(page.path)}
-                                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all group ${
+                                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-start transition-all group ${
                                       isCurrentPage
                                         ? 'bg-sky-500/15 border border-sky-500/30'
                                         : 'hover:bg-white/[0.05] border border-transparent'
@@ -393,9 +402,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           </div>
                           <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
                         </div>
-                        <div className="hidden text-left sm:block">
+                        <div className="hidden text-start sm:block">
                           <p className="text-sm font-medium text-white">{user?.discordUsername || user?.username}</p>
-                          <p className="text-[10px] text-sky-400">Administrator</p>
+                          <p className="text-[10px] text-sky-400">{t('layout.administrator')}</p>
                         </div>
                         <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
                       </button>
@@ -416,7 +425,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 <p className="font-semibold text-white">{user?.discordUsername || user?.username}</p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <Crown className="w-3 h-3 text-amber-400" />
-                                  <span className="text-xs text-amber-400">Admin</span>
+                                  <span className="text-xs text-amber-400">{t('layout.admin')}</span>
                                 </div>
                               </div>
                             </div>
@@ -425,22 +434,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           <div className="p-2">
                             <button onClick={() => { setShowUserMenu(false); router.push('/dashboard'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
                               <LayoutDashboard className="w-4 h-4 group-hover:text-sky-400" />
-                              <span className="text-sm">User Dashboard</span>
+                              <span className="text-sm">{t('layout.userDashboard')}</span>
                             </button>
                             <button onClick={() => { setShowUserMenu(false); setShowIpModal(true); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
                               <Globe className="w-4 h-4 group-hover:text-sky-400" />
-                              <span className="text-sm">IP Settings</span>
+                              <span className="text-sm">{t('layout.ipSettings')}</span>
                             </button>
                             <button onClick={() => { setShowUserMenu(false); router.push('/admin/settings'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
                               <Settings className="w-4 h-4 group-hover:text-sky-400" />
-                              <span className="text-sm">Settings</span>
+                              <span className="text-sm">{t('layout.settings')}</span>
                             </button>
                           </div>
-                          
+
                           <div className="p-2 border-t border-white/10">
                             <button onClick={() => { logout(); setShowUserMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all">
                               <LogOut className="w-4 h-4" />
-                              <span className="text-sm">Sign Out</span>
+                              <span className="text-sm">{t('layout.signOut')}</span>
                             </button>
                           </div>
                         </div>
@@ -456,14 +465,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {isClient
         ? createPortal(
-            <aside className={`fixed bottom-0 left-0 transition-all duration-500 ease-out top-[76px] z-[60] ${sidebarWidth}`}>
-              <div className="h-[calc(100vh-76px-12px)] mb-3 ml-3 mr-3 rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col">
+            <aside className={`fixed bottom-0 ${isRTL ? 'right-0' : 'left-0'} transition-all duration-500 ease-out top-[76px] z-[60] ${sidebarWidth}`}>
+              <div className={`h-[calc(100vh-76px-12px)] mb-3 ${isRTL ? 'mr-3 ml-3' : 'ml-3 mr-3'} rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col`}>
                 {/* Navigation */}
                 <nav className="overflow-y-auto flex-1 p-3 space-y-1">
               {/* Section Label */}
               {!isSidebarCollapsed && (
                 <div className="px-3 py-2">
-                  <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Main Menu</span>
+                  <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('layout.mainMenu')}</span>
                 </div>
               )}
               
@@ -493,7 +502,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       </button>
                       
                       {scriptsDropdownOpen && !isSidebarCollapsed && (
-                        <div className="pl-3 mt-1 ml-3 space-y-1 border-l border-white/10">
+                        <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
                           {item.dropdownItems?.map((dropdownItem) => (
                             <button
                               key={dropdownItem.href}
@@ -554,11 +563,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
 
                 {/* Help Link */}
-                <button className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/[0.05] transition-all">
+                {/* <button className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/[0.05] transition-all">
                   <HelpCircle className="w-5 h-5" />
                   <span className="text-sm">Help & Support</span>
                   <ExternalLink className="ml-auto w-3 h-3" />
-                </button>
+                </button> */}
               </div>
             )}
           </div>

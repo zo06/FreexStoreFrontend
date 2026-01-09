@@ -163,7 +163,7 @@ export function PaymentHistory({ className }: PaymentHistoryProps) {
               Track your script purchases and transactions
             </CardDescription>
           </div>
-          <div className="text-right">
+          <div className="text-end">
             <div className="text-2xl font-bold text-green-400">${totalSpent.toFixed(2)}</div>
             <div className="text-sm text-gray-400">Total Spent</div>
           </div>

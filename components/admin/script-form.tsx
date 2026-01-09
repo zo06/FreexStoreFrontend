@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/ui/file-upload'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { safeAdminApi } from '@/lib/admin-api'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Save, Upload, Copy, RefreshCw, Sparkles } from 'lucide-react'
+import { ArrowLeft, Save, Upload, Copy, RefreshCw, Star } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 // UUID generation function
@@ -826,7 +826,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
                   className="text-white bg-gradient-to-r from-purple-600 to-pink-600 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-pink-500 border-white/10 hover:shadow-xl hover:scale-105"
                   disabled={!formData.name.trim() || isSubmitting}
                 >
-                  <Sparkles className="mr-2 w-4 h-4" />
+                  <Star className="mr-2 w-4 h-4" />
                   Auto-Generate SEO
                 </Button>
               </div>

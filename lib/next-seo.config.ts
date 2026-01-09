@@ -166,11 +166,11 @@ export const defaultSEOConfig = {
 export const generateProductSEO = (script: any) => ({
   title: `${script.name} - FiveM Script`,
   description: script.description || `Download ${script.name} for your FiveM server. Premium quality script with full support and instant delivery.`,
-  canonical: `${SITE_CONFIG.url}/scripts/${script.id}`,
+  canonical: `${SITE_CONFIG.url}/script/${script.id}`,
   
   openGraph: {
     type: 'website',
-    url: `${SITE_CONFIG.url}/scripts/${script.id}`,
+    url: `${SITE_CONFIG.url}/script/${script.id}`,
     title: `${script.name} - FiveM Script`,
     description: script.description,
     images: [
@@ -242,7 +242,7 @@ export const generateProductSchema = (script: any) => ({
   },
   offers: {
     '@type': 'Offer',
-    url: `${SITE_CONFIG.url}/scripts/${script.id}`,
+    url: `${SITE_CONFIG.url}/script/${script.id}`,
     priceCurrency: 'USD',
     price: script.price,
     availability: script.isActive ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',

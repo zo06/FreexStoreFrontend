@@ -80,7 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Generate script URLs - use slug if available for SEO-friendly URLs
   type ScriptItem = { id: string; slug?: string; updatedAt?: string; createdAt: string; popular?: boolean };
   const scriptUrls = scripts.map((script: ScriptItem) => ({
-      url: `${baseUrl}/scripts/${script.slug || script.id}`,
+      url: `${baseUrl}/script/${script.slug || script.id}`,
       lastModified: new Date(script.updatedAt || script.createdAt),
       changeFrequency: 'weekly' as const,
       priority: script.popular ? 0.9 : 0.7,

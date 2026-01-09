@@ -1,10 +1,45 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Home, ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
+  const router = useRouter();
+  const [locale, setLocale] = useState('en');
+  const [translations, setTranslations] = useState({
+    heading: 'Page Not Found',
+    description: "The page you're looking for doesn't exist or has been moved.",
+    returnHome: 'Return Home',
+    goBack: 'Go Back',
+    quote: "Space is big. You just won't believe how vastly, hugely, mind-bogglingly big it is."
+  });
+
+  useEffect(() => {
+    // Get language from localStorage or default to 'en'
+    const savedLanguage = localStorage.getItem('language') || 'en';
+    setLocale(savedLanguage);
+    
+    // Load translations
+    import(`../messages/${savedLanguage}.json`)
+      .then((module) => {
+        const t = module.default.notFound;
+        setTranslations({
+          heading: t.heading,
+          description: t.description,
+          returnHome: t.returnHome,
+          goBack: t.goBack,
+          quote: t.quote
+        });
+      })
+      .catch(() => {
+        // Fallback to English if translation fails
+        console.error('Failed to load translations');
+      });
+  }, []);
+
   // Generate stars
   const stars = Array.from({ length: 100 }, (_, i) => ({
     id: i,
@@ -16,7 +51,9 @@ export default function NotFound() {
   }));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-950 to-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
+    <html lang={locale}>
+      <body>
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-blue-950 to-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
       {/* Grid pattern overlay */}
       <div 
         className="absolute inset-0 opacity-20"
@@ -71,22 +108,22 @@ export default function NotFound() {
         {/* Message */}
         <div className="space-y-4 px-4 pt-4">
           <h2 className="text-3xl md:text-4xl font-semibold text-white">
-            Page Not Found
+            {translations.heading}
           </h2>
           <p className="text-gray-400 text-lg max-w-lg mx-auto leading-relaxed">
-            The page you're looking for doesn't exist or has been moved.
+            {translations.description}
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-          <Link href="/">
+          <Link href={`/${locale}`}>
             <Button 
               size="lg"
               className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
             >
               <Home className="w-5 h-5 mr-2" />
-              Return Home
+              {translations.returnHome}
             </Button>
           </Link>
           
@@ -97,14 +134,14 @@ export default function NotFound() {
             className="border-blue-500/50 text-blue-300 hover:bg-blue-500/10 px-8 py-6 text-lg font-semibold transition-all duration-300"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Go Back
+            {translations.goBack}
           </Button>
         </div>
 
         {/* Space Quote */}
         <div className="pt-8">
           <p className="text-gray-500 text-sm italic">
-            &quot;Space is big. You just won&apos;t believe how vastly, hugely, mind-bogglingly big it is.&quot; - Douglas Adams
+            &quot;{translations.quote}&quot; - Douglas Adams
           </p>
         </div>
       </div>
@@ -145,7 +182,9 @@ export default function NotFound() {
           }
         }
       `}</style>
-    </div>
+        </div>
+      </body>
+    </html>
   );
 }
 

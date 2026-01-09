@@ -339,7 +339,7 @@ export function AdminFilter({
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-start font-normal",
                           !filters.dateFrom && "text-muted-foreground"
                         )}
                       >
@@ -365,7 +365,7 @@ export function AdminFilter({
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-start font-normal",
                           !filters.dateTo && "text-muted-foreground"
                         )}
                       >
