@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -81,6 +81,27 @@ export function AdminFilter({
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeFiltersCount, setActiveFiltersCount] = useState(0)
 
+  // Debounce for search input
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [localSearchValue, setLocalSearchValue] = useState('')
+
+  // Handle search input with debouncing
+  useEffect(() => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current)
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      updateFilters({ search: localSearchValue })
+    }, 500) // 500ms delay
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current)
+      }
+    }
+  }, [localSearchValue])
+
   const updateFilters = (newFilters: Partial<FilterValues>) => {
     const updatedFilters = { ...filters, ...newFilters }
     setFilters(updatedFilters)
@@ -113,6 +134,7 @@ export function AdminFilter({
       customValues: {}
     }
     setFilters(clearedFilters)
+    setLocalSearchValue('')
     onFilterChange(clearedFilters)
     setActiveFiltersCount(0)
   }
@@ -161,8 +183,8 @@ export function AdminFilter({
               <Input
                 id="search"
                 placeholder={config.searchPlaceholder || "Search..."}
-                value={filters.search}
-                onChange={(e) => updateFilters({ search: e.target.value })}
+                value={localSearchValue}
+                onChange={(e) => setLocalSearchValue(e.target.value)}
                 className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:bg-white/[0.15]"
               />
             </div>
