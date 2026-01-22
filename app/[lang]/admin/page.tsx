@@ -206,19 +206,19 @@ function AdminDashboard() {
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 opacity-40" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'%3E%3C/circle%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
 
-      <div className="relative z-10 p-6 mx-auto space-y-8 max-w-7xl">
+      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-6 sm:space-y-8 max-w-7xl">
         {/* Header Section */}
-        <div className="mb-12 text-center">
-          <div className="inline-flex gap-2 items-center px-6 py-3 mb-6 bg-gradient-to-r rounded-full border backdrop-blur-sm from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
-            <Sparkles className="w-5 h-5 text-cyan-400" />
-            <span className="text-sm font-medium text-cyan-200">{t('dashboardSection.controlCenter')}</span>
+        <div className="mb-8 sm:mb-12 text-center">
+          <div className="inline-flex gap-2 items-center px-4 sm:px-6 py-2 sm:py-3 mb-4 sm:mb-6 bg-gradient-to-r rounded-full border backdrop-blur-sm from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+            <span className="text-xs sm:text-sm font-medium text-cyan-200">{t('dashboardSection.controlCenter')}</span>
           </div>
 
-          <h1 className="mb-4 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+          <h1 className="mb-3 sm:mb-4 text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
             <span className="block text-gradient">{t('dashboardSection.title')}</span>
           </h1>
 
-          <p className="mx-auto mb-8 max-w-3xl text-lg leading-relaxed sm:text-xl text-muted">
+          <p className="mx-auto mb-6 sm:mb-8 max-w-3xl px-4 text-sm sm:text-lg lg:text-xl leading-relaxed text-muted">
             {t('dashboardSection.subtitle')}
           </p>
 
@@ -227,13 +227,13 @@ function AdminDashboard() {
             size="lg"
             className="text-white bg-gradient-to-r from-cyan-600 to-blue-600 border-0 shadow-2xl transition-all duration-300 hover:from-cyan-700 hover:to-blue-700 hover:shadow-cyan-500/25 hover:scale-105"
           >
-            <Activity className="mr-2 w-5 h-5" />
-            {t('dashboardSection.refreshLive')}
+            <Activity className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">{t('dashboardSection.refreshLive')}</span>
           </Button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {quickStats.map((stat, index) => {
             const Icon = stat.icon
             return (
@@ -265,19 +265,19 @@ function AdminDashboard() {
         </div>
 
         {/* Analytics Graphs */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 sm:gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* New Users Graph */}
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-blue-900/60 to-blue-800/30 border-blue-500/20 sm:p-8">
+          <div className="overflow-hidden relative p-4 sm:p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-blue-900/60 to-blue-800/30 border-blue-500/20 lg:p-8">
             <div className="absolute inset-0 bg-gradient-to-br to-transparent from-blue-600/5"></div>
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-blue-500 to-blue-600">
-                    <UserPlus className="w-5 h-5 text-white" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <div className="flex justify-center items-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br rounded-lg from-blue-500 to-blue-600">
+                    <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{t('dashboardSection.newUsersPerDay')}</h3>
-                    <p className="text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
+                    <h3 className="text-base sm:text-lg font-bold text-white">{t('dashboardSection.newUsersPerDay')}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
@@ -285,7 +285,7 @@ function AdminDashboard() {
                   <span className="text-xs font-medium text-green-400">{t('common.live')}</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} minWidth={280}>
                 <AreaChart data={analyticsData.newUsersData}>
                   <defs>
                     <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
@@ -294,9 +294,9 @@ function AdminDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip 
+                  <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} />
+                  <YAxis stroke="#9ca3af" fontSize={10} />
+                  <Tooltip
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                     labelStyle={{ color: '#f3f4f6' }}
                   />
@@ -307,17 +307,17 @@ function AdminDashboard() {
           </div>
 
           {/* Views Graph */}
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-purple-900/60 to-purple-800/30 border-purple-500/20 sm:p-8">
+          <div className="overflow-hidden relative p-4 sm:p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-purple-900/60 to-purple-800/30 border-purple-500/20 lg:p-8">
             <div className="absolute inset-0 bg-gradient-to-br to-transparent from-purple-600/5"></div>
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-purple-500 to-purple-600">
-                    <Eye className="w-5 h-5 text-white" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <div className="flex justify-center items-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br rounded-lg from-purple-500 to-purple-600">
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{t('dashboardSection.viewsPerDay')}</h3>
-                    <p className="text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
+                    <h3 className="text-base sm:text-lg font-bold text-white">{t('dashboardSection.viewsPerDay')}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
@@ -325,11 +325,11 @@ function AdminDashboard() {
                   <span className="text-xs font-medium text-green-400">{t('common.live')}</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} minWidth={280}>
                 <LineChart data={analyticsData.viewsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} />
+                  <YAxis stroke="#9ca3af" fontSize={10} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                     labelStyle={{ color: '#f3f4f6' }}
@@ -341,17 +341,17 @@ function AdminDashboard() {
           </div>
 
           {/* License Rate Graph */}
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-orange-900/60 to-orange-800/30 border-orange-500/20 sm:p-8">
+          <div className="overflow-hidden relative p-4 sm:p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-orange-900/60 to-orange-800/30 border-orange-500/20 lg:p-8">
             <div className="absolute inset-0 bg-gradient-to-br to-transparent from-orange-600/5"></div>
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-orange-500 to-orange-600">
-                    <Key className="w-5 h-5 text-white" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <div className="flex justify-center items-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br rounded-lg from-orange-500 to-orange-600">
+                    <Key className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{t('dashboardSection.licenseRatePerDay')}</h3>
-                    <p className="text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
+                    <h3 className="text-base sm:text-lg font-bold text-white">{t('dashboardSection.licenseRatePerDay')}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
@@ -359,11 +359,11 @@ function AdminDashboard() {
                   <span className="text-xs font-medium text-green-400">{t('common.live')}</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} minWidth={280}>
                 <BarChart data={analyticsData.licenseRateData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} />
+                  <YAxis stroke="#9ca3af" fontSize={10} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                     labelStyle={{ color: '#f3f4f6' }}
@@ -375,17 +375,17 @@ function AdminDashboard() {
           </div>
 
           {/* Login Rate Graph */}
-          <div className="overflow-hidden relative p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-green-900/60 to-green-800/30 border-green-500/20 sm:p-8">
+          <div className="overflow-hidden relative p-4 sm:p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-green-900/60 to-green-800/30 border-green-500/20 lg:p-8">
             <div className="absolute inset-0 bg-gradient-to-br to-transparent from-green-600/5"></div>
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-lg from-green-500 to-green-600">
-                    <LogIn className="w-5 h-5 text-white" />
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <div className="flex justify-center items-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br rounded-lg from-green-500 to-green-600">
+                    <LogIn className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{t('dashboardSection.dailyLoginUsers')}</h3>
-                    <p className="text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
+                    <h3 className="text-base sm:text-lg font-bold text-white">{t('dashboardSection.dailyLoginUsers')}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400">{t('dashboardSection.last30Days')} • {t('common.liveData')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
@@ -393,7 +393,7 @@ function AdminDashboard() {
                   <span className="text-xs font-medium text-green-400">{t('common.live')}</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} minWidth={280}>
                 <AreaChart data={analyticsData.loginRateData}>
                   <defs>
                     <linearGradient id="colorLogins" x1="0" y1="0" x2="0" y2="1">
@@ -402,8 +402,8 @@ function AdminDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="date" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} />
+                  <YAxis stroke="#9ca3af" fontSize={10} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
                     labelStyle={{ color: '#f3f4f6' }}

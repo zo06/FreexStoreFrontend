@@ -280,43 +280,46 @@ function AdminLicenses() {
 <div className="absolute inset-0">
   <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
 </div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
+      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Key className="w-8 h-8 text-blue-400" />
+        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+              <div className="p-2 sm:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
+                <Key className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-1 text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
+                <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('subtitle')}</p>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <Button
                 onClick={() => router.push('/admin')}
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
               >
                 <ArrowLeft className="mr-2 w-4 h-4" />
-                {t('backToDashboard')}
+                <span className="hidden sm:inline">{t('backToDashboard')}</span>
+                <span className="sm:hidden">Back</span>
               </Button>
               {statusFilter === 'revoked' || !statusFilter ? (
                 <Button
                   onClick={() => setIsDeleteRevokedDialogOpen(true)}
-                  className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                  className="flex-1 sm:flex-none text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
                 >
                   <Trash2 className="mr-2 w-4 h-4" />
-                  {t('deleteAllRevoked')}
+                  <span className="hidden sm:inline">{t('deleteAllRevoked')}</span>
+                  <span className="sm:hidden">Delete</span>
                 </Button>
               ) : null}
               <Button
                 onClick={() => router.push('/admin/licenses/manage')}
-                className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
               >
                 <Plus className="mr-2 w-4 h-4" />
-                {t('createLicense')}
+                <span className="hidden sm:inline">{t('createLicense')}</span>
+                <span className="sm:hidden">Create</span>
             </Button>
             </div>
           </div>
@@ -334,36 +337,36 @@ function AdminLicenses() {
         />
 
         {/* Licenses Table */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+        <div className="p-3 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
               {t('licenses')} ({filteredLicenses.length} {t('of')} {total})
             </h2>
-            <p className="mt-1 text-gray-400">{t('listDescription')}</p>
+            <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('listDescription')}</p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
           <Table>
             <TableHeader>
               <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="font-semibold text-gray-300">{t('user')}</TableHead>
-                <TableHead className="font-semibold text-gray-300">{t('script')}</TableHead>
-                <TableHead className="font-semibold text-gray-300">{t('status')}</TableHead>
-                <TableHead className="font-semibold text-gray-300">{t('expiryDate')}</TableHead>
-                <TableHead className="font-semibold text-gray-300">{t('createdDate')}</TableHead>
-                <TableHead className="font-semibold text-gray-300">{t('actions')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('user')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('script')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('status')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">{t('expiryDate')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap hidden lg:table-cell">{t('createdDate')}</TableHead>
+                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredLicenses.map((license) => (
                 <TableRow key={license.id} className="transition-colors border-white/10 hover:bg-white/5">
-                  <TableCell className="font-medium text-white">{getUserName(license.userId)}</TableCell>
-                  <TableCell className="text-gray-300">{getScriptName(license.scriptId)}</TableCell>
+                  <TableCell className="font-medium text-white text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getUserName(license.userId)}</TableCell>
+                  <TableCell className="text-gray-300 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getScriptName(license.scriptId)}</TableCell>
                   <TableCell>{getStatusBadge(license)}</TableCell>
-                  <TableCell className="text-gray-300">{formatDateTime(license.expiresAt)}</TableCell>
-                  <TableCell className="text-gray-300">{formatDate(license.createdAt || '')}</TableCell>
+                  <TableCell className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">{formatDateTime(license.expiresAt)}</TableCell>
+                  <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">{formatDate(license.createdAt || '')}</TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex justify-end gap-1 sm:gap-2">
                       <Button
                         onClick={() => {
                           navigator.clipboard.writeText(license.privateKey || '')
@@ -371,18 +374,18 @@ function AdminLicenses() {
                         }}
                         size="sm"
                         title={t('copyLicenseKey')}
-                        className="text-white bg-gradient-to-r from-green-600 to-green-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-green-500 hover:to-green-400 border-white/10 hover:shadow-xl hover:scale-105"
+                        className="text-white bg-gradient-to-r from-green-600 to-green-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-green-500 hover:to-green-400 border-white/10 hover:shadow-xl hover:scale-105 p-1 sm:p-2"
                       >
-                        <Key className="w-4 h-4" />
+                        <Key className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                       <Button
                         onClick={() => openEditDialog(license)}
                         size="sm"
                         disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
                         title={t('editLicense')}
-                        className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                       <Button
                         onClick={() => {
@@ -392,9 +395,9 @@ function AdminLicenses() {
                         size="sm"
                         disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
                         title={t('revokeLicense')}
-                        className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -406,30 +409,32 @@ function AdminLicenses() {
         </div>
 
         {/* Pagination */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-400">
+        <div className="p-3 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
               {t('showing')} {Math.min((currentPage - 1) * limit + 1, total)}-{Math.min(currentPage * limit, total)} {t('of')} {total} {t('licenses')} ({t('pageOf', { current: currentPage, total: totalPages })})
             </p>
-            <div className="flex space-x-2">
+            <div className="flex gap-2 items-center">
               <Button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 px-2 sm:px-3"
               >
-                {t('previous')}
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline ml-1">{t('previous')}</span>
               </Button>
-              <div className="flex items-center px-3 text-sm text-gray-400">
-                {t('pageOf', { current: currentPage, total: totalPages })}
+              <div className="flex items-center px-2 sm:px-3 text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                {currentPage} / {totalPages}
               </div>
               <Button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
                 size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 px-2 sm:px-3"
               >
-                {t('next')}
+                <span className="hidden sm:inline mr-1">{t('next')}</span>
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
               </Button>
             </div>
           </div>
@@ -439,21 +444,21 @@ function AdminLicenses() {
 
         {/* Revoke Confirmation Dialog */}
         <AlertDialog open={isRevokeDialogOpen} onOpenChange={setIsRevokeDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10">
+          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">{t('revokeDialogTitle')}</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogTitle className="text-white text-lg sm:text-xl">{t('revokeDialogTitle')}</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
                 {t('revokeDialogDescription', {
                   user: getUserName(selectedLicense?.userId || ''),
                   script: getScriptName(selectedLicense?.scriptId || '')
                 })}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10">{t('cancel')}</AlertDialogCancel>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogCancel className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto">{t('cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleRevokeLicense}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10"
+                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10 w-full sm:w-auto"
               >
                 {t('confirmRevoke')}
               </AlertDialogAction>
@@ -463,13 +468,13 @@ function AdminLicenses() {
 
         {/* Delete All Revoked Licenses Confirmation Dialog */}
         <AlertDialog open={isDeleteRevokedDialogOpen} onOpenChange={setIsDeleteRevokedDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10">
+          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
             <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2 text-white">
+              <AlertDialogTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
                 {t('deleteRevokedTitle')}
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
                 <div className="space-y-2">
                   <p>{t('deleteRevokedDescription1', { count: licenses.filter(l => !l.isActive).length })}</p>
                   <p className="text-yellow-400">{t('deleteRevokedDescription2')}</p>
@@ -477,17 +482,17 @@ function AdminLicenses() {
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <AlertDialogCancel
                 disabled={deletingRevoked}
-                className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10"
+                className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto"
               >
                 {t('cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteAllRevoked}
                 disabled={deletingRevoked}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10"
+                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10 w-full sm:w-auto"
               >
                 {deletingRevoked ? (
                   <>

@@ -142,32 +142,32 @@ export function AdminFilter({
   return (
     <Card className="mb-6 bg-white/5 backdrop-blur-xl border-white/10">
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2 items-center">
-            <CardTitle className="flex gap-2 items-center text-white">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex flex-wrap gap-2 items-center">
+            <CardTitle className="flex gap-2 items-center text-white text-base sm:text-lg">
               <Filter className="w-5 h-5" />
               Search & Filters
             </CardTitle>
             {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-cyan-500/20 text-cyan-400">
-                {activeFiltersCount} Active Filters
+              <Badge variant="secondary" className="ml-0 sm:ml-2 bg-cyan-500/20 text-cyan-400 text-xs">
+                {activeFiltersCount} Active
               </Badge>
             )}
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
             {totalCount > 0 && (
-              <div className="text-sm text-gray-400">
-                Showing {filteredCount} of {totalCount}
+              <div className="text-xs sm:text-sm text-gray-400">
+                {filteredCount} of {totalCount}
               </div>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-300 hover:text-white hover:bg-white/10"
+              className="text-gray-300 hover:text-white hover:bg-white/10 flex-1 sm:flex-none justify-center"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              {isExpanded ? 'Hide' : 'Show'} Filters
+              <span className="hidden sm:inline ml-1">{isExpanded ? 'Hide' : 'Show'} Filters</span>
             </Button>
           </div>
         </div>
@@ -175,8 +175,8 @@ export function AdminFilter({
       
       <CardContent className="space-y-4">
         {/* Search Bar - Always Visible */}
-        <div className="flex gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex-1 w-full">
             <Label htmlFor="search" className="text-gray-300">Search</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-gray-500" />
@@ -185,12 +185,19 @@ export function AdminFilter({
                 placeholder={config.searchPlaceholder || "Search..."}
                 value={localSearchValue}
                 onChange={(e) => setLocalSearchValue(e.target.value)}
+                onKeyDown={(e) => {
+                  // Prevent form submission on Enter key
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }
+                }}
                 className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:bg-white/[0.15]"
               />
             </div>
           </div>
-          
-          <div className="flex gap-2 items-end">
+
+          <div className="flex flex-wrap gap-2 items-end">
             {onRefresh && (
               <Button
                 onClick={onRefresh}
@@ -200,10 +207,10 @@ export function AdminFilter({
                 className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
               >
                 <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-                Refresh
+                <span className="hidden sm:inline ml-1">Refresh</span>
               </Button>
             )}
-            
+
             {onExport && (
               <Button
                 onClick={onExport}
@@ -212,10 +219,10 @@ export function AdminFilter({
                 className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
               >
                 <Download className="w-4 h-4" />
-                Export
+                <span className="hidden sm:inline ml-1">Export</span>
               </Button>
             )}
-            
+
             {activeFiltersCount > 0 && (
               <Button
                 onClick={clearAllFilters}
@@ -224,7 +231,7 @@ export function AdminFilter({
                 className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
               >
                 <X className="w-4 h-4" />
-                Clear All
+                <span className="hidden sm:inline ml-1">Clear</span>
               </Button>
             )}
           </div>
