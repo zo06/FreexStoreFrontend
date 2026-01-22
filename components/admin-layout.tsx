@@ -59,6 +59,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const lang = params?.lang as string || 'en';
   const isRTL = lang === 'ar';
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [scriptsDropdownOpen, setScriptsDropdownOpen] = useState(false);
   const [showIpModal, setShowIpModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -188,6 +189,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.push(path);
     setSearchQuery('');
     setShowSearchResults(false);
+    setIsMobileSidebarOpen(false);
+  };
+
+  // Handle navigation with sidebar close
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    setIsMobileSidebarOpen(false);
   };
 
   const sidebarItems = [
@@ -229,16 +237,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="overflow-hidden fixed inset-0 -z-10">
         {/* Base gradient - soft baby blue */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#0a1628] to-slate-950"></div>
-        
+
         {/* Baby blue ambient light */}
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(147,197,253,0.15),transparent)]"></div>
         <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_50%_50%_at_100%_100%,rgba(147,197,253,0.08),transparent)]"></div>
-        
-        {/* Floating orbs - baby blue theme */}
-        <div className="absolute top-20 left-20 md:w-[500px] md:h-[500px] bg-sky-400/[0.07] rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute top-1/2 right-20 md:w-[400px] md:h-[400px] bg-blue-400/[0.05] rounded-full blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-20 left-1/3 md:w-[600px] md:h-[600px] bg-sky-300/[0.04] rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
-        
+
+        {/* Floating orbs - baby blue theme - responsive sizes */}
+        <div className="absolute top-10 left-10 w-48 h-48 sm:w-64 sm:h-64 md:w-[500px] md:h-[500px] bg-sky-400/[0.07] rounded-full blur-[80px] sm:blur-[120px] animate-pulse"></div>
+        <div className="absolute top-1/2 right-10 w-40 h-40 sm:w-48 sm:h-48 md:w-[400px] md:h-[400px] bg-blue-400/[0.05] rounded-full blur-[60px] sm:blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-10 left-1/4 w-56 h-56 sm:w-72 sm:h-72 md:w-[600px] md:h-[600px] bg-sky-300/[0.04] rounded-full blur-[100px] sm:blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
+
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(147,197,253,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(147,197,253,0.03)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
       </div>
@@ -246,32 +254,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {isClient
         ? createPortal(
             <header className="fixed top-0 right-0 left-0 z-[70] h-16">
-              <div className="h-full mx-3 mt-3 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.2)]">
-                <div className="flex justify-between items-center px-4 h-full">
+              <div className="h-full mx-1 sm:mx-2 md:mx-3 mt-3 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.2)]">
+                <div className="flex justify-between items-center px-1.5 sm:px-2 md:px-4 h-full">
                   {/* Left Section */}
-                  <div className="flex gap-4 items-center">
-                    {/* Sidebar Toggle */}
+                  <div className="flex gap-2 sm:gap-4 items-center">
+                    {/* Mobile Menu Toggle */}
+                    <button
+                      onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                      className="lg:hidden flex justify-center items-center w-9 h-9 sm:w-10 sm:h-10 text-sky-400 rounded-xl border transition-all duration-300 bg-sky-500/10 border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300"
+                    >
+                      {isMobileSidebarOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
+                    </button>
+
+                    {/* Desktop Sidebar Toggle */}
                     <button
                       onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                      className="flex justify-center items-center w-10 h-10 text-sky-400 rounded-xl border transition-all duration-300 bg-sky-500/10 border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300"
+                      className="hidden lg:flex justify-center items-center w-10 h-10 text-sky-400 rounded-xl border transition-all duration-300 bg-sky-500/10 border-sky-500/20 hover:bg-sky-500/20 hover:text-sky-300"
                     >
-                      {isRTL 
+                      {isRTL
                         ? (isSidebarCollapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)
                         : (isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />)
                       }
                     </button>
-                    
+
                     {/* Logo & Brand */}
-                    <Link href="/admin" className="flex gap-3 items-center group">
+                    <Link href="/admin" className="flex gap-2 sm:gap-3 items-center group">
                       <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl opacity-40 blur transition-opacity group-hover:opacity-60"></div>
-                        <div className="flex relative justify-center items-center w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600 rounded-xl">
-                          <Shield className="w-5 h-5 text-white" />
+                        <div className="flex relative justify-center items-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-sky-400 to-blue-600 rounded-xl">
+                          <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
                       </div>
                       <div className="hidden sm:block">
-                        <h1 className="text-base font-bold text-white">Admin Panel</h1>
-                        <p className="text-[10px] text-sky-400/70 uppercase tracking-wider">FreexStore</p>
+                        <h1 className="text-sm sm:text-base font-bold text-white">Admin Panel</h1>
+                        <p className="text-[8px] sm:text-[10px] text-sky-400/70 uppercase tracking-wider">FreexStore</p>
                       </div>
                     </Link>
                   </div>
@@ -374,39 +390,39 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </div>
 
                   {/* Right Section */}
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-1 sm:gap-2 items-center">
                     {/* Time Display */}
-                    <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5">
-                      <Clock className="w-4 h-4 text-sky-400/70" />
-                      <span className="text-sm text-gray-400">{currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <div className="hidden md:flex items-center gap-2 px-2 sm:px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5">
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400/70" />
+                      <span className="text-xs sm:text-sm text-gray-400">{currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
 
                     {/* Quick Actions */}
-                    <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-gray-400 hover:text-sky-400 hover:bg-sky-500/10 hover:border-sky-500/30 transition-all duration-300">
-                      <Home className="w-5 h-5" />
+                    <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-gray-400 hover:text-sky-400 hover:bg-sky-500/10 hover:border-sky-500/30 transition-all duration-300">
+                      <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Link>
 
                     {/* User Menu */}
-                    <div className="relative ml-2 user-menu-container">
+                    <div className="relative user-menu-container">
                       <button
                         onClick={() => setShowUserMenu(!showUserMenu)}
-                        className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-2xl bg-white/[0.05] border border-white/10 hover:bg-white/[0.08] hover:border-sky-500/30 transition-all duration-300 group"
+                        className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-1 pr-2 sm:pr-3 py-1 rounded-2xl bg-white/[0.05] border border-white/10 hover:bg-white/[0.08] hover:border-sky-500/30 transition-all duration-300 group"
                       >
                         <div className="relative">
-                          <div className="flex overflow-hidden justify-center items-center w-9 h-9 bg-gradient-to-br from-sky-400 via-blue-500 to-sky-600 rounded-xl">
+                          <div className="flex overflow-hidden justify-center items-center w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-sky-400 via-blue-500 to-sky-600 rounded-xl">
                             {user?.avatar ? (
                               <img src={user.avatar} alt={`${user?.discordUsername || user?.username || 'Admin'} Profile Avatar - FreexStore Admin Panel`} className="object-cover w-full h-full" />
                             ) : (
-                              <span className="text-sm font-bold text-white">{(user?.discordUsername || user?.username || 'A').charAt(0).toUpperCase()}</span>
+                              <span className="text-xs sm:text-sm font-bold text-white">{(user?.discordUsername || user?.username || 'A').charAt(0).toUpperCase()}</span>
                             )}
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
                         </div>
                         <div className="hidden text-start sm:block">
-                          <p className="text-sm font-medium text-white">{user?.discordUsername || user?.username}</p>
-                          <p className="text-[10px] text-sky-400">{t('layout.administrator')}</p>
+                          <p className="text-xs sm:text-sm font-medium text-white truncate max-w-[100px]">{user?.discordUsername || user?.username}</p>
+                          <p className="text-[8px] sm:text-[10px] text-sky-400">{t('layout.administrator')}</p>
                         </div>
-                        <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
                       </button>
 
                       {/* Dropdown */}
@@ -465,8 +481,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {isClient
         ? createPortal(
-            <aside className={`fixed bottom-0 ${isRTL ? 'right-0' : 'left-0'} transition-all duration-500 ease-out top-[76px] z-[60] ${sidebarWidth}`}>
-              <div className={`h-[calc(100vh-76px-12px)] mb-3 ${isRTL ? 'mr-3 ml-3' : 'ml-3 mr-3'} rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col`}>
+            <>
+              {/* Mobile Sidebar Overlay */}
+              {isMobileSidebarOpen && (
+                <div
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] lg:hidden"
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                />
+              )}
+
+              <aside className={`fixed bottom-0 ${isRTL ? 'right-0' : 'left-0'} transition-all duration-500 ease-out top-[76px] z-[60] ${isMobileSidebarOpen ? 'w-64 sm:w-72 md:w-80' : sidebarWidth} ${isMobileSidebarOpen ? 'translate-x-0' : ''} ${isRTL ? 'lg:translate-x-0' : 'lg:translate-x-0'} ${!isMobileSidebarOpen ? '-translate-x-full lg:translate-x-0' : ''}`}>
+                <div className={`h-[calc(100vh-76px-12px)] mb-1.5 sm:mb-2 md:mb-3 ${isRTL ? 'mr-1.5 sm:mr-2 md:mr-3 ml-1.5 sm:ml-2 md:ml-3' : 'ml-1.5 sm:ml-2 md:ml-3 mr-1.5 sm:mr-2 md:mr-3'} rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col`}>
                 {/* Navigation */}
                 <nav className="overflow-y-auto flex-1 p-3 space-y-1">
               {/* Section Label */}
@@ -482,7 +507,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <div>
                       <button
                         onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
-                        className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-3 rounded-xl transition-all duration-300 group ${
+                        className={`w-full flex items-center ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center' : 'justify-between'} px-3 py-3 rounded-xl transition-all duration-300 group ${
                           isActive(item.href)
                             ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
                             : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
@@ -494,19 +519,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           }`}>
                             <item.icon className="w-5 h-5" />
                           </div>
-                          {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                          {(!isSidebarCollapsed || isMobileSidebarOpen) && <span className="text-sm font-medium">{item.label}</span>}
                         </div>
-                        {!isSidebarCollapsed && (
+                        {(!isSidebarCollapsed || isMobileSidebarOpen) && (
                           scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
                         )}
                       </button>
-                      
-                      {scriptsDropdownOpen && !isSidebarCollapsed && (
+
+                      {(scriptsDropdownOpen || isMobileSidebarOpen) && (!isSidebarCollapsed || isMobileSidebarOpen) && (
                         <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
                           {item.dropdownItems?.map((dropdownItem) => (
                             <button
                               key={dropdownItem.href}
-                              onClick={() => router.push(dropdownItem.href)}
+                              onClick={() => handleNavigation(dropdownItem.href)}
                               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
                                 pathname === dropdownItem.href
                                   ? 'bg-sky-500/15 text-sky-400'
@@ -522,8 +547,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     </div>
                   ) : (
                     <button
-                      onClick={() => router.push(item.href)}
-                      className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : ''} gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
+                      onClick={() => handleNavigation(item.href)}
+                      className={`w-full flex items-center ${(isSidebarCollapsed && !isMobileSidebarOpen) ? 'justify-center' : ''} gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
                         isActive(item.href)
                           ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
                           : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
@@ -534,7 +559,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       }`}>
                         <item.icon className="w-5 h-5" />
                       </div>
-                      {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                      {(!isSidebarCollapsed || isMobileSidebarOpen) && <span className="text-sm font-medium">{item.label}</span>}
                     </button>
                   )}
                 </div>
@@ -542,22 +567,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </nav>
 
             {/* Bottom Section */}
-            {!isSidebarCollapsed && (
+            {(!isSidebarCollapsed || isMobileSidebarOpen) && (
               <div className="p-3 border-t border-white/[0.06]">
                 {/* Quick Stats */}
-                <div className="p-4 bg-gradient-to-br rounded-xl border from-sky-500/10 to-blue-500/5 border-sky-500/20">
-                  <div className="flex gap-2 items-center mb-3">
-                    <TrendingUp className="w-4 h-4 text-sky-400" />
-                    <span className="text-xs font-semibold text-white">Today&apos;s Stats</span>
+                <div className="p-3 sm:p-4 bg-gradient-to-br rounded-xl border from-sky-500/10 to-blue-500/5 border-sky-500/20">
+                  <div className="flex gap-2 items-center mb-2 sm:mb-3">
+                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
+                    <span className="text-[10px] sm:text-xs font-semibold text-white">Today&apos;s Stats</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-                      <p className="text-lg font-bold text-sky-400">{todayStats.sales}</p>
-                      <p className="text-[10px] text-gray-500">Sales</p>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
+                      <p className="text-base sm:text-lg font-bold text-sky-400">{todayStats.sales}</p>
+                      <p className="text-[8px] sm:text-[10px] text-gray-500">Sales</p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-                      <p className="text-lg font-bold text-emerald-400">${todayStats.revenue.toFixed(2)}</p>
-                      <p className="text-[10px] text-gray-500">Revenue</p>
+                    <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
+                      <p className="text-base sm:text-lg font-bold text-emerald-400">${todayStats.revenue.toFixed(2)}</p>
+                      <p className="text-[8px] sm:text-[10px] text-gray-500">Revenue</p>
                     </div>
                   </div>
                 </div>
@@ -571,7 +596,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
             )}
           </div>
-        </aside>,
+        </aside>
+            </>,
             document.body
           )
         : null}
@@ -579,8 +605,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content Wrapper */}
       <div className="flex">
         {/* Main Content */}
-        <main className={`flex-1 pt-24 pr-3 pb-6 transition-all duration-500 ease-out ${mainMargin}`}>
-          <div className="min-h-[calc(100vh-120px)] rounded-2xl bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] overflow-hidden">
+        <main className={`w-full pt-20 sm:pt-22 md:pt-24 px-1.5 sm:px-2 md:px-3 pb-3 sm:pb-4 md:pb-6 transition-all duration-500 ease-out ${isRTL ? (isSidebarCollapsed ? 'lg:mr-20' : 'lg:mr-72') : (isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72')}`}>
+          <div className="min-h-[calc(100vh-100px)] sm:min-h-[calc(100vh-110px)] md:min-h-[calc(100vh-120px)] rounded-xl sm:rounded-2xl bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] overflow-hidden">
             {children}
           </div>
         </main>

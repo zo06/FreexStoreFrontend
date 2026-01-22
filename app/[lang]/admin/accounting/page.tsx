@@ -146,7 +146,7 @@ function AdminAccounting() {
     )
   }
 
-  const successRate = stats.totalTransactions > 0 
+  const successRate = stats.totalTransactions > 0
     ? (stats.successfulTransactions / stats.totalTransactions * 100).toFixed(1)
     : 0
 
@@ -161,26 +161,26 @@ function AdminAccounting() {
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+
+      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
         {/* Header Section */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r from-green-600 to-emerald-500 rounded-xl shadow-lg">
-                <DollarSign className="w-8 h-8 text-white" />
+        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-r from-green-600 to-emerald-500 rounded-xl shadow-lg">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Accounting & Analytics</h1>
-                <p className="mt-1 text-gray-400">Financial insights and revenue analytics</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Accounting & Analytics</h1>
+                <p className="mt-1 text-xs sm:text-sm text-gray-400">Financial insights and revenue analytics</p>
               </div>
             </div>
-            
-            <div className="flex gap-3">
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as any)}
-                className="px-4 py-2 text-white rounded-xl border transition-all duration-300 bg-slate-800/50 border-white/10 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm text-white rounded-xl border transition-all duration-300 bg-slate-800/50 border-white/10 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="7d">Last 7 Days</option>
                 <option value="30d">Last 30 Days</option>
@@ -188,107 +188,108 @@ function AdminAccounting() {
                 <option value="1y">Last Year</option>
                 <option value="all">All Time</option>
               </select>
-              
-              <Button 
+
+              <Button
                 onClick={loadAccountingStats}
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
               >
                 <RefreshCw className="mr-2 w-4 h-4" />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-              
-              <Button 
-                onClick={() => router.push('/admin')} 
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+
+              <Button
+                onClick={() => router.push('/admin')}
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
               >
                 <ArrowLeft className="mr-2 w-4 h-4" />
-                Back
+                <span className="hidden sm:inline">Back</span>
               </Button>
             </div>
           </div>
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/20 hover:bg-green-900/50">
-            <div className="flex items-center gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/20 hover:bg-green-900/50">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-2 bg-green-500/20 rounded-lg">
-                <DollarSign className="w-5 h-5 text-green-400" />
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
               </div>
-              <span className="text-sm font-medium text-gray-300">Net Revenue</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-300">Net Revenue</span>
             </div>
-            <div className={`text-3xl font-bold ${netRevenue >= 0 ? 'text-white' : 'text-red-400'}`}>{formatCurrency(netRevenue)}</div>
-            <p className="mt-1 text-xs text-gray-400">
+            <div className={`text-2xl sm:text-3xl font-bold ${netRevenue >= 0 ? 'text-white' : 'text-red-400'}`}>{formatCurrency(netRevenue)}</div>
+            <p className="mt-1 text-[10px] sm:text-xs text-gray-400">
               After {formatCurrency(stats.refundedAmount)} in refunds
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/20 hover:bg-blue-900/50">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/20 hover:bg-blue-900/50">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-2 bg-blue-500/20 rounded-lg">
-                <ShoppingCart className="w-5 h-5 text-blue-400" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
               </div>
-              <span className="text-sm font-medium text-gray-300">Total Transactions</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-300">Total Transactions</span>
             </div>
-            <div className="text-3xl font-bold text-white">{stats.totalTransactions}</div>
-            <p className="mt-1 text-xs text-gray-400">
+            <div className="text-2xl sm:text-3xl font-bold text-white">{stats.totalTransactions}</div>
+            <p className="mt-1 text-[10px] sm:text-xs text-gray-400">
               {successRate}% success rate
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-cyan-900/40 to-purple-800/20 border-cyan-500/20 hover:bg-cyan-900/50">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-cyan-900/40 to-purple-800/20 border-cyan-500/20 hover:bg-cyan-900/50">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-2 bg-cyan-500/20 rounded-lg">
-                <Target className="w-5 h-5 text-cyan-400" />
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
               </div>
-              <span className="text-sm font-medium text-gray-300">Average Order Value</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-300">Average Order Value</span>
             </div>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-2xl sm:text-3xl font-bold text-white">
               {formatCurrency(stats.successfulTransactions > 0 ? stats.totalRevenue / stats.successfulTransactions : 0)}
             </div>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-[10px] sm:text-xs text-gray-400">
               Per successful transaction
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-orange-900/40 to-orange-800/20 border-orange-500/20 hover:bg-orange-900/50">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-orange-900/40 to-orange-800/20 border-orange-500/20 hover:bg-orange-900/50">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div className="p-2 bg-orange-500/20 rounded-lg">
-                <TrendingDown className="w-5 h-5 text-orange-400" />
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
               </div>
-              <span className="text-sm font-medium text-gray-300">Refunded Amount</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-300">Refunded Amount</span>
             </div>
-            <div className="text-3xl font-bold text-white">{formatCurrency(stats.refundedAmount)}</div>
-            <p className="mt-1 text-xs text-gray-400">
+            <div className="text-2xl sm:text-3xl font-bold text-white">{formatCurrency(stats.refundedAmount)}</div>
+            <p className="mt-1 text-[10px] sm:text-xs text-gray-400">
               Total refunds issued
             </p>
           </div>
         </div>
 
         {/* Revenue Charts */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Revenue by Month */}
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-            <div className="mb-6">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+            <div className="mb-4 sm:mb-6">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-lg font-semibold text-white">Monthly Revenue</h3>
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+                <h3 className="text-base sm:text-lg font-semibold text-white">Monthly Revenue</h3>
               </div>
-              <p className="text-sm text-gray-400">Revenue trends over time</p>
+              <p className="text-xs sm:text-sm text-gray-400">Revenue trends over time</p>
             </div>
             <div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} minWidth={280}>
                 <LineChart data={stats.revenueByMonth}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis 
-                    dataKey="month" 
+                  <XAxis
+                    dataKey="month"
                     stroke="#94a3b8"
                     tickFormatter={formatMonth}
+                    fontSize={10}
                   />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1e293b', 
+                  <YAxis stroke="#94a3b8" fontSize={10} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
                       border: '1px solid #475569',
                       borderRadius: '8px'
                     }}
@@ -296,10 +297,10 @@ function AdminAccounting() {
                     labelFormatter={formatMonth}
                   />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#8b5cf6" 
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#8b5cf6"
                     strokeWidth={2}
                     name="Revenue"
                   />
@@ -309,18 +310,18 @@ function AdminAccounting() {
           </div>
 
           {/* Revenue vs Refunds Overview */}
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-            <div className="mb-6">
+          <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+            <div className="mb-4 sm:mb-6">
               <div className="flex items-center gap-2 mb-2">
-                <PieChart className="w-5 h-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Revenue Overview</h3>
+                <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                <h3 className="text-base sm:text-lg font-semibold text-white">Revenue Overview</h3>
               </div>
-              <p className="text-sm text-gray-400">Income vs Refunds breakdown</p>
+              <p className="text-xs sm:text-sm text-gray-400">Income vs Refunds breakdown</p>
             </div>
             <div>
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center gap-4 sm:gap-6">
                 {/* Donut Chart */}
-                <div className="relative w-48 h-48">
+                <div className="relative w-36 h-36 sm:w-48 sm:h-48">
                   <svg className="w-full h-full transform -rotate-90">
                     <circle
                       cx="96"

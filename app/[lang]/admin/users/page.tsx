@@ -170,7 +170,7 @@ function AdminUsers() {
   if (loading && users.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
       </div>
     )
   }
@@ -181,26 +181,26 @@ function AdminUsers() {
 <div className="absolute inset-0">
   <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
 </div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
+  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-2xl sm:blur-3xl from-cyan-500/10 to-blue-500/10"></div>
 
-      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
+      <div className="relative z-10 p-3 sm:p-4 md:p-6 mx-auto space-y-3 sm:space-y-4 md:space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
-              <div className="p-2 sm:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+        <div className="p-3 sm:p-4 md:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 w-full sm:w-auto">
+              <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
+                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm text-gray-400">{t('subtitle')}</p>
               </div>
             </div>
             <Button
               onClick={() => router.push('/admin')}
               className="w-full sm:w-auto text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
             >
-              <ArrowLeft className="mr-2 w-4 h-4" />
+              <ArrowLeft className="mr-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">{t('backToDashboard')}</span>
               <span className="sm:hidden">Back</span>
             </Button>
@@ -219,38 +219,38 @@ function AdminUsers() {
       />
 
         {/* Users Table */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+        <div className="p-4 sm:p-5 md:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+          <div className="mb-4 sm:mb-5 md:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
               {t('table.users', { count: filteredUsers.length, total: users.length })}
             </h2>
-            <p className="mt-1 text-gray-400">{t('table.listDescription')}</p>
+            <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('table.listDescription')}</p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
             <Table>
               <TableHeader>
                 <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="font-semibold text-gray-300">{t('table.user')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.discord')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.role')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.joinDate')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.lastLogin')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.lastIp')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.actions')}</TableHead>
+                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.user')}</TableHead>
+                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.discord')}</TableHead>
+                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.role')}</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.joinDate')}</TableHead>
+                  <TableHead className="hidden sm:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.lastLogin')}</TableHead>
+                  <TableHead className="hidden lg:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.lastIp')}</TableHead>
+                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm text-right">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id} className="transition-colors border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{user.username}</TableCell>
-                    <TableCell className="text-gray-300">{user.discordUsername || t('table.na')}</TableCell>
+                    <TableCell className="font-medium text-white text-xs sm:text-sm">{user.username}</TableCell>
+                    <TableCell className="text-gray-300 text-xs sm:text-sm">{user.discordUsername || t('table.na')}</TableCell>
                     <TableCell>{getStatusBadge(user)}</TableCell>
-                    <TableCell className="text-gray-300">{user.createdAt ? formatDate(user.createdAt) : t('table.na')}</TableCell>
-                    <TableCell className="text-gray-300">{user.lastLoginAt ? formatDate(user.lastLoginAt) : t('table.neverLoggedIn')}</TableCell>
-                    <TableCell className="font-mono text-gray-300 text-sm">{(user as any).lastLoginIp || t('table.na')}</TableCell>
+                    <TableCell className="hidden md:table-cell text-gray-300 text-xs sm:text-sm">{user.createdAt ? formatDate(user.createdAt) : t('table.na')}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-gray-300 text-xs sm:text-sm">{user.lastLoginAt ? formatDate(user.lastLoginAt) : t('table.neverLoggedIn')}</TableCell>
+                    <TableCell className="hidden lg:table-cell font-mono text-gray-300 text-xs">{(user as any).lastLoginIp || t('table.na')}</TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex justify-end gap-1 sm:gap-2">
                         <Button
                           onClick={() => {
                             setSelectedUserForInfo(user)
@@ -260,17 +260,17 @@ function AdminUsers() {
                           className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
                           title={t('table.viewUserDetails')}
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                         <Button
                           onClick={() => handleToggleAdmin(user)}
                           size="sm"
-                          className={`${user.isAdmin 
-                            ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white' 
+                          className={`${user.isAdmin
+                            ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white'
                             : 'bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white'
                           } border border-white/10 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105`}
                         >
-                          <Shield className="w-4 h-4" />
+                          <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                         <Button
                           onClick={() => {
@@ -280,7 +280,7 @@ function AdminUsers() {
                           size="sm"
                           className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -292,21 +292,21 @@ function AdminUsers() {
         </div>
 
         {/* Pagination */}
-        <div className="p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-400">
+        <div className="p-3 sm:p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
               {t('pagination.showing', {
                 from: Math.min((currentPage - 1) * limit + 1, users.length),
                 to: Math.min(currentPage * limit, users.length),
                 total: users.length
               })}
             </p>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <Button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
               >
                 {t('pagination.previous')}
               </Button>
@@ -314,7 +314,7 @@ function AdminUsers() {
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
                 size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
               >
                 {t('pagination.next')}
               </Button>
