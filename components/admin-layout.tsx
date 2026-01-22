@@ -131,6 +131,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, [pathname]);
 
+  // Close mobile sidebar when navigating
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [pathname]);
+
+  // Reset mobile sidebar state when switching between mobile/desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        // lg breakpoint
+        setIsMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Check on mount
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -490,113 +510,205 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 />
               )}
 
-              <aside className={`fixed bottom-0 ${isRTL ? 'right-0' : 'left-0'} transition-all duration-500 ease-out top-[76px] z-[60] ${isMobileSidebarOpen ? 'w-64 sm:w-72 md:w-80' : sidebarWidth} ${isMobileSidebarOpen ? 'translate-x-0' : ''} ${isRTL ? 'lg:translate-x-0' : 'lg:translate-x-0'} ${!isMobileSidebarOpen ? '-translate-x-full lg:translate-x-0' : ''}`}>
-                <div className={`h-[calc(100vh-76px-12px)] mb-1.5 sm:mb-2 md:mb-3 ${isRTL ? 'mr-1.5 sm:mr-2 md:mr-3 ml-1.5 sm:ml-2 md:ml-3' : 'ml-1.5 sm:ml-2 md:ml-3 mr-1.5 sm:mr-2 md:mr-3'} rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col`}>
-                {/* Navigation */}
-                <nav className="overflow-y-auto flex-1 p-3 space-y-1">
-              {/* Section Label */}
-              {!isSidebarCollapsed && (
-                <div className="px-3 py-2">
-                  <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('layout.mainMenu')}</span>
-                </div>
-              )}
-              
-              {sidebarItems.map((item) => (
-                <div key={item.href}>
-                  {item.hasDropdown ? (
-                    <div>
-                      <button
-                        onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
-                        className={`w-full flex items-center ${isSidebarCollapsed && !isMobileSidebarOpen ? 'justify-center' : 'justify-between'} px-3 py-3 rounded-xl transition-all duration-300 group ${
-                          isActive(item.href)
-                            ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
-                            : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
-                        }`}
-                      >
-                        <div className="flex gap-3 items-center">
-                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                            isActive(item.href) ? 'bg-sky-500/20' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
-                          }`}>
-                            <item.icon className="w-5 h-5" />
-                          </div>
-                          {(!isSidebarCollapsed || isMobileSidebarOpen) && <span className="text-sm font-medium">{item.label}</span>}
-                        </div>
-                        {(!isSidebarCollapsed || isMobileSidebarOpen) && (
-                          scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
-                        )}
-                      </button>
+              {/* Mobile Sidebar (< lg screens) */}
+              <aside className={`fixed bottom-0 top-[76px] z-[60] w-64 sm:w-72 md:w-80 bg-slate-900/95 backdrop-blur-xl border-r border-white/[0.06] lg:hidden transition-transform duration-300 ease-out ${
+                isMobileSidebarOpen
+                  ? (isRTL ? 'translate-x-0 right-0' : 'translate-x-0 left-0')
+                  : (isRTL ? 'translate-x-full right-0' : '-translate-x-full left-0')
+              }`}>
+                <div className="h-[calc(100vh-76px)] overflow-y-auto flex flex-col">
+                  {/* Navigation */}
+                  <nav className="flex-1 p-3 space-y-1">
+                    {/* Section Label */}
+                    <div className="px-3 py-2">
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('layout.mainMenu')}</span>
+                    </div>
 
-                      {(scriptsDropdownOpen || isMobileSidebarOpen) && (!isSidebarCollapsed || isMobileSidebarOpen) && (
-                        <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
-                          {item.dropdownItems?.map((dropdownItem) => (
+                    {sidebarItems.map((item) => (
+                      <div key={item.href}>
+                        {item.hasDropdown ? (
+                          <div>
                             <button
-                              key={dropdownItem.href}
-                              onClick={() => handleNavigation(dropdownItem.href)}
-                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
-                                pathname === dropdownItem.href
-                                  ? 'bg-sky-500/15 text-sky-400'
-                                  : 'text-gray-500 hover:text-white hover:bg-white/[0.05]'
+                              onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
+                              className="w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-300 group text-gray-400 hover:text-white hover:bg-white/[0.05]"
+                            >
+                              <div className="flex gap-3 items-center">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/[0.03] group-hover:bg-white/[0.06]">
+                                  <item.icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-sm font-medium">{item.label}</span>
+                              </div>
+                              {scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </button>
+
+                            {scriptsDropdownOpen && (
+                              <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
+                                {item.dropdownItems?.map((dropdownItem) => (
+                                  <button
+                                    key={dropdownItem.href}
+                                    onClick={() => handleNavigation(dropdownItem.href)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
+                                      pathname === dropdownItem.href
+                                        ? 'bg-sky-500/15 text-sky-400'
+                                        : 'text-gray-500 hover:text-white hover:bg-white/[0.05]'
+                                    }`}
+                                  >
+                                    <dropdownItem.icon className="w-4 h-4" />
+                                    <span className="text-sm">{dropdownItem.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleNavigation(item.href)}
+                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
+                              isActive(item.href)
+                                ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
+                                : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
+                            }`}
+                          >
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                              isActive(item.href) ? 'bg-sky-500/20' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
+                            }`}>
+                              <item.icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-medium">{item.label}</span>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </nav>
+
+                  {/* Bottom Section */}
+                  <div className="p-3 border-t border-white/[0.06]">
+                    {/* Quick Stats */}
+                    <div className="p-3 sm:p-4 bg-gradient-to-br rounded-xl border from-sky-500/10 to-blue-500/5 border-sky-500/20">
+                      <div className="flex gap-2 items-center mb-2 sm:mb-3">
+                        <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
+                        <span className="text-[10px] sm:text-xs font-semibold text-white">Today&apos;s Stats</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                        <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
+                          <p className="text-base sm:text-lg font-bold text-sky-400">{todayStats.sales}</p>
+                          <p className="text-[8px] sm:text-[10px] text-gray-500">Sales</p>
+                        </div>
+                        <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
+                          <p className="text-base sm:text-lg font-bold text-emerald-400">${todayStats.revenue.toFixed(2)}</p>
+                          <p className="text-[8px] sm:text-[10px] text-gray-500">Revenue</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              {/* Desktop Sidebar (>= lg screens) */}
+              <aside className={`hidden lg:flex fixed bottom-0 top-[76px] z-[60] transition-all duration-300 ease-out ${
+                isRTL
+                  ? (isSidebarCollapsed ? 'right-0 w-20' : 'right-0 w-72')
+                  : (isSidebarCollapsed ? 'left-0 w-20' : 'left-0 w-72')
+              }`}>
+                <div className={`h-[calc(100vh-76px)] ${isRTL ? 'mr-3' : 'ml-3'} w-[calc(100%-12px)] rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] overflow-hidden flex flex-col`}>
+                  {/* Navigation */}
+                  <nav className="overflow-y-auto flex-1 p-3 space-y-1">
+                    {/* Section Label */}
+                    {!isSidebarCollapsed && (
+                      <div className="px-3 py-2">
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('layout.mainMenu')}</span>
+                      </div>
+                    )}
+
+                    {sidebarItems.map((item) => (
+                      <div key={item.href}>
+                        {item.hasDropdown ? (
+                          <div>
+                            <button
+                              onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
+                              className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-3 rounded-xl transition-all duration-300 group ${
+                                isActive(item.href)
+                                  ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
+                                  : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
                               }`}
                             >
-                              <dropdownItem.icon className="w-4 h-4" />
-                              <span className="text-sm">{dropdownItem.label}</span>
+                              <div className="flex gap-3 items-center">
+                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                                  isActive(item.href) ? 'bg-sky-500/20' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
+                                }`}>
+                                  <item.icon className="w-5 h-5" />
+                                </div>
+                                {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                              </div>
+                              {!isSidebarCollapsed && (
+                                scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+                              )}
                             </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleNavigation(item.href)}
-                      className={`w-full flex items-center ${(isSidebarCollapsed && !isMobileSidebarOpen) ? 'justify-center' : ''} gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
-                        isActive(item.href)
-                          ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
-                          : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
-                      }`}
-                    >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                        isActive(item.href) ? 'bg-sky-500/20' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
-                      }`}>
-                        <item.icon className="w-5 h-5" />
+
+                            {scriptsDropdownOpen && !isSidebarCollapsed && (
+                              <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
+                                {item.dropdownItems?.map((dropdownItem) => (
+                                  <button
+                                    key={dropdownItem.href}
+                                    onClick={() => handleNavigation(dropdownItem.href)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
+                                      pathname === dropdownItem.href
+                                        ? 'bg-sky-500/15 text-sky-400'
+                                        : 'text-gray-500 hover:text-white hover:bg-white/[0.05]'
+                                    }`}
+                                  >
+                                    <dropdownItem.icon className="w-4 h-4" />
+                                    <span className="text-sm">{dropdownItem.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleNavigation(item.href)}
+                            className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : ''} gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
+                              isActive(item.href)
+                                ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
+                                : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'
+                            }`}
+                          >
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                              isActive(item.href) ? 'bg-sky-500/20' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
+                            }`}>
+                              <item.icon className="w-5 h-5" />
+                            </div>
+                            {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                          </button>
+                        )}
                       </div>
-                      {(!isSidebarCollapsed || isMobileSidebarOpen) && <span className="text-sm font-medium">{item.label}</span>}
-                    </button>
+                    ))}
+                  </nav>
+
+                  {/* Bottom Section */}
+                  {!isSidebarCollapsed && (
+                    <div className="p-3 border-t border-white/[0.06]">
+                      {/* Quick Stats */}
+                      <div className="p-4 bg-gradient-to-br rounded-xl border from-sky-500/10 to-blue-500/5 border-sky-500/20">
+                        <div className="flex gap-2 items-center mb-3">
+                          <TrendingUp className="w-4 h-4 text-sky-400" />
+                          <span className="text-xs font-semibold text-white">Today&apos;s Stats</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="text-center p-2 rounded-lg bg-white/[0.03]">
+                            <p className="text-lg font-bold text-sky-400">{todayStats.sales}</p>
+                            <p className="text-[10px] text-gray-500">Sales</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-white/[0.03]">
+                            <p className="text-lg font-bold text-emerald-400">${todayStats.revenue.toFixed(2)}</p>
+                            <p className="text-[10px] text-gray-500">Revenue</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              ))}
-            </nav>
-
-            {/* Bottom Section */}
-            {(!isSidebarCollapsed || isMobileSidebarOpen) && (
-              <div className="p-3 border-t border-white/[0.06]">
-                {/* Quick Stats */}
-                <div className="p-3 sm:p-4 bg-gradient-to-br rounded-xl border from-sky-500/10 to-blue-500/5 border-sky-500/20">
-                  <div className="flex gap-2 items-center mb-2 sm:mb-3">
-                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
-                    <span className="text-[10px] sm:text-xs font-semibold text-white">Today&apos;s Stats</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
-                      <p className="text-base sm:text-lg font-bold text-sky-400">{todayStats.sales}</p>
-                      <p className="text-[8px] sm:text-[10px] text-gray-500">Sales</p>
-                    </div>
-                    <div className="text-center p-1.5 sm:p-2 rounded-lg bg-white/[0.03]">
-                      <p className="text-base sm:text-lg font-bold text-emerald-400">${todayStats.revenue.toFixed(2)}</p>
-                      <p className="text-[8px] sm:text-[10px] text-gray-500">Revenue</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Help Link */}
-                {/* <button className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/[0.05] transition-all">
-                  <HelpCircle className="w-5 h-5" />
-                  <span className="text-sm">Help & Support</span>
-                  <ExternalLink className="ml-auto w-3 h-3" />
-                </button> */}
-              </div>
-            )}
-          </div>
-        </aside>
+              </aside>
             </>,
             document.body
           )
