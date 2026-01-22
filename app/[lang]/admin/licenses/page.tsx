@@ -72,9 +72,12 @@ function AdminLicenses() {
   }
 
   // Fetch licenses with pagination and filters
-  const fetchLicenses = async () => {
+  const fetchLicenses = async (showLoading = false) => {
     try {
-      setLoading(true)
+      // Only show loading spinner for manual refresh, not for search/filter
+      if (showLoading) {
+        setLoading(true)
+      }
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: limit.toString(),
@@ -103,15 +106,23 @@ function AdminLicenses() {
       console.error('Failed to fetch licenses:', error)
       toast.error(t('failedToFetch'))
     } finally {
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
     }
   }
 
   // Load all data on mount
   useEffect(() => {
-    fetchLicenses()
+    // Show loading only on initial mount
+    fetchLicenses(true)
     getUsers().catch(() => {})
     getScripts().catch(() => {})
+  }, [])
+
+  // Load licenses when filters change (no loading overlay)
+  useEffect(() => {
+    fetchLicenses(false)
   }, [currentPage, searchFilter, statusFilter])
 
   const handleFilterChange = (filters: FilterValues) => {
@@ -266,7 +277,8 @@ function AdminLicenses() {
 
   // Remove old filter logic - now handled by AdminFilter component
 
-  if (loading) {
+  // Show loading spinner only on initial page load
+  if (loading && licenses.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
         <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
@@ -329,7 +341,7 @@ function AdminLicenses() {
         <AdminFilter
           config={filterConfig}
           onFilterChange={handleFilterChange}
-          onRefresh={fetchLicenses}
+          onRefresh={() => fetchLicenses(true)}
           onExport={handleExport}
           totalCount={total}
           filteredCount={filteredLicenses.length}

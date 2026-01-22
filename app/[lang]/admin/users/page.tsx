@@ -166,9 +166,8 @@ function AdminUsers() {
     return new Date(dateString).toLocaleDateString()
   }
 
-
-
-  if (loading) {
+  // Show loading spinner only on initial page load
+  if (loading && users.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
         <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
@@ -183,26 +182,27 @@ function AdminUsers() {
   <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
 </div>
   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+
+      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Users className="w-8 h-8 text-blue-400" />
+        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+              <div className="p-2 sm:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-1 text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
+                <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('subtitle')}</p>
               </div>
             </div>
             <Button
               onClick={() => router.push('/admin')}
-              className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+              className="w-full sm:w-auto text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
             >
               <ArrowLeft className="mr-2 w-4 h-4" />
-              {t('backToDashboard')}
+              <span className="hidden sm:inline">{t('backToDashboard')}</span>
+              <span className="sm:hidden">Back</span>
             </Button>
           </div>
         </div>
