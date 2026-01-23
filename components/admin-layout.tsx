@@ -126,10 +126,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Auto-open Scripts dropdown based on current page
   useEffect(() => {
-    if (pathname.startsWith('/admin/scripts')) {
+    if (pathname.startsWith('/admin/scripts') && !scriptsDropdownOpen) {
       setScriptsDropdownOpen(true);
     }
-  }, [pathname]);
+  }, [pathname, scriptsDropdownOpen]);
 
   // Close mobile sidebar when navigating
   useEffect(() => {
