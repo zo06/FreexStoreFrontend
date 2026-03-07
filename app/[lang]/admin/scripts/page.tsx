@@ -126,7 +126,7 @@ function AdminScripts() {
     }
 
     // Category filter
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       filtered = filtered.filter(script => ((script.category as { name?: string } | undefined)?.name) === filters.category)
     }
 
