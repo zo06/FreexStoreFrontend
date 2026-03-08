@@ -31,7 +31,7 @@ export function TrialBanner() {
 
   return (
     <div
-      className={`relative flex items-center justify-between gap-3 px-4 py-2 text-sm ${
+      className={`relative flex items-center justify-between gap-3 px-4 py-2 text-sm z-[999999999999] ${
         isUrgent
           ? 'bg-red-500/10 border-b border-red-500/20 text-red-300'
           : 'bg-amber-500/10 border-b border-amber-500/20 text-amber-300'
