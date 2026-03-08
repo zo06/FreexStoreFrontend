@@ -1243,5 +1243,27 @@
     "licenseActivated": "License activated! Redirecting to dashboard...",
     "paymentFailed": "Payment succeeded but license activation failed. Contact support.",
     "activationError": "Error activating license. Please contact support."
+  },
+  "trialProtection": {
+    "banner": {
+      "label": "Free Trial:",
+      "daysLeft": "{days, plural, one {# day left} other {# days left}}",
+      "hoursLeft": "{hours, plural, one {# hour left} other {# hours left}}",
+      "lessThanHour": "Less than 1 hour left",
+      "expiresSoon": "Expires very soon —",
+      "upgradeNow": "Upgrade now to keep access.",
+      "upgradeAnytime": "Upgrade anytime to unlock full access.",
+      "getLicense": "Get License",
+      "dismiss": "Dismiss trial banner"
+    },
+    "expiredModal": {
+      "heading": "Free Trial Expired",
+      "description": "Your 3-day free trial has ended. To continue using FreexStore, please purchase a license.",
+      "trialStarted": "Trial started",
+      "trialEnded": "Trial ended",
+      "purchaseLicense": "Purchase a License",
+      "logOut": "Log Out",
+      "footerNote": "Your account is still active. Contact support if you believe this is an error."
+    }
   }
 }

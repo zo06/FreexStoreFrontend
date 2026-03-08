@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { ShieldX, Clock, Key, ArrowRight, LogOut } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TrialExpiredModalProps {
   trialStartAt?: string | null;
@@ -10,6 +11,8 @@ interface TrialExpiredModalProps {
 }
 
 export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialExpiredModalProps) {
+  const t = useTranslations('trialProtection.expiredModal');
+
   // Prevent scrolling when modal is visible
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -21,7 +24,7 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -34,7 +37,6 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
     /* Full-screen blocking overlay — no way to close/dismiss */
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md"
-      // Absorb all pointer events so nothing behind is clickable
       onMouseDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
@@ -64,11 +66,10 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
           {/* Heading */}
           <div className="mb-6 text-center">
             <h1 className="mb-2 text-2xl font-bold text-white">
-              Free Trial Expired
+              {t('heading')}
             </h1>
             <p className="text-sm leading-relaxed text-gray-400">
-              Your 3-day free trial has ended. To continue using FreexStore,
-              please purchase a license.
+              {t('description')}
             </p>
           </div>
 
@@ -77,13 +78,13 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
             <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
               {trialStartAt && (
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-gray-400">Trial started</span>
+                  <span className="text-gray-400">{t('trialStarted')}</span>
                   <span className="font-medium text-white">{formatDate(trialStartAt)}</span>
                 </div>
               )}
               {trialEndAt && (
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-gray-400">Trial ended</span>
+                  <span className="text-gray-400">{t('trialEnded')}</span>
                   <span className="font-medium text-red-400">{formatDate(trialEndAt)}</span>
                 </div>
               )}
@@ -97,7 +98,7 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
               className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:from-cyan-400 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-500/25"
             >
               <Key className="h-4 w-4" />
-              Purchase a License
+              {t('purchaseLicense')}
               <ArrowRight className="h-4 w-4" />
             </a>
 
@@ -107,13 +108,13 @@ export function TrialExpiredModal({ trialStartAt, trialEndAt, onLogout }: TrialE
               className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-medium text-gray-300 transition-all duration-200 hover:bg-white/10 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
-              Log Out
+              {t('logOut')}
             </button>
           </div>
 
           {/* Footer note */}
           <p className="mt-4 text-center text-xs text-gray-600">
-            Your account is still active. Contact support if you believe this is an error.
+            {t('footerNote')}
           </p>
         </div>
       </div>

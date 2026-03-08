@@ -1248,5 +1248,27 @@
     "licenseActivated": "Lizenz aktiviert! Weiterleitung zum Dashboard...",
     "paymentFailed": "Zahlung erfolgreich, aber Lizenzaktivierung fehlgeschlagen. Kontaktieren Sie den Support.",
     "activationError": "Fehler beim Aktivieren der Lizenz. Bitte kontaktieren Sie den Support."
+  },
+  "trialProtection": {
+    "banner": {
+      "label": "Kostenlose Testversion:",
+      "daysLeft": "{days, plural, one {# Tag verbleibend} other {# Tage verbleibend}}",
+      "hoursLeft": "{hours, plural, one {# Stunde verbleibend} other {# Stunden verbleibend}}",
+      "lessThanHour": "Weniger als 1 Stunde verbleibend",
+      "expiresSoon": "Läuft sehr bald ab —",
+      "upgradeNow": "Jetzt upgraden, um den Zugriff zu behalten.",
+      "upgradeAnytime": "Jederzeit upgraden für vollen Zugriff.",
+      "getLicense": "Lizenz erwerben",
+      "dismiss": "Banner schließen"
+    },
+    "expiredModal": {
+      "heading": "Kostenlose Testversion abgelaufen",
+      "description": "Ihre 3-tägige kostenlose Testversion ist abgelaufen. Um FreexStore weiterhin zu nutzen, erwerben Sie bitte eine Lizenz.",
+      "trialStarted": "Testversion gestartet",
+      "trialEnded": "Testversion beendet",
+      "purchaseLicense": "Lizenz kaufen",
+      "logOut": "Abmelden",
+      "footerNote": "Ihr Konto ist weiterhin aktiv. Kontaktieren Sie den Support, wenn Sie glauben, dass dies ein Fehler ist."
+    }
   }
 }

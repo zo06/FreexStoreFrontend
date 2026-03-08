@@ -2,6 +2,7 @@
 
 import { Clock, X, Key, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useLicenseStatus } from '@/components/license-protection-provider';
 
 /**
@@ -9,6 +10,7 @@ import { useLicenseStatus } from '@/components/license-protection-provider';
  * telling them how many days/hours remain.
  */
 export function TrialBanner() {
+  const t = useTranslations('trialProtection.banner');
   const licenseStatus = useLicenseStatus();
   const [dismissed, setDismissed] = useState(false);
 
@@ -22,10 +24,10 @@ export function TrialBanner() {
 
   const timeLabel =
     daysRemaining !== null && daysRemaining > 0
-      ? `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} left`
+      ? t('daysLeft', { days: daysRemaining })
       : hoursRemaining !== null && hoursRemaining > 0
-      ? `${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left`
-      : 'Less than 1 hour left';
+      ? t('hoursLeft', { hours: hoursRemaining })
+      : t('lessThanHour');
 
   const isUrgent = (daysRemaining ?? 0) === 0;
 
@@ -40,9 +42,9 @@ export function TrialBanner() {
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 flex-shrink-0" />
         <span>
-          <strong>Free Trial:</strong>{' '}
-          {isUrgent ? 'Expires very soon — ' : ''}{timeLabel} remaining.{' '}
-          {isUrgent ? 'Upgrade now to keep access.' : 'Upgrade anytime to unlock full access.'}
+          <strong>{t('label')}</strong>{' '}
+          {isUrgent ? `${t('expiresSoon')} ` : ''}{timeLabel}{' '}
+          {isUrgent ? t('upgradeNow') : t('upgradeAnytime')}
         </span>
       </div>
 
@@ -52,14 +54,14 @@ export function TrialBanner() {
           className="flex items-center gap-1 font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity"
         >
           <Key className="h-3 w-3" />
-          Get License
+          {t('getLicense')}
           <ArrowRight className="h-3 w-3" />
         </a>
         <button
           type="button"
           onClick={() => setDismissed(true)}
           className="rounded p-0.5 hover:bg-white/10 transition-colors"
-          aria-label="Dismiss trial banner"
+          aria-label={t('dismiss')}
         >
           <X className="h-4 w-4" />
         </button>
