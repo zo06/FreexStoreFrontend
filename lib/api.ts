@@ -543,6 +543,20 @@ class ApiClient {
     return this.post<any>(`/licenses/trial/${scriptId}`, {});
   }
 
+  async checkLicense() {
+    return this.request<{
+      valid: boolean;
+      isTrial: boolean;
+      trialExpired: boolean;
+      trialStartAt?: string | null;
+      trialEndAt?: string | null;
+      daysRemaining?: number;
+      hoursRemaining?: number;
+      message?: string;
+      hasActiveLicense?: boolean;
+    }>('/licenses/check');
+  }
+
   // Contact methods
   async submitContactForm(data: {
     name: string;

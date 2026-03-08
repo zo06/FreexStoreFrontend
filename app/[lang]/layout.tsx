@@ -10,6 +10,8 @@ import { Providers } from '@/lib/providers';
 import ClientLayout from '@/components/client-layout';
 import { defaultMetadata, generateOrganizationSchema, generateWebsiteSchema, generateSiteNavigationSchema, generateGEOContentSchema, generateGEOFAQSchema, SITE_CONFIG } from '@/lib/seo-config';
 import ConditionalFooter from '@/components/conditional-footer';
+import { LicenseProtectionProvider } from '@/components/license-protection-provider';
+import { TrialBanner } from '@/components/ui/trial-banner';
 import { LanguageProvider } from '@/lib/contexts/LanguageContext';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -169,20 +171,23 @@ export default async function LocaleLayout({
           <Providers>
             <LanguageProvider>
               <AuthProvider>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="dark"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <ClientLayout>
-                    <ConditionalNavigation />
-                    <MainContent>
-                      {children}
-                    </MainContent>
-                    <ConditionalFooter />
-                  </ClientLayout>
-                </ThemeProvider>
+                <LicenseProtectionProvider>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <ClientLayout>
+                      <ConditionalNavigation />
+                      <TrialBanner />
+                      <MainContent>
+                        {children}
+                      </MainContent>
+                      <ConditionalFooter />
+                    </ClientLayout>
+                  </ThemeProvider>
+                </LicenseProtectionProvider>
               </AuthProvider>
             </LanguageProvider>
           </Providers>
