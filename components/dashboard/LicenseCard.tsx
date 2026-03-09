@@ -189,14 +189,6 @@ export function LicenseCard({ license, licensesIpAddress, onUpdate }: LicenseCar
             >
               Manage
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="px-3 py-2 text-xs cursor-pointer lg:px-4 lg:text-sm"
-              onClick={handleValidateLicense}
-            >
-              Validate
-            </Button>
           </div>
         </div>
       </div>

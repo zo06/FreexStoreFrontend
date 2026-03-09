@@ -239,14 +239,6 @@ export function LicenseManagement({ licenses, licensesIpAddress, onLicenseUpdate
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => handleValidateLicense(license.privateKey)}
-                  className="cursor-pointer"
-                >
-                  Validate License
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
                   onClick={() => setSelectedLicense(license)}
                   className="cursor-pointer"
                 >
