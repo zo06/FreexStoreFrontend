@@ -177,20 +177,27 @@ export const adminApi = {
     uploadFile: async (id: string, file: File): Promise<Script> => {
       const formData = new FormData();
       formData.append('file', file);
-      
-      // Extract file extension and set fileType
       const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'rar';
       formData.append('fileType', fileExtension);
-      
       const response = await apiClient.post<{data: Script}>(`/admin/scripts/${id}/upload`, formData);
       return response.data;
     },
-    
-    // Direct upload RAR to Cloudinary (returns downloadUrl without needing script ID)
-    uploadRarDirect: async (file: File): Promise<{downloadUrl: string; publicId: string; originalName: string; size: number; fileType: string}> => {
+
+    // Upgrade: uploads new file + bumps version in one request via updates controller
+    upgradeScript: async (id: string, file: File, version: string): Promise<{ message: string; version: string; downloadUrl: string }> => {
       const formData = new FormData();
       formData.append('file', file);
-      
+      formData.append('version', version);
+      const response = await apiClient.post<{ message: string; version: string; downloadUrl: string }>(`/updates/upload/${id}`, formData);
+      return response;
+    },
+    
+    // Upload RAR — pass scriptId to update downloadUrl in DB immediately
+    uploadRarDirect: async (file: File, scriptId?: string): Promise<{downloadUrl: string; publicId: string; originalName: string; size: number; fileType: string}> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (scriptId) formData.append('scriptId', scriptId);
+
       const response = await apiClient.post<{downloadUrl: string; publicId: string; originalName: string; size: number; fileType: string; message: string}>('/admin/scripts/upload-rar', formData);
       return response;
     },
@@ -390,6 +397,7 @@ export const safeAdminApi = {
     delete: withErrorHandling(adminApi.scripts.delete),
     toggleActive: withErrorHandling(adminApi.scripts.toggleActive),
     uploadFile: withErrorHandling(adminApi.scripts.uploadFile),
+    upgradeScript: withErrorHandling(adminApi.scripts.upgradeScript),
     uploadRarDirect: withErrorHandling(adminApi.scripts.uploadRarDirect),
     uploadImage: withErrorHandling(adminApi.scripts.uploadImage),
     uploadImages: withErrorHandling(adminApi.scripts.uploadImages),

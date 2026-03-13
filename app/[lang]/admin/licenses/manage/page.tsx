@@ -245,17 +245,17 @@ function LicenseManagementContent() {
     <div className="p-6 min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
-        <div className="flex gap-4 items-center mb-8">
+        <div className="flex flex-col gap-4 mb-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push('/admin/licenses')}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 w-fit"
           >
             <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Licenses
           </Button>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3">
             <div className="p-3 bg-blue-600 rounded-lg">
               <Key className="w-8 h-8 text-white" />
             </div>

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, User as UserIcon, Mail, Calendar, Shield, Globe, Server, Activity, Package, CreditCard, Clock, CheckCircle, XCircle, Eye, Key, DollarSign } from 'lucide-react'
+import { X, User as UserIcon, Mail, Calendar, Shield, Globe, Server, Activity, Package, CreditCard, Clock, CheckCircle, XCircle, Eye, Key, DollarSign, FileText, Search, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import toast from 'react-hot-toast'
 import { ModalPortal } from '@/components/ui/modal-portal'
 
@@ -14,6 +15,14 @@ interface AdminUserInfoModalProps {
   userName: string
 }
 
+const EVENT_COLORS: Record<string, string> = {
+  LicenseValid: 'bg-green-500/20 text-green-400',
+  LicenseInvalid: 'bg-red-500/20 text-red-400',
+  startup: 'bg-blue-500/20 text-blue-400',
+  shutdown: 'bg-orange-500/20 text-orange-400',
+  error: 'bg-red-500/20 text-red-400',
+}
+
 export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }: AdminUserInfoModalProps) {
   const [activeTab, setActiveTab] = useState('details')
   const [loading, setLoading] = useState(true)
@@ -22,17 +31,33 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
   const [transactions, setTransactions] = useState<any[]>([])
   const [activities, setActivities] = useState<any[]>([])
 
+  // License event logs state
+  const [eventLogs, setEventLogs] = useState<any[]>([])
+  const [logsLoading, setLogsLoading] = useState(false)
+  const [logsTotal, setLogsTotal] = useState(0)
+  const [logsPage, setLogsPage] = useState(1)
+  const [logsTotalPages, setLogsTotalPages] = useState(1)
+  const [logsEventFilter, setLogsEventFilter] = useState('')
+  const [selectedLog, setSelectedLog] = useState<any>(null)
+
   useEffect(() => {
     if (isOpen && userId) {
       fetchUserData()
     }
   }, [isOpen, userId])
 
+  // Fetch logs when switching to the logs tab or when filters/page change
+  useEffect(() => {
+    if (activeTab === 'logs' && isOpen && userId) {
+      fetchLicenseLogs()
+    }
+  }, [activeTab, logsPage, logsEventFilter, isOpen, userId])
+
   const fetchUserData = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
-      
+
       if (!token) {
         toast.error('Authentication required')
         return
@@ -68,6 +93,28 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
       toast.error('Failed to load user information')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchLicenseLogs = async () => {
+    try {
+      setLogsLoading(true)
+      const token = localStorage.getItem('access_token')
+      const params = new URLSearchParams({ userId, page: logsPage.toString(), limit: '15' })
+      if (logsEventFilter) params.set('event', logsEventFilter)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/licenses/logs?${params}`, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      })
+      if (res.ok) {
+        const result = await res.json()
+        setEventLogs(result.data || [])
+        setLogsTotal(result.pagination?.total || 0)
+        setLogsTotalPages(result.pagination?.totalPages || 1)
+      }
+    } catch (error) {
+      console.error('Failed to fetch license logs:', error)
+    } finally {
+      setLogsLoading(false)
     }
   }
 
@@ -108,13 +155,14 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
     { id: 'scripts', label: 'Active Scripts', icon: Package },
     { id: 'transactions', label: 'Transactions', icon: CreditCard },
     { id: 'activity', label: 'Activity Log', icon: Activity },
+    { id: 'logs', label: 'License Logs', icon: FileText },
   ]
 
   if (!isOpen) return null
 
   return (
     <ModalPortal isOpen={isOpen}>
-      <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="flex fixed inset-0 z-[99999] justify-center items-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="overflow-hidden relative w-full max-w-6xl max-h-[90vh] bg-gradient-to-br rounded-2xl border shadow-2xl from-slate-900 via-slate-900 to-slate-800 border-cyan-500/30">
         {/* Header */}
         <div className="flex sticky top-0 z-10 justify-between items-center p-6 bg-gradient-to-r border-b backdrop-blur-xl from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
@@ -157,7 +205,7 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto p-6 space-y-6 max-h-[calc(90vh-200px)]">
+        <div className="overflow-y-auto px-8 py-[4rem] space-y-6 max-h-[calc(90vh-200px)]">
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="w-12 h-12 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
@@ -470,6 +518,140 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
                   )}
                 </div>
               )}
+
+              {/* License Logs Tab */}
+              {activeTab === 'logs' && (
+                <div className="space-y-4">
+                  {/* Header + filter */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+                    <h3 className="text-lg font-semibold text-white">
+                      License Event Logs
+                      <span className="ml-2 text-sm font-normal text-gray-400">({logsTotal} total)</span>
+                    </h3>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <div className="relative flex-1 sm:w-48">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                        <Input
+                          placeholder="Filter by event..."
+                          value={logsEventFilter}
+                          onChange={e => { setLogsEventFilter(e.target.value); setLogsPage(1) }}
+                          className="pl-8 h-8 text-sm bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50"
+                        />
+                      </div>
+                      <Button
+                        onClick={fetchLicenseLogs}
+                        size="sm"
+                        disabled={logsLoading}
+                        className="text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 border border-white/10 h-8 px-3"
+                      >
+                        {logsLoading ? (
+                          <div className="w-3.5 h-3.5 rounded-full border-b-2 border-white animate-spin" />
+                        ) : (
+                          <Filter className="w-3.5 h-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {logsLoading && eventLogs.length === 0 ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-8 h-8 rounded-full border-b-2 border-cyan-400 animate-spin" />
+                    </div>
+                  ) : eventLogs.length > 0 ? (
+                    <>
+                      <div className="space-y-2">
+                        {eventLogs.map((log) => (
+                          <div key={log.id} className="p-3 rounded-lg border bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                            <div className="flex flex-wrap gap-2 items-center mb-2">
+                              <button
+                                onClick={() => setSelectedLog(log)}
+                                className="flex justify-center items-center w-6 h-6 rounded text-gray-400 hover:text-cyan-400 hover:bg-white/10 transition-colors flex-shrink-0"
+                                title="View full details"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <Badge className={`text-xs border ${EVENT_COLORS[log.event] ?? 'bg-cyan-500/20 text-cyan-400'}`}>
+                                {log.event}
+                              </Badge>
+                              {log.resourceName && (
+                                <span className="px-2 py-0.5 text-xs rounded bg-white/5 text-gray-400">
+                                  {log.resourceName}
+                                </span>
+                              )}
+                              {log.ip && (
+                                <span className="font-mono text-xs text-gray-500">{log.ip}</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-400">
+                              {log.details && (
+                                <div><span className="text-gray-600">Details: </span>{log.details}</div>
+                              )}
+                              {log.hostname && (
+                                <div className="truncate" title={log.hostname}>
+                                  <span className="text-gray-600">Host: </span>{log.hostname}
+                                </div>
+                              )}
+                              {log.serverName && (
+                                <div><span className="text-gray-600">Server: </span>{log.serverName}</div>
+                              )}
+                              {log.licenseKey && (
+                                <div className="font-mono truncate" title={log.licenseKey}>
+                                  <span className="text-gray-600 font-sans">Key: </span>{log.licenseKey}
+                                </div>
+                              )}
+                              {log.timestamp && (
+                                <div>
+                                  <span className="text-gray-600">Client time: </span>
+                                  {new Date(log.timestamp * 1000).toLocaleString()}
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-gray-600">Received: </span>
+                                {formatDate(log.createdAt)}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination */}
+                      {logsTotalPages > 1 && (
+                        <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                          <p className="text-xs text-gray-500">
+                            Page {logsPage} of {logsTotalPages}
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => setLogsPage(p => Math.max(1, p - 1))}
+                              disabled={logsPage === 1}
+                              size="sm"
+                              className="h-7 px-3 text-xs text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50"
+                            >
+                              Prev
+                            </Button>
+                            <Button
+                              onClick={() => setLogsPage(p => Math.min(logsTotalPages, p + 1))}
+                              disabled={logsPage === logsTotalPages}
+                              size="sm"
+                              className="h-7 px-3 text-xs text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50"
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="py-12 text-center text-gray-400">
+                      <FileText className="mx-auto mb-3 w-16 h-16 opacity-30" />
+                      <p>No license event logs found for this user</p>
+                      <p className="mt-1 text-xs text-gray-600">
+                        Logs appear when the user&apos;s Lua scripts report events
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -485,6 +667,65 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
         </div>
       </div>
     </div>
+      {/* Log Detail Popup */}
+      {selectedLog && (
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4" onClick={() => setSelectedLog(null)}>
+          <div
+            className="relative w-full max-w-md bg-slate-900 border border-cyan-500/40 rounded-xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Popup Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <span className="text-sm font-semibold text-white">Log Details</span>
+                <Badge className={`text-xs border ${EVENT_COLORS[selectedLog.event] ?? 'bg-cyan-500/20 text-cyan-400'}`}>
+                  {selectedLog.event}
+                </Badge>
+              </div>
+              <button
+                onClick={() => setSelectedLog(null)}
+                className="flex items-center justify-center w-6 h-6 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Popup Body */}
+            <div className="p-4 space-y-2 max-h-[70vh] overflow-y-auto">
+              {[
+                { label: 'Log ID', value: selectedLog.id },
+                { label: 'Event', value: selectedLog.event },
+                { label: 'Resource', value: selectedLog.resourceName },
+                { label: 'IP Address', value: selectedLog.ip, mono: true },
+                { label: 'Hostname', value: selectedLog.hostname, mono: true },
+                { label: 'Server Name', value: selectedLog.serverName },
+                { label: 'License Key', value: selectedLog.licenseKey, mono: true },
+                { label: 'Details', value: selectedLog.details },
+                { label: 'Client Time', value: selectedLog.timestamp ? new Date(selectedLog.timestamp * 1000).toLocaleString() : null },
+                { label: 'Received At', value: formatDate(selectedLog.createdAt) },
+                { label: 'User ID', value: selectedLog.userId, mono: true },
+              ].filter(row => row.value != null && row.value !== '').map(row => (
+                <div key={row.label} className="flex gap-3 items-start text-sm">
+                  <span className="w-28 flex-shrink-0 text-xs text-gray-500 pt-0.5">{row.label}</span>
+                  <span className={`flex-1 text-white break-all ${row.mono ? 'font-mono text-xs' : ''}`}>{String(row.value)}</span>
+                </div>
+              ))}
+
+              {/* Raw extra fields */}
+              {Object.entries(selectedLog)
+                .filter(([k]) => !['id','event','resourceName','ip','hostname','serverName','licenseKey','details','timestamp','createdAt','userId'].includes(k))
+                .filter(([, v]) => v != null && v !== '')
+                .map(([k, v]) => (
+                  <div key={k} className="flex gap-3 items-start text-sm">
+                    <span className="w-28 flex-shrink-0 text-xs text-gray-500 pt-0.5 capitalize">{k}</span>
+                    <span className="flex-1 font-mono text-xs text-white break-all">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
     </ModalPortal>
   )
 }

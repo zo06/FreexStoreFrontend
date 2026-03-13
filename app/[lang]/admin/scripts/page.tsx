@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Plus, Edit, Trash2, Eye, Power, PowerOff, Copy, Download, Upload, Code, ArrowLeft } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Plus, Edit, Trash2, Power, PowerOff, Code, ArrowLeft, RefreshCw, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
 import { useTranslations } from 'next-intl'
@@ -39,6 +42,13 @@ function AdminScripts() {
   const [totalPages, setTotalPages] = useState(1)
   const [limit] = useState(10)
   const router = useRouter()
+
+  // Upgrade dialog state
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false)
+  const [upgradeScript, setUpgradeScript] = useState<Script | null>(null)
+  const [upgradeVersion, setUpgradeVersion] = useState('')
+  const [upgradeFile, setUpgradeFile] = useState<File | null>(null)
+  const [upgradeLoading, setUpgradeLoading] = useState(false)
 
   
   // Get unique categories from scripts
@@ -197,6 +207,40 @@ function AdminScripts() {
     }
   }
 
+  const handleOpenUpgrade = (script: Script) => {
+    setUpgradeScript(script)
+    setUpgradeVersion((script as any).version || '')
+    setUpgradeFile(null)
+    setIsUpgradeDialogOpen(true)
+  }
+
+  const handleUpgrade = async () => {
+    if (!upgradeScript) return
+    if (!upgradeVersion.trim()) {
+      toast.error('Please enter a version number')
+      return
+    }
+    if (!upgradeFile) {
+      toast.error('Please select a file to upload')
+      return
+    }
+    setUpgradeLoading(true)
+    try {
+      await safeAdminApi.scripts.upgradeScript(upgradeScript.id, upgradeFile, upgradeVersion.trim())
+      toast.success(`${upgradeScript.name} upgraded to v${upgradeVersion.trim()}`)
+      setIsUpgradeDialogOpen(false)
+      setUpgradeScript(null)
+      setUpgradeFile(null)
+      setUpgradeVersion('')
+      await getScripts()
+    } catch (error) {
+      console.error('Upgrade failed:', error)
+      toast.error('Upgrade failed — please try again')
+    } finally {
+      setUpgradeLoading(false)
+    }
+  }
+
   const handleToggleActive = async (script: Script) => {
     try {
       await safeAdminApi.scripts.toggleActive(script.id)
@@ -318,8 +362,8 @@ function AdminScripts() {
                         <Button
                           onClick={() => handleToggleActive(script)}
                           size="sm"
-                          className={`${script.isActive 
-                            ? 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white' 
+                          className={`${script.isActive
+                            ? 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white'
                             : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
                           } border border-white/10 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105`}
                         >
@@ -331,6 +375,14 @@ function AdminScripts() {
                           className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
                         >
                           <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleOpenUpgrade(script)}
+                          size="sm"
+                          className="text-white bg-gradient-to-r from-purple-600 to-purple-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-purple-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          title="Upgrade"
+                        >
+                          <RefreshCw className="w-4 h-4" />
                         </Button>
                         <Button
                           onClick={() => {
@@ -382,7 +434,98 @@ function AdminScripts() {
           </div>
         </div>
 
-        {/* Dialogs removed - now using dedicated pages for create/edit */}
+        {/* Upgrade Dialog */}
+        <Dialog open={isUpgradeDialogOpen} onOpenChange={(open) => { if (!upgradeLoading) setIsUpgradeDialogOpen(open) }}>
+          <DialogContent className="bg-gradient-to-br border shadow-2xl backdrop-blur-xl from-slate-900/90 to-slate-800/90 border-white/10 sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex gap-2 items-center text-xl font-semibold text-white">
+                <RefreshCw className="w-5 h-5 text-purple-400" />
+                Upgrade Script
+              </DialogTitle>
+              {upgradeScript && (
+                <p className="mt-1 text-sm text-gray-400">
+                  {upgradeScript.name}
+                  {(upgradeScript as any).version && (
+                    <span className="ml-2 text-purple-400">v{(upgradeScript as any).version}</span>
+                  )}
+                </p>
+              )}
+            </DialogHeader>
+
+            <div className="flex flex-col gap-5 py-2">
+              {/* New version */}
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-medium text-gray-300">New Version</Label>
+                <Input
+                  placeholder="e.g. 1.0.4"
+                  value={upgradeVersion}
+                  onChange={(e) => setUpgradeVersion(e.target.value)}
+                  disabled={upgradeLoading}
+                  className="text-white bg-white/5 border-white/10 placeholder:text-gray-500 focus:border-purple-400 focus:ring-purple-400/20"
+                />
+              </div>
+
+              {/* File upload */}
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-medium text-gray-300">Update File</Label>
+                <label className={`flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200
+                  ${upgradeFile
+                    ? 'border-purple-500 bg-purple-500/10'
+                    : 'border-white/20 bg-white/5 hover:border-purple-400/60 hover:bg-purple-500/5'}
+                  ${upgradeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".zip,.rar,.7z,.tar,.gz"
+                    disabled={upgradeLoading}
+                    onChange={(e) => setUpgradeFile(e.target.files?.[0] ?? null)}
+                  />
+                  {upgradeFile ? (
+                    <div className="flex flex-col items-center gap-1 px-4 text-center">
+                      <RefreshCw className="w-5 h-5 text-purple-400" />
+                      <span className="text-sm font-medium text-purple-300 truncate max-w-[260px]">{upgradeFile.name}</span>
+                      <span className="text-xs text-gray-500">{(upgradeFile.size / 1024 / 1024).toFixed(2)} MB — click to change</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-gray-400">
+                      <Upload className="w-6 h-6" />
+                      <span className="text-sm">Click to select file</span>
+                      <span className="text-xs text-gray-500">.zip · .rar · .7z · .tar · .gz</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            <DialogFooter className="flex gap-2 pt-2 sm:justify-end">
+              <Button
+                onClick={() => setIsUpgradeDialogOpen(false)}
+                disabled={upgradeLoading}
+                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpgrade}
+                disabled={upgradeLoading || !upgradeFile || !upgradeVersion.trim()}
+                className="text-white bg-gradient-to-r from-purple-600 to-purple-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-purple-400 border-white/10 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {upgradeLoading ? (
+                  <span className="flex gap-2 items-center">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Upgrading...
+                  </span>
+                ) : (
+                  <span className="flex gap-2 items-center">
+                    <RefreshCw className="w-4 h-4" />
+                    Upgrade
+                  </span>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

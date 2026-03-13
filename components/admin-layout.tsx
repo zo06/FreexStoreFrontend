@@ -6,19 +6,19 @@ import Link from 'next/link';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslations } from 'next-intl';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Code2, 
-  Key, 
-  Receipt, 
-  Calculator, 
-  MessageSquare, 
-  Settings, 
-  ChevronDown, 
+import {
+  LayoutDashboard,
+  Users,
+  Code2,
+  Key,
+  Receipt,
+  Calculator,
+  MessageSquare,
+  Settings,
+  ChevronDown,
   ChevronRight,
   ChevronLeft,
-  Menu, 
+  Menu,
   X,
   LogOut,
   UserCheck,
@@ -40,7 +40,9 @@ import {
   Clock,
   Star,
   Zap,
-  ExternalLink
+  ExternalLink,
+  Activity,
+  FileText
 } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
 
@@ -61,6 +63,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [scriptsDropdownOpen, setScriptsDropdownOpen] = useState(false);
+  const [licensesDropdownOpen, setLicensesDropdownOpen] = useState(false);
   const [showIpModal, setShowIpModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,7 +132,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     if (pathname.startsWith('/admin/scripts') && !scriptsDropdownOpen) {
       setScriptsDropdownOpen(true);
     }
-  }, [pathname, scriptsDropdownOpen]);
+    if (pathname.startsWith('/admin/licenses') && !licensesDropdownOpen) {
+      setLicensesDropdownOpen(true);
+    }
+  }, [pathname, scriptsDropdownOpen, licensesDropdownOpen]);
 
   // Close mobile sidebar when navigating
   useEffect(() => {
@@ -233,7 +239,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { href: '/admin/categories', label: t('categoriesLabel'), icon: Tags },
       ],
     },
-    { href: '/admin/licenses', icon: Key, label: t('licensesLabel') },
+    {
+      href: '/admin/licenses',
+      icon: Key,
+      label: t('licensesLabel'),
+      hasLicensesDropdown: true,
+      dropdownItems: [
+        { href: '/admin/licenses', label: t('licensesLabel'), icon: Key },
+        { href: '/admin/licenses/event-logs', label: 'Event Logs', icon: Activity },
+        { href: '/admin/licenses/token-audits', label: 'Token Audits', icon: Shield },
+      ],
+    },
     { href: '/admin/transactions', icon: Receipt, label: t('transactionsLabel') },
     { href: '/admin/accounting', icon: Calculator, label: t('accountingLabel') },
     { href: '/admin/contact-messages', icon: Mail, label: t('contactMessagesLabel') },
@@ -526,10 +542,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
                     {sidebarItems.map((item) => (
                       <div key={item.href}>
-                        {item.hasDropdown ? (
+                        {(item as any).hasDropdown || (item as any).hasLicensesDropdown ? (
                           <div>
                             <button
-                              onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
+                              onClick={() => (item as any).hasLicensesDropdown
+                                ? setLicensesDropdownOpen(!licensesDropdownOpen)
+                                : setScriptsDropdownOpen(!scriptsDropdownOpen)
+                              }
                               className="w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-300 group text-gray-400 hover:text-white hover:bg-white/[0.05]"
                             >
                               <div className="flex gap-3 items-center">
@@ -538,12 +557,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 </div>
                                 <span className="text-sm font-medium">{item.label}</span>
                               </div>
-                              {scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                              {((item as any).hasLicensesDropdown ? licensesDropdownOpen : scriptsDropdownOpen)
+                                ? <ChevronDown className="w-4 h-4" />
+                                : <ChevronRight className="w-4 h-4" />
+                              }
                             </button>
 
-                            {scriptsDropdownOpen && (
+                            {((item as any).hasLicensesDropdown ? licensesDropdownOpen : scriptsDropdownOpen) && (
                               <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
-                                {item.dropdownItems?.map((dropdownItem) => (
+                                {(item as any).dropdownItems?.map((dropdownItem: any) => (
                                   <button
                                     key={dropdownItem.href}
                                     onClick={() => handleNavigation(dropdownItem.href)}
@@ -622,10 +644,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
                     {sidebarItems.map((item) => (
                       <div key={item.href}>
-                        {item.hasDropdown ? (
+                        {(item as any).hasDropdown || (item as any).hasLicensesDropdown ? (
                           <div>
                             <button
-                              onClick={() => setScriptsDropdownOpen(!scriptsDropdownOpen)}
+                              onClick={() => (item as any).hasLicensesDropdown
+                                ? setLicensesDropdownOpen(!licensesDropdownOpen)
+                                : setScriptsDropdownOpen(!scriptsDropdownOpen)
+                              }
                               className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-3 rounded-xl transition-all duration-300 group ${
                                 isActive(item.href)
                                   ? 'bg-gradient-to-r from-sky-500/20 to-blue-500/15 text-sky-400 border border-sky-500/30 shadow-lg shadow-sky-500/10'
@@ -641,13 +666,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
                               </div>
                               {!isSidebarCollapsed && (
-                                scriptsDropdownOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+                                ((item as any).hasLicensesDropdown ? licensesDropdownOpen : scriptsDropdownOpen)
+                                  ? <ChevronDown className="w-4 h-4" />
+                                  : <ChevronRight className="w-4 h-4" />
                               )}
                             </button>
 
-                            {scriptsDropdownOpen && !isSidebarCollapsed && (
+                            {((item as any).hasLicensesDropdown ? licensesDropdownOpen : scriptsDropdownOpen) && !isSidebarCollapsed && (
                               <div className={`${isRTL ? 'pr-3 mr-3 border-r' : 'pl-3 ml-3 border-l'} mt-1 space-y-1 border-white/10`}>
-                                {item.dropdownItems?.map((dropdownItem) => (
+                                {(item as any).dropdownItems?.map((dropdownItem: any) => (
                                   <button
                                     key={dropdownItem.href}
                                     onClick={() => handleNavigation(dropdownItem.href)}

@@ -44,6 +44,7 @@ interface ScriptFormData {
   features: string[]
   requirements: string
   discordRoleId: string
+  resourceName: string
   // SEO Fields
   seoTitle: string
   seoDescription: string
@@ -90,6 +91,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
     features: script?.features ? script.features.split(',').map(f => f.trim()) : [''],
     requirements: script?.requirements || '',
     discordRoleId: (script as any)?.discordRoleId || '',
+    resourceName: (script as any)?.resourceName || '',
     // SEO Fields
     seoTitle: (script as any)?.seoTitle || '',
     seoDescription: (script as any)?.seoDescription || '',
@@ -137,6 +139,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         features: script.features ? script.features.split(',').map(f => f.trim()) : [''],
         requirements: script.requirements || '',
         discordRoleId: (script as any)?.discordRoleId || '',
+        resourceName: (script as any)?.resourceName || '',
         // SEO Fields
         seoTitle: (script as any)?.seoTitle || '',
         seoDescription: (script as any)?.seoDescription || '',
@@ -229,12 +232,12 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         return
       }
 
-      // Upload RAR file to Cloudinary first if selected
+      // Upload RAR file first if selected — pass scriptId in edit mode to update DB immediately
       let downloadUrl = formData.downloadUrl
       if (selectedFile) {
-        toast.loading('Uploading script file to Cloudinary...', { id: 'upload-rar' })
+        toast.loading('Uploading script file...', { id: 'upload-rar' })
         try {
-          const uploadResult = await safeAdminApi.scripts.uploadRarDirect(selectedFile)
+          const uploadResult = await safeAdminApi.scripts.uploadRarDirect(selectedFile, mode === 'edit' ? script?.id : undefined)
           downloadUrl = uploadResult.downloadUrl
           toast.success('Script file uploaded successfully!', { id: 'upload-rar' })
         } catch (error) {
@@ -264,6 +267,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         youtubeUrl: formData.youtubeUrl.trim(),
         scriptUUID: formData.scriptUUID || null,
         discordRoleId: formData.discordRoleId || null,
+        resourceName: formData.resourceName.trim() || null,
         downloadUrl: downloadUrl || undefined,
         // SEO Fields
         seoTitle: formData.seoTitle.trim() || formData.name.trim(),
@@ -617,6 +621,21 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
                   To get Role ID: Discord Server Settings → Roles → Right-click role → Copy Role ID
                 </p>
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="resourceName" className="text-white">Resource Name</Label>
+              <Input
+                id="resourceName"
+                value={formData.resourceName}
+                onChange={(e) => setFormData({ ...formData, resourceName: e.target.value })}
+                placeholder="e.g. Freex-Hud"
+                className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                disabled={isSubmitting}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                The resource name embedded in the license JWT. Must match the resource name used in your Lua script. Leave empty to use the default.
+              </p>
             </div>
 
             <div>
