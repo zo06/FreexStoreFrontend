@@ -278,6 +278,11 @@ export const adminApi = {
     revoke: async (id: string): Promise<License> => {
       const response = await apiClient.patch<{data: License}>(`/admin/licenses/${id}/revoke`);
       return response.data;
+    },
+
+    reactivate: async (id: string): Promise<License> => {
+      const response = await apiClient.patch<{data: License}>(`/licenses/${id}/reactivate`);
+      return response.data;
     }
   },
   
@@ -415,7 +420,8 @@ export const safeAdminApi = {
     create: withErrorHandling(adminApi.licenses.create),
     update: withErrorHandling(adminApi.licenses.update),
     delete: withErrorHandling(adminApi.licenses.delete),
-    revoke: withErrorHandling(adminApi.licenses.revoke)
+    revoke: withErrorHandling(adminApi.licenses.revoke),
+    reactivate: withErrorHandling(adminApi.licenses.reactivate)
   },
   categories: {
     getAll: withErrorHandling(adminApi.categories.getAll),

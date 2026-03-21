@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
-import { Plus, Trash2, CheckCircle, XCircle, RefreshCw, Download, Eye, Key, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, XCircle, RefreshCw, Download, Eye, Key, ArrowLeft, AlertTriangle, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
 import { useTranslations } from 'next-intl'
@@ -44,6 +44,7 @@ function AdminLicenses() {
   const [loading, setLoading] = useState(false)
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null)
   const [isRevokeDialogOpen, setIsRevokeDialogOpen] = useState(false)
+  const [isReactivateDialogOpen, setIsReactivateDialogOpen] = useState(false)
   const [isDeleteRevokedDialogOpen, setIsDeleteRevokedDialogOpen] = useState(false)
   const [deletingRevoked, setDeletingRevoked] = useState(false)
 
@@ -143,15 +144,13 @@ function AdminLicenses() {
         t('exportHeaders.createdDate')
       ].join(','),
       ...filteredLicenses.map(license => {
-        const user = users.find(u => u.id === license.userId)
-        const script = scripts.find(s => s.id === license.scriptId)
         const now = new Date()
         const isExpired = license.expiresAt ? new Date(license.expiresAt) <= now : false
         const status = !license.isActive ? t('revoked') : isExpired ? t('expired') : t('active')
 
         return [
-          user?.username || t('unknown'),
-          script?.name || t('unknown'),
+          getUserName(license),
+          getScriptName(license),
           license.privateKey || '',
           license.expiresAt ? new Date(license.expiresAt).toLocaleDateString('ar') : t('noExpiration'),
           status,
@@ -183,6 +182,20 @@ function AdminLicenses() {
     } catch (error) {
       console.error('Failed to revoke license:', error)
       toast.error(t('failedToRevoke'))
+    }
+  }
+
+  const handleReactivateLicense = async () => {
+    if (!selectedLicense) return
+    try {
+      await safeAdminApi.licenses.reactivate(selectedLicense.id)
+      toast.success(t('licenseReactivatedSuccess'))
+      setIsReactivateDialogOpen(false)
+      setSelectedLicense(null)
+      await fetchLicenses()
+    } catch (error) {
+      console.error('Failed to reactivate license:', error)
+      toast.error(t('failedToReactivate'))
     }
   }
 
@@ -256,14 +269,12 @@ function AdminLicenses() {
     return <Badge variant="default" className="bg-green-500">{t('active')}</Badge>
   }
 
-  const getUserName = (userId: string) => {
-    const user = users.find(u => u.id === userId)
-    return user?.username || t('unknownUser')
+  const getUserName = (license: License) => {
+    return (license as any).user?.username || users.find(u => u.id === license.userId)?.username || t('unknownUser')
   }
 
-  const getScriptName = (scriptId: string) => {
-    const script = scripts.find(s => s.id === scriptId) // Use strict equality
-    return script?.name || t('unknownScript')
+  const getScriptName = (license: License) => {
+    return (license as any).script?.name || scripts.find(s => s.id === license.scriptId)?.name || t('unknownScript')
   }
 
   const formatDate = (dateString: string) => {
@@ -372,8 +383,8 @@ function AdminLicenses() {
             <TableBody>
               {filteredLicenses.map((license) => (
                 <TableRow key={license.id} className="transition-colors border-white/10 hover:bg-white/5">
-                  <TableCell className="font-medium text-white text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getUserName(license.userId)}</TableCell>
-                  <TableCell className="text-gray-300 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getScriptName(license.scriptId)}</TableCell>
+                  <TableCell className="font-medium text-white text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getUserName(license)}</TableCell>
+                  <TableCell className="text-gray-300 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getScriptName(license)}</TableCell>
                   <TableCell>{getStatusBadge(license)}</TableCell>
                   <TableCell className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">{formatDateTime(license.expiresAt)}</TableCell>
                   <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">{formatDate(license.createdAt || '')}</TableCell>
@@ -399,18 +410,32 @@ function AdminLicenses() {
                       >
                         <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedLicense(license)
-                          setIsRevokeDialogOpen(true)
-                        }}
-                        size="sm"
-                        disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
-                        title={t('revokeLicense')}
-                        className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
-                      >
-                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
+                      {license.isRevoked ? (
+                        <Button
+                          onClick={() => {
+                            setSelectedLicense(license)
+                            setIsReactivateDialogOpen(true)
+                          }}
+                          size="sm"
+                          title={t('reactivateLicense')}
+                          className="text-white bg-gradient-to-r from-emerald-600 to-emerald-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-emerald-500 hover:to-emerald-400 border-white/10 hover:shadow-xl hover:scale-105 p-1 sm:p-2"
+                        >
+                          <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            setSelectedLicense(license)
+                            setIsRevokeDialogOpen(true)
+                          }}
+                          size="sm"
+                          disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
+                          title={t('revokeLicense')}
+                          className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
+                        >
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -454,6 +479,31 @@ function AdminLicenses() {
 
 
 
+        {/* Reactivate Confirmation Dialog */}
+        <AlertDialog open={isReactivateDialogOpen} onOpenChange={setIsReactivateDialogOpen}>
+          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white text-lg sm:text-xl">{t('reactivateDialogTitle')}</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
+                {t('reactivateDialogDescription', {
+                  user: selectedLicense ? getUserName(selectedLicense) : '',
+                  script: selectedLicense ? getScriptName(selectedLicense) : ''
+                })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogCancel className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto">{t('cancel')}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleReactivateLicense}
+                className="text-white bg-gradient-to-r from-emerald-600 to-emerald-500 border backdrop-blur-sm hover:from-emerald-500 hover:to-emerald-400 border-white/10 w-full sm:w-auto"
+              >
+                <RotateCcw className="mr-2 w-4 h-4" />
+                {t('confirmReactivate')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Revoke Confirmation Dialog */}
         <AlertDialog open={isRevokeDialogOpen} onOpenChange={setIsRevokeDialogOpen}>
           <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
@@ -461,8 +511,8 @@ function AdminLicenses() {
               <AlertDialogTitle className="text-white text-lg sm:text-xl">{t('revokeDialogTitle')}</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
                 {t('revokeDialogDescription', {
-                  user: getUserName(selectedLicense?.userId || ''),
-                  script: getScriptName(selectedLicense?.scriptId || '')
+                  user: selectedLicense ? getUserName(selectedLicense) : '',
+                  script: selectedLicense ? getScriptName(selectedLicense) : ''
                 })}
               </AlertDialogDescription>
             </AlertDialogHeader>
