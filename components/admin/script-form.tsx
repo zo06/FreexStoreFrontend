@@ -50,6 +50,7 @@ interface ScriptFormData {
   seoDescription: string
   seoKeywords: string
   slug: string
+  excludePaths: string[]
 }
 
 interface ScriptFormProps {
@@ -96,9 +97,15 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
     seoTitle: (script as any)?.seoTitle || '',
     seoDescription: (script as any)?.seoDescription || '',
     seoKeywords: (script as any)?.seoKeywords || '',
-    slug: (script as any)?.slug || ''
+    slug: (script as any)?.slug || '',
+    excludePaths: (() => {
+      const raw = (script as any)?.excludePaths;
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      try { return JSON.parse(raw); } catch { return []; }
+    })(),
   })
-  
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [selectedImages, setSelectedImages] = useState<File[]>([])
@@ -144,7 +151,13 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         seoTitle: (script as any)?.seoTitle || '',
         seoDescription: (script as any)?.seoDescription || '',
         seoKeywords: (script as any)?.seoKeywords || '',
-        slug: (script as any)?.slug || ''
+        slug: (script as any)?.slug || '',
+        excludePaths: (() => {
+          const raw = (script as any)?.excludePaths;
+          if (!raw) return [];
+          if (Array.isArray(raw)) return raw;
+          try { return JSON.parse(raw); } catch { return []; }
+        })(),
       })
     }
   }, [script, mode])
@@ -275,7 +288,8 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         seoKeywords: formData.seoKeywords.trim(),
         slug: formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
         // Include existing imageUrl only if no new image is selected
-        ...(formData.imageUrl && !selectedImage ? { imageUrl: formData.imageUrl } : {})
+        ...(formData.imageUrl && !selectedImage ? { imageUrl: formData.imageUrl } : {}),
+        excludePaths: formData.excludePaths.filter(p => p.trim()),
       }
 
       let result
@@ -693,6 +707,53 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
                 className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
               />
             </div>
+
+            {/* Exclude Paths */}
+            <div>
+              <Label className="text-white">Exclude Paths from Updates</Label>
+              <p className="mb-2 text-xs text-gray-400">
+                Files matching these paths will be omitted from the update manifest. Use exact relative paths (e.g. <code className="text-cyan-400">Config.lua</code>) or directory prefixes (e.g. <code className="text-cyan-400">DontEdit/</code>).
+              </p>
+              <div className="mt-1 space-y-2">
+                {formData.excludePaths.map((path, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={path}
+                      onChange={(e) => {
+                        const next = [...formData.excludePaths];
+                        next[index] = e.target.value;
+                        setFormData({ ...formData, excludePaths: next });
+                      }}
+                      placeholder="e.g. DontEdit/Front-End/assets/css/main.css"
+                      className="text-white bg-white/10 border-white/20 placeholder:text-gray-400 font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFormData({ ...formData, excludePaths: formData.excludePaths.filter((_, i) => i !== index) });
+                      }}
+                      className="text-white bg-white/10 border-white/20 hover:bg-red-900/30 hover:border-red-500/30"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFormData({ ...formData, excludePaths: [...formData.excludePaths, ''] });
+                  }}
+                  className="text-white bg-white/10 border-white/20 hover:bg-white/20"
+                >
+                  + Add Excluded Path
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <Label htmlFor="scriptFile" className="text-white">
