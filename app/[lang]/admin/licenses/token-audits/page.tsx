@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check, Activity } from 'lucide-react'
 import toast from 'react-hot-toast'
+import LicenseProfileModal from '@/components/admin/license-profile-modal'
 
 interface TokenAudit {
   id: string
@@ -170,6 +171,7 @@ function AdminLicenseTokenAudits() {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const [selectedAudit, setSelectedAudit] = useState<TokenAudit | null>(null)
+  const [profileKey, setProfileKey] = useState<string | null>(null)
   const limit = 20
 
   // Filters
@@ -234,6 +236,7 @@ function AdminLicenseTokenAudits() {
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
 
       {selectedAudit && <DetailModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} />}
+      {profileKey && <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -349,7 +352,7 @@ function AdminLicenseTokenAudits() {
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Expires At</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden 2xl:table-cell">JTI</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">View</TableHead>
+                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -394,13 +397,22 @@ function AdminLicenseTokenAudits() {
                         <CopyCell value={audit.jti} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <button
-                          onClick={() => setSelectedAudit(audit)}
-                          className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
-                          title="View full details"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={() => setSelectedAudit(audit)}
+                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                            title="View token audit details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setProfileKey(audit.licenseKey)}
+                            className="p-1.5 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                            title="View full user profile by license key"
+                          >
+                            <Activity className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

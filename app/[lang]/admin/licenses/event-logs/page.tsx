@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, Activity, RefreshCw, Search, X, Filter, Server, Clock, Eye, Copy, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
+import LicenseProfileModal from '@/components/admin/license-profile-modal'
 
 interface EventLog {
   id: string
@@ -167,6 +168,7 @@ function AdminLicenseEventLogs() {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const [selectedLog, setSelectedLog] = useState<EventLog | null>(null)
+  const [profileKey, setProfileKey] = useState<string | null>(null)
   const limit = 20
 
   // Filters
@@ -235,6 +237,7 @@ function AdminLicenseEventLogs() {
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
 
       {selectedLog && <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {profileKey && <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -357,7 +360,7 @@ function AdminLicenseEventLogs() {
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden lg:table-cell">IP</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Timestamp</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">View</TableHead>
+                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,13 +405,24 @@ function AdminLicenseEventLogs() {
                         <CopyCell value={formatDate(log.createdAt)} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <button
-                          onClick={() => setSelectedLog(log)}
-                          className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
-                          title="View full details"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={() => setSelectedLog(log)}
+                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                            title="View log details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          {log.licenseKey && (
+                            <button
+                              onClick={() => setProfileKey(log.licenseKey!)}
+                              className="p-1.5 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                              title="View user profile by license key"
+                            >
+                              <Activity className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
