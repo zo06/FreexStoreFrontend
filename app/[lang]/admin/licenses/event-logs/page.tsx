@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Activity, RefreshCw, Search, X, Filter, Server, Clock } from 'lucide-react'
+import { ArrowLeft, Activity, RefreshCw, Search, X, Filter, Server, Clock, Eye, Copy, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface EventLog {
@@ -46,6 +46,118 @@ function getEventBadge(event: string) {
   return <Badge className={`border text-xs ${cls}`}>{event}</Badge>
 }
 
+function CopyCell({ value, className = '' }: { value: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!value || value === '—') return
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true)
+      toast.success('Copied!')
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+  return (
+    <span
+      onClick={handleCopy}
+      title={value || '—'}
+      className={`group inline-flex items-center gap-1 cursor-pointer rounded px-1 -mx-1 hover:bg-white/10 transition-colors ${className}`}
+    >
+      <span className="truncate max-w-[160px]">{value || '—'}</span>
+      {value && value !== '—' && (
+        copied
+          ? <Check className="w-3 h-3 text-green-400 flex-shrink-0 opacity-80" />
+          : <Copy className="w-3 h-3 text-gray-500 flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
+      )}
+    </span>
+  )
+}
+
+function DetailModal({ log, onClose }: { log: EventLog; onClose: () => void }) {
+  const fields: { label: string; value: string }[] = [
+    { label: 'ID', value: log.id },
+    { label: 'Event', value: log.event },
+    { label: 'Details', value: log.details || '—' },
+    { label: 'License Key', value: log.licenseKey || '—' },
+    { label: 'Hostname', value: log.hostname || '—' },
+    { label: 'Server', value: log.serverName || '—' },
+    { label: 'Resource', value: log.resourceName || '—' },
+    { label: 'IP Address', value: log.ip || '—' },
+    { label: 'Timestamp', value: log.timestamp ? new Date(log.timestamp * 1000).toLocaleString() : '—' },
+    { label: 'Created At', value: new Date(log.createdAt).toLocaleString() },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-white/10">
+              <Activity className="w-5 h-5 text-cyan-400" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">Event Log Details</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{log.id}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Event badge */}
+        <div className="px-5 pt-4">
+          {getEventBadge(log.event)}
+        </div>
+
+        {/* Fields */}
+        <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+          {fields.map(f => (
+            <div key={f.label} className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-24 flex-shrink-0 pt-0.5">{f.label}</span>
+              <span className="flex items-center gap-1.5 flex-1 group">
+                <span className="text-xs text-gray-200 font-mono break-all">{f.value}</span>
+                {f.value !== '—' && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(f.value)
+                      toast.success('Copied!')
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-gray-500 hover:text-cyan-400"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-5 pt-2 border-t border-white/10">
+          <button
+            onClick={onClose}
+            className="w-full py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AdminLicenseEventLogs() {
   const router = useRouter()
 
@@ -54,6 +166,7 @@ function AdminLicenseEventLogs() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [selectedLog, setSelectedLog] = useState<EventLog | null>(null)
   const limit = 20
 
   // Filters
@@ -120,6 +233,8 @@ function AdminLicenseEventLogs() {
         <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
       </div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
+
+      {selectedLog && <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -223,6 +338,7 @@ function AdminLicenseEventLogs() {
           <p className="mt-3 text-xs text-gray-500">
             Showing {logs.length} of {total} records
             {hasActiveFilters && <span className="ml-1 text-cyan-400">(filtered)</span>}
+            <span className="ml-2 text-gray-600">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
           </p>
         </div>
 
@@ -241,12 +357,13 @@ function AdminLicenseEventLogs() {
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden lg:table-cell">IP</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Timestamp</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
+                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {logs.length === 0 ? (
                   <TableRow>
-                    <td colSpan={9} className="py-16 text-center text-gray-400">
+                    <td colSpan={10} className="py-16 text-center text-gray-400">
                       <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
                       <p className="text-sm">No event logs found</p>
                       {hasActiveFilters && (
@@ -258,31 +375,40 @@ function AdminLicenseEventLogs() {
                   </TableRow>
                 ) : (
                   logs.map(log => (
-                    <TableRow key={log.id} className="border-white/10 hover:bg-white/5 transition-colors">
+                    <TableRow key={log.id} className="border-white/10 hover:bg-white/5 transition-colors group">
                       <TableCell className="whitespace-nowrap">{getEventBadge(log.event)}</TableCell>
-                      <TableCell className="text-xs text-gray-300 max-w-[140px] truncate" title={log.details ?? ''}>
-                        {log.details || '—'}
+                      <TableCell className="text-xs text-gray-300">
+                        <CopyCell value={log.details || ''} />
                       </TableCell>
-                      <TableCell className="text-xs text-gray-300 max-w-[160px] truncate" title={log.hostname ?? ''}>
-                        {log.hostname || '—'}
+                      <TableCell className="text-xs text-gray-300">
+                        <CopyCell value={log.hostname || ''} />
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400 max-w-[120px] truncate" title={log.licenseKey ?? ''}>
-                        {log.licenseKey || '—'}
+                      <TableCell className="font-mono text-xs text-gray-400">
+                        <CopyCell value={log.licenseKey || ''} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-300 hidden md:table-cell">
-                        {log.resourceName || '—'}
+                        <CopyCell value={log.resourceName || ''} />
                       </TableCell>
-                      <TableCell className="text-xs text-gray-300 max-w-[120px] truncate hidden lg:table-cell" title={log.serverName ?? ''}>
-                        {log.serverName || '—'}
+                      <TableCell className="text-xs text-gray-300 hidden lg:table-cell">
+                        <CopyCell value={log.serverName || ''} />
                       </TableCell>
                       <TableCell className="font-mono text-xs text-gray-400 hidden lg:table-cell">
-                        {log.ip || '—'}
+                        <CopyCell value={log.ip || ''} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 hidden xl:table-cell whitespace-nowrap">
-                        {formatTs(log.timestamp)}
+                        <CopyCell value={formatTs(log.timestamp)} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 whitespace-nowrap">
-                        {formatDate(log.createdAt)}
+                        <CopyCell value={formatDate(log.createdAt)} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          onClick={() => setSelectedLog(log)}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          title="View full details"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))

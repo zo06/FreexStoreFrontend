@@ -129,7 +129,7 @@ function AdminLicenses() {
   const handleFilterChange = (filters: FilterValues) => {
     // Update search and status filters for backend
     setSearchFilter(filters.search || '')
-    setStatusFilter(filters.status || '')
+    setStatusFilter(filters.status === 'all' ? '' : (filters.status || ''))
     setCurrentPage(1) // Reset to first page when filters change
   }
 

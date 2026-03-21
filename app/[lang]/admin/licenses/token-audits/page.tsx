@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock } from 'lucide-react'
+import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface TokenAudit {
@@ -46,6 +46,121 @@ function getStatusBadge(status: number) {
   return <Badge className="border text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">{status}</Badge>
 }
 
+function CopyCell({ value, className = '' }: { value: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!value || value === '—') return
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true)
+      toast.success('Copied!')
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+  return (
+    <span
+      onClick={handleCopy}
+      title={value || '—'}
+      className={`group inline-flex items-center gap-1 cursor-pointer rounded px-1 -mx-1 hover:bg-white/10 transition-colors ${className}`}
+    >
+      <span className="truncate max-w-[160px]">{value || '—'}</span>
+      {value && value !== '—' && (
+        copied
+          ? <Check className="w-3 h-3 text-green-400 flex-shrink-0 opacity-80" />
+          : <Copy className="w-3 h-3 text-gray-500 flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
+      )}
+    </span>
+  )
+}
+
+function DetailModal({ audit, onClose }: { audit: TokenAudit; onClose: () => void }) {
+  const formatUnix = (ts: number) => new Date(ts * 1000).toLocaleString()
+  const fields: { label: string; value: string }[] = [
+    { label: 'ID', value: audit.id },
+    { label: 'JTI', value: audit.jti },
+    { label: 'License Key', value: audit.licenseKey },
+    { label: 'Product UUID', value: audit.productUUID || '—' },
+    { label: 'Status', value: String(audit.status) },
+    { label: 'Message', value: audit.message },
+    { label: 'Version', value: audit.version || '—' },
+    { label: 'IP Address', value: audit.ip || '—' },
+    { label: 'User Agent', value: audit.userAgent || '—' },
+    { label: 'Issued At', value: formatUnix(audit.iat) },
+    { label: 'Expires At', value: formatUnix(audit.exp) },
+    { label: 'Created At', value: new Date(audit.createdAt).toLocaleString() },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-white/10">
+              <Shield className="w-5 h-5 text-cyan-400" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">Token Audit Details</h2>
+              <p className="text-xs text-gray-400 mt-0.5 font-mono truncate max-w-[260px]">{audit.jti}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Status badge */}
+        <div className="px-5 pt-4">
+          {getStatusBadge(audit.status)}
+        </div>
+
+        {/* Fields */}
+        <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+          {fields.map(f => (
+            <div key={f.label} className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-24 flex-shrink-0 pt-0.5">{f.label}</span>
+              <span className="flex items-center gap-1.5 flex-1 group">
+                <span className="text-xs text-gray-200 font-mono break-all">{f.value}</span>
+                {f.value !== '—' && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(f.value)
+                      toast.success('Copied!')
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-gray-500 hover:text-cyan-400"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-5 pt-2 border-t border-white/10">
+          <button
+            onClick={onClose}
+            className="w-full py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AdminLicenseTokenAudits() {
   const router = useRouter()
 
@@ -54,6 +169,7 @@ function AdminLicenseTokenAudits() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [selectedAudit, setSelectedAudit] = useState<TokenAudit | null>(null)
   const limit = 20
 
   // Filters
@@ -116,6 +232,8 @@ function AdminLicenseTokenAudits() {
         <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
       </div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
+
+      {selectedAudit && <DetailModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} />}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -212,6 +330,7 @@ function AdminLicenseTokenAudits() {
           <p className="mt-3 text-xs text-gray-500">
             Showing {audits.length} of {total} records
             {hasActiveFilters && <span className="ml-1 text-cyan-400">(filtered)</span>}
+            <span className="ml-2 text-gray-600">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
           </p>
         </div>
 
@@ -230,12 +349,13 @@ function AdminLicenseTokenAudits() {
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Expires At</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
                   <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden 2xl:table-cell">JTI</TableHead>
+                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {audits.length === 0 ? (
                   <TableRow>
-                    <td colSpan={9} className="py-16 text-center text-gray-400">
+                    <td colSpan={10} className="py-16 text-center text-gray-400">
                       <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
                       <p className="text-sm">No token audit records found</p>
                       {hasActiveFilters && (
@@ -247,31 +367,40 @@ function AdminLicenseTokenAudits() {
                   </TableRow>
                 ) : (
                   audits.map(audit => (
-                    <TableRow key={audit.id} className="border-white/10 hover:bg-white/5 transition-colors">
+                    <TableRow key={audit.id} className="border-white/10 hover:bg-white/5 transition-colors group">
                       <TableCell className="whitespace-nowrap">{getStatusBadge(audit.status)}</TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400 max-w-[140px] truncate" title={audit.licenseKey}>
-                        {audit.licenseKey}
+                      <TableCell className="font-mono text-xs text-gray-400">
+                        <CopyCell value={audit.licenseKey} />
                       </TableCell>
-                      <TableCell className="text-xs text-gray-300 hidden sm:table-cell max-w-[140px] truncate" title={audit.message}>
-                        {audit.message}
+                      <TableCell className="text-xs text-gray-300 hidden sm:table-cell">
+                        <CopyCell value={audit.message} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 hidden md:table-cell">
-                        {audit.version || '—'}
+                        <CopyCell value={audit.version || ''} />
                       </TableCell>
                       <TableCell className="font-mono text-xs text-gray-400 hidden lg:table-cell">
-                        {audit.ip || '—'}
+                        <CopyCell value={audit.ip || ''} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 whitespace-nowrap hidden xl:table-cell">
-                        {formatUnix(audit.iat)}
+                        <CopyCell value={formatUnix(audit.iat)} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 whitespace-nowrap hidden xl:table-cell">
-                        {formatUnix(audit.exp)}
+                        <CopyCell value={formatUnix(audit.exp)} />
                       </TableCell>
                       <TableCell className="text-xs text-gray-400 whitespace-nowrap">
-                        {formatDate(audit.createdAt)}
+                        <CopyCell value={formatDate(audit.createdAt)} />
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-600 hidden 2xl:table-cell max-w-[100px] truncate" title={audit.jti}>
-                        {audit.jti}
+                      <TableCell className="font-mono text-xs text-gray-600 hidden 2xl:table-cell">
+                        <CopyCell value={audit.jti} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          onClick={() => setSelectedAudit(audit)}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          title="View full details"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))

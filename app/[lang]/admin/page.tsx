@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
-import { Users, TrendingUp, Activity, Sparkles, Key, UserPlus, Eye, LogIn, BarChart3, UserCheck } from 'lucide-react'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { Users, TrendingUp, Activity, Sparkles, Key, UserPlus, Eye, LogIn, BarChart3, UserCheck, Shield, ClipboardList, FileCode, CreditCard, ArrowRight, TrendingDown } from 'lucide-react'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell } from 'recharts'
 import toast from 'react-hot-toast'
 import { useTranslations } from 'next-intl'
 
@@ -380,6 +380,44 @@ function AdminDashboard() {
             </div>
           </div>
 
+          {/* Combined Trends Graph */}
+          <div className="overflow-hidden relative p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-indigo-900/60 to-indigo-800/30 border-indigo-500/20 lg:col-span-2">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-indigo-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
+                <div className="flex gap-2 sm:gap-3 items-center">
+                  <div className="flex justify-center items-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-gradient-to-br rounded-lg from-indigo-500 to-indigo-600">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold text-white">Combined Growth Trends</h3>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-gray-400">{t('dashboardSection.last30Days')} · Users & Licenses</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-1.5 rounded-full bg-blue-400"/><span className="text-xs text-gray-400">Users</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-1.5 rounded-full bg-orange-400"/><span className="text-xs text-gray-400">Licenses</span></div>
+                </div>
+              </div>
+              <div className="w-full" style={{ height: '180px', minHeight: '180px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analyticsData.newUsersData.map((d, i) => ({
+                    date: d.date,
+                    users: d.users,
+                    licenses: analyticsData.licenseRateData[i]?.licenses ?? 0,
+                  }))}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} />
+                    <YAxis stroke="#9ca3af" fontSize={10} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }} labelStyle={{ color: '#f3f4f6' }} />
+                    <Line type="monotone" dataKey="users" stroke="#60a5fa" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="licenses" stroke="#fb923c" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
           {/* Login Rate Graph */}
           <div className="overflow-hidden relative p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-green-900/60 to-green-800/30 border-green-500/20">
             <div className="absolute inset-0 bg-gradient-to-br to-transparent from-green-600/5"></div>
@@ -422,6 +460,176 @@ function AdminDashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+        {/* License Health + Pie */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {/* License Breakdown Pie */}
+          <div className="overflow-hidden relative p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-cyan-900/60 to-cyan-800/30 border-cyan-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-cyan-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-2 sm:gap-3 items-center mb-4">
+                <div className="flex justify-center items-center w-9 h-9 bg-gradient-to-br rounded-lg from-cyan-500 to-cyan-600">
+                  <BarChart3 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">License Breakdown</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-400">Active distribution</p>
+                </div>
+              </div>
+              {(() => {
+                const trial = analyticsData.licenseStats?.licenseTrialActive ?? 0
+                const all = analyticsData.licenseStats?.allLicenseActives ?? 0
+                const paid = Math.max(0, all - trial)
+                const pieData = [
+                  { name: 'Paid Active', value: paid, color: '#06b6d4' },
+                  { name: 'Trial Active', value: trial, color: '#8b5cf6' },
+                ]
+                return (
+                  <div className="flex items-center gap-4">
+                    <div style={{ width: 120, height: 120, flexShrink: 0 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={pieData} dataKey="value" innerRadius={30} outerRadius={50} paddingAngle={3}>
+                            {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                          </Pie>
+                          <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px', fontSize: 11 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      {pieData.map(d => (
+                        <div key={d.name} className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
+                          <span className="text-xs text-gray-300 flex-1">{d.name}</span>
+                          <span className="text-xs font-semibold text-white">{d.value}</span>
+                        </div>
+                      ))}
+                      <div className="pt-1 border-t border-white/10 flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Total Active</span>
+                        <span className="text-xs font-bold text-cyan-400">{all}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+
+          {/* License Health Bars */}
+          <div className="overflow-hidden relative p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-emerald-900/60 to-emerald-800/30 border-emerald-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-emerald-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-2 sm:gap-3 items-center mb-4">
+                <div className="flex justify-center items-center w-9 h-9 bg-gradient-to-br rounded-lg from-emerald-500 to-emerald-600">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">License Health</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-400">Current status snapshot</p>
+                </div>
+              </div>
+              {(() => {
+                const total = analyticsData.stats.totalLicenses || 1
+                const active = analyticsData.licenseStats?.allLicenseActives ?? 0
+                const trial = analyticsData.licenseStats?.licenseTrialActive ?? 0
+                const trialAccounts = analyticsData.licenseStats?.trialAccountsActive ?? 0
+                const rows = [
+                  { label: 'Active Licenses', value: active, total, color: 'bg-emerald-500' },
+                  { label: 'Trial Licenses', value: trial, total, color: 'bg-purple-500' },
+                  { label: 'Trial Accounts', value: trialAccounts, total: analyticsData.stats.totalUsers || 1, color: 'bg-blue-500' },
+                ]
+                return (
+                  <div className="space-y-3">
+                    {rows.map(r => (
+                      <div key={r.label}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-xs text-gray-400">{r.label}</span>
+                          <span className="text-xs font-semibold text-white">{r.value}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${r.color} transition-all duration-700`}
+                            style={{ width: `${Math.min(100, (r.value / r.total) * 100).toFixed(1)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+
+          {/* Growth Comparison */}
+          <div className="overflow-hidden relative p-3 sm:p-4 md:p-6 lg:p-8 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-rose-900/60 to-rose-800/30 border-rose-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br to-transparent from-rose-600/5"></div>
+            <div className="relative z-10">
+              <div className="flex gap-2 sm:gap-3 items-center mb-4">
+                <div className="flex justify-center items-center w-9 h-9 bg-gradient-to-br rounded-lg from-rose-500 to-rose-600">
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">MoM Growth</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-400">Month-over-month change</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { label: 'Users', value: analyticsData.stats.usersGrowth || '0%', icon: Users, positive: !analyticsData.stats.usersGrowth?.startsWith('-') },
+                  { label: 'Views', value: analyticsData.stats.viewsGrowth || '0%', icon: Eye, positive: !analyticsData.stats.viewsGrowth?.startsWith('-') },
+                  { label: 'Licenses', value: analyticsData.stats.licensesGrowth || '0%', icon: Key, positive: !analyticsData.stats.licensesGrowth?.startsWith('-') },
+                  { label: 'Logins', value: analyticsData.stats.loginsGrowth || '0%', icon: LogIn, positive: !analyticsData.stats.loginsGrowth?.startsWith('-') },
+                ].map(item => {
+                  const Icon = item.icon
+                  return (
+                    <div key={item.label} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-3.5 h-3.5 text-gray-400" />
+                        <span className="text-xs text-gray-300">{item.label}</span>
+                      </div>
+                      <div className={`flex items-center gap-1 text-xs font-semibold ${item.positive ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {item.positive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        {item.value}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Navigation */}
+        <div className="overflow-hidden relative p-4 sm:p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-slate-900/80 to-slate-800/40 border-white/10">
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <ArrowRight className="w-4 h-4 text-cyan-400" />
+            Quick Navigation
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {[
+              { href: '/admin/licenses', icon: Key, label: 'Licenses', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-400' },
+              { href: '/admin/users', icon: Users, label: 'Users', color: 'from-purple-500/20 to-pink-500/20 border-purple-500/30 text-purple-400' },
+              { href: '/admin/scripts', icon: FileCode, label: 'Scripts', color: 'from-orange-500/20 to-yellow-500/20 border-orange-500/30 text-orange-400' },
+              { href: '/admin/transactions', icon: CreditCard, label: 'Transactions', color: 'from-green-500/20 to-emerald-500/20 border-green-500/30 text-green-400' },
+              { href: '/admin/audit-logs', icon: ClipboardList, label: 'Audit Logs', color: 'from-cyan-500/20 to-blue-500/20 border-cyan-500/30 text-cyan-400' },
+              { href: '/admin/licenses/event-logs', icon: Activity, label: 'Event Logs', color: 'from-rose-500/20 to-red-500/20 border-rose-500/30 text-rose-400' },
+            ].map(item => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border bg-gradient-to-br ${item.color} hover:scale-105 transition-all duration-200`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-xs font-medium text-white text-center">{item.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
       </div>
     </main>
     </>
