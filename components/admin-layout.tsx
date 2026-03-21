@@ -42,7 +42,8 @@ import {
   Zap,
   ExternalLink,
   Activity,
-  FileText
+  FileText,
+  ClipboardList
 } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
 
@@ -188,6 +189,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { icon: Mail, label: t('contactMessagesLabel'), path: '/admin/contact-messages', description: t('viewMessages') },
     { icon: MessageSquare, label: t('customRequestsLabel'), path: '/admin/custom-requests', description: t('viewRequests') },
     { icon: HelpCircle, label: t('faqLabel'), path: '/admin/faq', description: t('faqLabel') },
+    { icon: ClipboardList, label: 'Audit Logs', path: '/admin/audit-logs', description: 'Full trail of admin actions' },
   ];
 
   // Filter admin pages based on search query
@@ -255,6 +257,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/contact-messages', icon: Mail, label: t('contactMessagesLabel') },
     { href: '/admin/custom-requests', icon: MessageSquare, label: t('customRequestsLabel') },
     { href: '/admin/faq', icon: HelpCircle, label: t('faqLabel') },
+    { href: '/admin/audit-logs', icon: ClipboardList, label: 'Audit Logs' },
   ];
 
   const isActive = (href: string) => {
