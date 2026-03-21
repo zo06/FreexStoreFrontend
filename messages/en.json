@@ -51,7 +51,8 @@
       "loading": "Loading...",
       "popular": "Popular",
       "new": "New",
-      "special": "Special"
+      "special": "Special",
+      "freeTrial": "Free Trial"
     },
     "stats": {
       "badge": "Trusted Platform",
@@ -72,6 +73,100 @@
       "noCreditCard": "No credit card",
       "trialDays": "3-day trial",
       "cancelAnytime": "Cancel anytime"
+    },
+    "howItWorks": {
+      "badge": "Simple Process",
+      "title": "Up and Running in",
+      "highlight": "3 Easy Steps",
+      "subtitle": "No complex setup. No coding required. Just install and enjoy.",
+      "step1Title": "Browse & Discover",
+      "step1Desc": "Explore 500+ premium FiveM scripts. Filter by category, price, or popularity to find the perfect fit for your server.",
+      "step2Title": "Try for Free",
+      "step2Desc": "Start a 3-day free trial on any script. No credit card required. Zero commitments. Full access.",
+      "step3Title": "Own Forever",
+      "step3Desc": "Love it? Purchase a lifetime license and receive all future updates automatically — forever."
+    },
+    "testimonials": {
+      "badge": "Community Love",
+      "title": "Trusted by Server Owners",
+      "subtitle": "Join thousands of satisfied FiveM developers worldwide",
+      "quote1": "Best FiveM script store I've used. The quality is unmatched and support responds within minutes.",
+      "author1": "DarkRaven",
+      "role1": "Server Owner · 2,000+ players",
+      "quote2": "Switched from other stores and never looked back. Scripts are plug-and-play — no headaches.",
+      "author2": "XenoFive",
+      "role2": "FiveM Developer",
+      "quote3": "The free trial system is genius. Tried 2 scripts before buying — both were worth every cent.",
+      "author3": "NightCity_RP",
+      "role3": "Community Manager"
+    },
+    "bundles": {
+      "badge": "Save More with Bundles",
+      "title": "Script",
+      "highlight": "Bundle Packs",
+      "subtitle": "Curated collections at a fraction of the price. Save up to 40%.",
+      "getBundle": "Get Bundle",
+      "save": "Save",
+      "bestValue": "Best Value",
+      "mostPopular": "Most Popular",
+      "newBundle": "New Bundle",
+      "featuredLabel": "⭐ Most Popular",
+      "economy": {
+        "name": "Economy Pack",
+        "desc": "Everything you need to run a thriving economy server. Jobs, shops, banking, and more."
+      },
+      "admin": {
+        "name": "Admin Pack",
+        "desc": "Take full control of your server with powerful admin tools and monitoring systems."
+      },
+      "rp": {
+        "name": "RP Essentials",
+        "desc": "The perfect starter pack for new roleplay servers. Everything you need to launch."
+      }
+    },
+    "urgency": {
+      "limitedOffer": "Limited Time Offer",
+      "dealTitle": "Weekend Special",
+      "dealDesc": "Get 20% off any script. Use code",
+      "promoCode": "WEEKEND20",
+      "promoSuffix": "at checkout.",
+      "claimOffer": "Claim Offer",
+      "endsIn": "Ends in",
+      "activityTitle": "Recent Activity",
+      "purchased": "purchased",
+      "startedTrial": "started trial"
+    },
+    "quickPreview": {
+      "keyFeatures": "Key Features",
+      "moreFeaturesCount": "+{count} more features...",
+      "instantDelivery": "Instant\nDelivery",
+      "secureLicense": "Secure\nLicense",
+      "support": "24/7\nSupport",
+      "buyNow": "Buy Now",
+      "startFreeTrial": "Start Free Trial",
+      "viewFullDetails": "View full details & purchase options",
+      "freeTrial": "Free Trial",
+      "popular": "Popular",
+      "new": "New",
+      "premium": "Premium"
+    },
+    "compare": {
+      "comparing": "Comparing",
+      "of": "of",
+      "addScript": "Add script...",
+      "clear": "Clear",
+      "compareNow": "Compare Now",
+      "title": "Script Comparison",
+      "subtitle": "Side-by-side comparison of {count} scripts",
+      "feature": "Feature",
+      "category": "Category",
+      "license": "License",
+      "freeTrial": "Free Trial",
+      "popular": "Popular",
+      "features": "Features",
+      "lifetime": "♾️ Lifetime",
+      "timeBased": "⏱️ Time-based",
+      "buyScript": "Buy"
     }
   },
   "dashboard": {
@@ -266,7 +361,10 @@
     "refreshing": "Refreshing...",
     "noScriptsInCategory": "No scripts in this category",
     "purchased": "Purchased",
-    "myScripts": "My Scripts"
+    "myScripts": "My Scripts",
+    "quickPreview": "Quick Preview",
+    "addToCompare": "Add to compare",
+    "removeFromCompare": "Remove from compare"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -1208,7 +1306,7 @@
     "quote": "Space is big. You just won't believe how vastly, hugely, mind-bogglingly big it is."
   },
   "scriptDetail": {
-    "loading": "Loading payment details...",
+    "loading": "Loading...",
     "error": "Error",
     "scriptNotFound": "Script not found",
     "backToScripts": "Back to Scripts",
@@ -1219,6 +1317,26 @@
     "securePayment": "Secure payment processing with 256-bit encryption",
     "premium": "Premium",
     "keyFeatures": "Key Features",
+    "aboutScript": "About This Script",
+    "whyLoveIt": "Why Customers Love It",
+    "whatsIncluded": "What's Included",
+    "included1": "Full source code access",
+    "included2": "Instant download after payment",
+    "included3": "Free future updates",
+    "included4": "24/7 technical support",
+    "included5": "Secure private license key",
+    "included6": "IP whitelisting protection",
+    "trustUsers": "Happy Users",
+    "trustRating": "Average Rating",
+    "trustDelivery": "Delivery",
+    "trustSupport": "Support",
+    "viewingNow": "people viewing now",
+    "viewingCard": "people viewing this right now",
+    "verifiedBuyer": "Verified Buyer",
+    "freeTrialAvailable": "Free Trial Available",
+    "trialNoCreditCard": "3-day free trial · No credit card needed",
+    "sslSecure": "SSL Secure",
+    "instantAccess": "Instant Access",
     "systemRequirements": "System Requirements",
     "licenseInformation": "License Information",
     "licenseType": "License Type",
@@ -1237,6 +1355,9 @@
     "receiptEmail": "Receipt will be sent to your email address",
     "secureTransaction": "Secure Transaction",
     "encryptionNotice": "Your payment is protected by industry-leading 256-bit encryption. We never store your payment card details on our servers.",
+    "popular": "Popular",
+    "new": "New",
+    "perForever": "/ forever",
     "sslEncrypted": "SSL Encrypted",
     "pciCompliant": "PCI Compliant",
     "paymentSuccessful": "Payment successful! Activating license...",

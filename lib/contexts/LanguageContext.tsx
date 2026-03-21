@@ -16,6 +16,7 @@ export interface LanguageContextType {
 
 interface LanguageProviderProps {
   children: ReactNode
+  initialLang?: string
 }
 
 const translations = {
@@ -28,13 +29,21 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const LANGUAGE_STORAGE_KEY = 'freex_language'
 
-export function LanguageProvider({ children }: LanguageProviderProps) {
-  const [language, setLanguageState] = useState<Language>('en')
+const VALID_LANGS: Language[] = ['en', 'ar', 'de']
 
-  // Load language from localStorage on mount
+export function LanguageProvider({ children, initialLang }: LanguageProviderProps) {
+  const resolvedInitial: Language =
+    initialLang && VALID_LANGS.includes(initialLang as Language)
+      ? (initialLang as Language)
+      : 'en'
+
+  const [language, setLanguageState] = useState<Language>(resolvedInitial)
+
+  // Sync with localStorage on mount, but URL param takes precedence
   useEffect(() => {
     const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY) as Language
-    if (stored && (stored === 'en' || stored === 'ar' || stored === 'de')) {
+    // Only use stored value if no URL lang was provided
+    if (!initialLang && stored && VALID_LANGS.includes(stored)) {
       setLanguageState(stored)
       document.documentElement.dir = stored === 'ar' ? 'rtl' : 'ltr'
       document.documentElement.lang = stored

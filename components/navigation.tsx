@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Star, Zap, Home, Package, LayoutDashboard, Command } from 'lucide-react';
+import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Star, Zap, Home, Package, LayoutDashboard, Command, Clock } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
 import LanguageSwitcher from '@/components/language-switcher';
 import { useTranslations } from 'next-intl';
@@ -63,6 +63,7 @@ export default function Navigation() {
     { href: '/', label: t('home'), icon: Home },
     { href: '/scripts', label: t('scripts'), icon: Package },
     ...(user ? [{ href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard }] : []),
+    ...(user ? [{ href: '/hr/dashboard', label: 'Work Duty', icon: Clock }] : []),
     ...(isAdmin ? [{ href: '/admin', label: t('admin'), icon: Command }] : [])
   ];
 

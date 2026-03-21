@@ -503,7 +503,60 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+
+            {/* Active Trial Progress Widget */}
+            {user && user.trialStartAt && user.trialEndAt && (() => {
+              const trialEnd = new Date(user.trialEndAt);
+              const trialStart = new Date(user.trialStartAt);
+              const now = new Date();
+              const isActive = trialEnd > now;
+              const totalMs = trialEnd.getTime() - trialStart.getTime();
+              const usedMs = now.getTime() - trialStart.getTime();
+              const pct = Math.min(100, Math.max(0, (usedMs / totalMs) * 100));
+              const hoursLeft = Math.max(0, Math.floor((trialEnd.getTime() - now.getTime()) / 3600000));
+              const daysLeft = Math.floor(hoursLeft / 24);
+              const hoursRemainder = hoursLeft % 24;
+
+              if (!isActive) return null;
+              return (
+                <div className="mb-8 p-6 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-900/20 via-slate-900/80 to-orange-900/20 backdrop-blur-xl animate-fade-in">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/30 to-orange-500/30 flex items-center justify-center">
+                        <Clock size={24} className="text-amber-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-lg font-bold text-white">Free Trial Active</h3>
+                          <span className="px-2 py-0.5 text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded-full">
+                            {daysLeft > 0 ? `${daysLeft}d ${hoursRemainder}h left` : `${hoursLeft}h left`}
+                          </span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-slate-400">Trial ends {trialEnd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <Button
+                        onClick={() => router.push('/scripts')}
+                        className="px-6 py-3 font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Rocket size={18} />
+                          Upgrade to Full Access
+                        </div>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Recent Activity & Payment History */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
               {/* Recent Activity */}

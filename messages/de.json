@@ -51,7 +51,8 @@
       "loading": "Lädt...",
       "popular": "Beliebt",
       "new": "Neu",
-      "special": "Besonders"
+      "special": "Besonders",
+      "freeTrial": "Kostenlose Testversion"
     },
     "stats": {
       "badge": "Vertrauenswürdige Plattform",
@@ -72,6 +73,100 @@
       "noCreditCard": "Keine Kreditkarte",
       "trialDays": "3-Tage-Test",
       "cancelAnytime": "Jederzeit kündbar"
+    },
+    "howItWorks": {
+      "badge": "Einfacher Prozess",
+      "title": "Startklar in",
+      "highlight": "3 einfachen Schritten",
+      "subtitle": "Keine komplexe Einrichtung. Kein Coding erforderlich. Einfach installieren und genießen.",
+      "step1Title": "Entdecken & Durchstöbern",
+      "step1Desc": "Entdecken Sie über 500 Premium FiveM-Skripte. Filtern nach Kategorie, Preis oder Beliebtheit.",
+      "step2Title": "Kostenlos testen",
+      "step2Desc": "Starten Sie eine 3-tägige kostenlose Testversion für jedes Skript. Keine Kreditkarte erforderlich. Voller Zugriff.",
+      "step3Title": "Für immer besitzen",
+      "step3Desc": "Gefällt es Ihnen? Kaufen Sie eine Lebzeitlizenz und erhalten Sie alle zukünftigen Updates automatisch."
+    },
+    "testimonials": {
+      "badge": "Community-Liebe",
+      "title": "Von Serverbesitzern vertraut",
+      "subtitle": "Schließen Sie sich Tausenden zufriedener FiveM-Entwickler weltweit an",
+      "quote1": "Bester FiveM-Skriptshop den ich je benutzt habe. Die Qualität ist unübertroffen.",
+      "author1": "DarkRaven",
+      "role1": "Serverbesitzer · 2.000+ Spieler",
+      "quote2": "Von anderen Shops gewechselt und nie zurückgeblickt. Skripte sind sofort einsatzbereit.",
+      "author2": "XenoFive",
+      "role2": "FiveM-Entwickler",
+      "quote3": "Das kostenlose Testsystem ist genial. Zwei Skripte getestet bevor ich kaufte — beide ihr Geld wert.",
+      "author3": "NightCity_RP",
+      "role3": "Community-Manager"
+    },
+    "bundles": {
+      "badge": "Mehr sparen mit Bundles",
+      "title": "Skript",
+      "highlight": "Bundle-Pakete",
+      "subtitle": "Kuratierte Kollektionen zu einem Bruchteil des Preises. Sparen Sie bis zu 40%.",
+      "getBundle": "Bundle erhalten",
+      "save": "Sparen",
+      "bestValue": "Bestes Angebot",
+      "mostPopular": "Beliebteste",
+      "newBundle": "Neues Bundle",
+      "featuredLabel": "⭐ Beliebteste",
+      "economy": {
+        "name": "Wirtschafts-Paket",
+        "desc": "Alles was Sie für einen florierenden Wirtschaftsserver brauchen. Jobs, Shops, Banking und mehr."
+      },
+      "admin": {
+        "name": "Admin-Paket",
+        "desc": "Vollständige Kontrolle über Ihren Server mit leistungsstarken Admin-Tools und Überwachungssystemen."
+      },
+      "rp": {
+        "name": "RP-Grundlagen",
+        "desc": "Das perfekte Starter-Paket für neue Roleplay-Server. Alles was Sie für den Start benötigen."
+      }
+    },
+    "urgency": {
+      "limitedOffer": "Zeitlich begrenztes Angebot",
+      "dealTitle": "Wochenend-Special",
+      "dealDesc": "Erhalten Sie 20% Rabatt auf jedes Skript. Verwenden Sie den Code",
+      "promoCode": "WEEKEND20",
+      "promoSuffix": "beim Checkout.",
+      "claimOffer": "Angebot sichern",
+      "endsIn": "Endet in",
+      "activityTitle": "Letzte Aktivität",
+      "purchased": "hat gekauft",
+      "startedTrial": "hat Testversion gestartet"
+    },
+    "quickPreview": {
+      "keyFeatures": "Hauptmerkmale",
+      "moreFeaturesCount": "+{count} weitere Merkmale...",
+      "instantDelivery": "Sofortige\nLieferung",
+      "secureLicense": "Sichere\nLizenz",
+      "support": "24/7\nSupport",
+      "buyNow": "Jetzt kaufen",
+      "startFreeTrial": "Kostenlose Testversion starten",
+      "viewFullDetails": "Vollständige Details & Kaufoptionen anzeigen",
+      "freeTrial": "Kostenlose Testversion",
+      "popular": "Beliebt",
+      "new": "Neu",
+      "premium": "Premium"
+    },
+    "compare": {
+      "comparing": "Vergleiche",
+      "of": "von",
+      "addScript": "Skript hinzufügen...",
+      "clear": "Löschen",
+      "compareNow": "Jetzt vergleichen",
+      "title": "Skript-Vergleich",
+      "subtitle": "Seitenvergleich von {count} Skripten",
+      "feature": "Merkmal",
+      "category": "Kategorie",
+      "license": "Lizenz",
+      "freeTrial": "Kostenlose Testversion",
+      "popular": "Beliebt",
+      "features": "Merkmale",
+      "lifetime": "♾️ Lebenslang",
+      "timeBased": "⏱️ Zeitbasiert",
+      "buyScript": "Kaufen"
     }
   },
   "dashboard": {
@@ -271,7 +366,10 @@
     "search": "Skripte suchen...",
     "noResults": "Keine Skripte gefunden",
     "price": "Preis",
-    "startTrial": "Testversion starten"
+    "startTrial": "Testversion starten",
+    "quickPreview": "Schnellvorschau",
+    "addToCompare": "Zum Vergleich hinzufügen",
+    "removeFromCompare": "Aus Vergleich entfernen"
   },
   "admin": {
     "dashboard": "Admin-Dashboard",
@@ -1224,6 +1322,26 @@
     "securePayment": "Sichere Zahlungsabwicklung mit 256-Bit-Verschlüsselung",
     "premium": "Premium",
     "keyFeatures": "Hauptmerkmale",
+    "aboutScript": "Über dieses Skript",
+    "whyLoveIt": "Warum Kunden es lieben",
+    "whatsIncluded": "Was ist enthalten",
+    "included1": "Vollständiger Quellcode-Zugriff",
+    "included2": "Sofortiger Download nach Zahlung",
+    "included3": "Kostenlose zukünftige Updates",
+    "included4": "24/7 technischer Support",
+    "included5": "Persönlicher sicherer Lizenzschlüssel",
+    "included6": "IP-Bindungsschutz",
+    "trustUsers": "Zufriedene Benutzer",
+    "trustRating": "Durchschnittliche Bewertung",
+    "trustDelivery": "Lieferung",
+    "trustSupport": "Support",
+    "viewingNow": "Person sieht sich das gerade an",
+    "viewingCard": "Personen sehen dies gerade an",
+    "verifiedBuyer": "Verifizierter Käufer",
+    "freeTrialAvailable": "Kostenlose Testversion verfügbar",
+    "trialNoCreditCard": "3-tägige Testversion · Keine Kreditkarte erforderlich",
+    "sslSecure": "SSL-gesichert",
+    "instantAccess": "Sofortiger Zugriff",
     "systemRequirements": "Systemanforderungen",
     "licenseInformation": "Lizenzinformationen",
     "licenseType": "Lizenztyp",
@@ -1242,6 +1360,9 @@
     "receiptEmail": "Quittung wird an Ihre E-Mail-Adresse gesendet",
     "secureTransaction": "Sichere Transaktion",
     "encryptionNotice": "Ihre Zahlung ist durch branchenführende 256-Bit-Verschlüsselung geschützt. Wir speichern niemals Ihre Zahlungskartendetails auf unseren Servern.",
+    "popular": "Beliebt",
+    "new": "Neu",
+    "perForever": "/ für immer",
     "sslEncrypted": "SSL-verschlüsselt",
     "pciCompliant": "PCI-konform",
     "paymentSuccessful": "Zahlung erfolgreich! Lizenz wird aktiviert...",

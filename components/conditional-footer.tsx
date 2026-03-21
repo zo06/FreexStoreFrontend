@@ -7,7 +7,7 @@ export default function ConditionalFooter() {
   const pathname = usePathname();
   
   // Don't show footer on admin routes (handles /en/admin, /de/admin, /ar/admin, etc.)
-  if (pathname?.includes('/admin')) {
+  if (pathname?.includes('/admin') || pathname?.includes('/hr')) {
     return null;
   }
   

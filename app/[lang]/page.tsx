@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Zap, BarChart3, Plug, Bot, Star, Rocket, Globe, Users, Flame } from 'lucide-react';
+import { Zap, BarChart3, Star, Rocket, Globe, Users, Flame, Search, Gift, Infinity as InfinityIcon, Quote } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +14,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTranslations } from 'next-intl';
 
 gsap.registerPlugin(ScrollTrigger);
+
 
 export default function Home() {
   const t = useTranslations('home');
@@ -279,6 +280,105 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20 sm:py-28 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/15 to-transparent pointer-events-none"></div>
+        <div className="container relative z-10 mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 mb-6">
+              <Rocket className="w-4 h-4 text-violet-400" />
+              <span className="text-sm font-medium text-violet-400">{t('howItWorks.badge')}</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight">
+              <span className="text-white">{t('howItWorks.title')}</span>{' '}
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent">{t('howItWorks.highlight')}</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">{t('howItWorks.subtitle')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative">
+            {/* Connector line (desktop only) */}
+            <div className="hidden md:block absolute top-14 left-[calc(33.33%+0.75rem)] right-[calc(33.33%+0.75rem)] h-px bg-gradient-to-r from-cyan-500/40 via-blue-500/40 to-violet-500/40"></div>
+
+            {/* Step 1 */}
+            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-cyan-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-cyan-500/30">1</div>
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <Search className="w-8 h-8 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step1Title')}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step1Desc')}</p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-blue-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/30">2</div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <Gift className="w-8 h-8 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step2Title')}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step2Desc')}</p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-violet-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-violet-500/30">3</div>
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                <InfinityIcon className="w-8 h-8 text-violet-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step3Title')}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step3Desc')}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 sm:py-28 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/10 to-transparent pointer-events-none"></div>
+        <div className="container relative z-10 mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
+              <Star className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-400">{t('testimonials.badge')}</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 leading-tight">{t('testimonials.title')}</h2>
+            <p className="text-gray-400 text-lg">{t('testimonials.subtitle')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { quote: t('testimonials.quote1'), author: t('testimonials.author1'), role: t('testimonials.role1'), color: 'cyan', rating: 5 },
+              { quote: t('testimonials.quote2'), author: t('testimonials.author2'), role: t('testimonials.role2'), color: 'blue', rating: 5 },
+              { quote: t('testimonials.quote3'), author: t('testimonials.author3'), role: t('testimonials.role3'), color: 'emerald', rating: 5 },
+            ].map((item, i) => (
+              <div key={i} className="relative p-7 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-white/20 transition-all duration-500">
+                <Quote className="w-8 h-8 text-white/10 mb-4" />
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {[...Array(item.rating)].map((_, s) => (
+                    <Star key={s} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-gray-300 text-sm leading-relaxed mb-6">"{item.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border border-white/10 flex items-center justify-center text-sm font-bold text-white">
+                    {item.author.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-white text-sm font-semibold">{item.author}</div>
+                    <div className="text-gray-500 text-xs">{item.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Scripts Section */}
       <section ref={featuresRef} id="features" className="py-20 sm:py-28 lg:py-36 relative">
         {/* Section background */}
@@ -356,6 +456,12 @@ export default function Home() {
                           <Star className="w-3.5 h-3.5" />{t('featuredScripts.new')}
                         </div>
                       ) : null}
+                      {/* Free Trial badge */}
+                      {script.trialAvailable && (
+                        <div className={`absolute top-3 ${locale === 'ar' ? 'right-3' : 'left-3'} px-2.5 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 rounded-full backdrop-blur-sm inline-flex items-center gap-1`}>
+                          <Gift className="w-3 h-3" />{t('featuredScripts.freeTrial')}
+                        </div>
+                      )}
                       
                       {/* Price tag */}
                       <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">

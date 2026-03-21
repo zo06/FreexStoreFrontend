@@ -169,7 +169,7 @@ export default async function LocaleLayout({
         <HtmlLangSetter lang={lang} dir={direction} />
         <NextIntlClientProvider messages={messages}>
           <Providers>
-            <LanguageProvider>
+            <LanguageProvider initialLang={lang}>
               <AuthProvider>
                 <LicenseProtectionProvider>
                   <ThemeProvider

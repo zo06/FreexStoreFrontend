@@ -12,7 +12,11 @@ import toast from 'react-hot-toast';
 import PayPalBuyButton from '@/components/PayPalBuyButton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { MediaSlider } from '@/components/ui/media-slider';
+import { QuickPreviewModal } from '@/components/ui/quick-preview-modal';
+import { CompareBar } from '@/components/ui/compare-bar';
+import { CompareModal } from '@/components/ui/compare-modal';
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 
 interface Script {
   id: string;
@@ -104,6 +108,8 @@ function ScriptsPageContent() {
   const searchParams = useSearchParams();
   const filterParam = searchParams.get('filter');
   const categoryParam = searchParams.get('category');
+  const pathname = usePathname();
+  const locale = pathname?.split('/')[1] || 'en';
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
@@ -204,6 +210,9 @@ function ScriptsPageContent() {
   console.log(filteredScripts)
 
   const [trialLoading, setTrialLoading] = useState<string | null>(null);
+  const [previewScript, setPreviewScript] = useState<Script | null>(null);
+  const [compareScripts, setCompareScripts] = useState<Script[]>([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
   
   // Helper function to check user's license status for a script
   const getLicenseStatus = (scriptId: string) => {
@@ -262,6 +271,17 @@ function ScriptsPageContent() {
     setShowPopup(false);
     setSelectedScript(null);
   };
+
+  const toggleCompare = (script: Script) => {
+    setCompareScripts(prev => {
+      const exists = prev.find(s => s.id === script.id);
+      if (exists) return prev.filter(s => s.id !== script.id);
+      if (prev.length >= 3) { toast.error('You can compare up to 3 scripts'); return prev; }
+      return [...prev, script];
+    });
+  };
+
+  const isInCompare = (id: string) => compareScripts.some(s => s.id === id);
 
   return (
     <>
@@ -493,13 +513,20 @@ function ScriptsPageContent() {
                           <Sparkle size={14} weight="fill" className="inline mr-1" />New
                         </div>
                       ) : null}
-                      
+
+                      {/* Free Trial badge (bottom-left) */}
+                      {script.trialAvailable && !getLicenseStatus(script.id) && (
+                        <div className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 rounded-full backdrop-blur-sm inline-flex items-center gap-1">
+                          <Gift size={12} weight="fill" />Free Trial
+                        </div>
+                      )}
+
                       {/* Price tag */}
                       <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
                         <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
                       </div>
                     </div>
-                    
+
                     {/* Content */}
                     <div className="p-5 sm:p-6">
                       {/* Category & License Status */}
@@ -563,67 +590,87 @@ function ScriptsPageContent() {
                       
                       {/* Actions */}
                       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        {/* Quick Preview button */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPreviewScript(script); }}
+                          className="px-3 py-2.5 text-sm font-semibold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all duration-300 flex items-center gap-1.5 flex-shrink-0"
+                          title={t('quickPreview')}
+                        >
+                          <Eye size={14} />
+                        </button>
+                        {/* Compare button */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleCompare(script); }}
+                          className={`px-2.5 py-2.5 text-xs font-medium border rounded-xl transition-all duration-300 flex-shrink-0 ${
+                            isInCompare(script.id)
+                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                              : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10'
+                          }`}
+                          title={isInCompare(script.id) ? t('removeFromCompare') : t('addToCompare')}
+                        >
+                          ⚖️
+                        </button>
                         {user ? (
                           (() => {
                             const licenseStatus = getLicenseStatus(script.id);
-                            
+
                             // User has purchased the script
                             if (licenseStatus && !licenseStatus.isTrial) {
                               return (
-                                <button 
+                                <button
                                   onClick={() => window.location.href = '/dashboard'}
                                   className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl transition-all duration-300"
                                 >
-                                  <CheckCircle size={14} weight="fill" className="inline mr-1" />Owned - View
+                                  <CheckCircle size={14} weight="fill" className="inline mr-1" />{t('ownedView')}
                                 </button>
                               );
                             }
-                            
+
                             // User has trial license - show upgrade button only
                             if (licenseStatus && licenseStatus.isTrial) {
                               return (
-                                <button 
+                                <button
                                   onClick={() => handleScriptAction(script, 'buy')}
                                   className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25 animate-pulse"
                                 >
-                                  <ArrowUp size={14} weight="bold" className="inline mr-1" />Upgrade to Full
+                                  <ArrowUp size={14} weight="bold" className="inline mr-1" />{t('upgradeFull')}
                                 </button>
                               );
                             }
-                            
+
                             // No license - show trial/buy options (only if trialAvailable is true)
                             if (script.trialAvailable && user.trialEndAt && new Date(user.trialEndAt) > new Date()) {
                               return (
                                 <div className="flex flex-1 gap-2">
-                                  <button 
+                                  <button
                                     onClick={() => handleScriptAction(script, 'trial')}
                                     className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25"
                                   >
-                                    <Gift size={14} weight="fill" className="inline mr-1" />Try Free
+                                    <Gift size={14} weight="fill" className="inline mr-1" />{t('tryFree')}
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => handleScriptAction(script, 'buy')}
                                     className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                                   >
-                                    Buy
+                                    {t('buy')}
                                   </button>
                                 </div>
                               );
                             }
-                            
+
                             // No trial available or trial expired - show buy only
                             return (
-                              <button 
+                              <button
                                 onClick={() => handleScriptAction(script, 'buy')}
                                 className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                               >
-                                Buy Now
+                                {t('buyNow')}
                               </button>
                             );
                           })()
                         ) : (
                           <Link href="/auth/login" className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25">
-                            Login to Buy
+                            {t('loginToBuy')}
                           </Link>
                         )}
                       </div>
@@ -662,23 +709,30 @@ function ScriptsPageContent() {
                   
                   {script.popular && script.new ? (
                     <div className="absolute top-3 right-3 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full shadow-lg animate-pulse">
-                      <Sparkle size={14} weight="fill" className="inline mr-1" />Special
+                      <Sparkle size={14} weight="fill" className="inline mr-1" />{t('special')}
                     </div>
                   ) : script.popular ? (
                     <div className="absolute top-3 right-3 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 rounded-full shadow-lg">
-                      <Fire size={14} weight="fill" className="inline mr-1" />Popular
+                      <Fire size={14} weight="fill" className="inline mr-1" />{t('popular')}
                     </div>
                   ) : script.new ? (
                     <div className="absolute top-3 right-3 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg">
-                      <Sparkle size={14} weight="fill" className="inline mr-1" />New
+                      <Sparkle size={14} weight="fill" className="inline mr-1" />{t('new')}
                     </div>
                   ) : null}
-                  
+
+                  {/* Free Trial badge */}
+                  {script.trialAvailable && !getLicenseStatus(script.id) && (
+                    <div className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 rounded-full backdrop-blur-sm inline-flex items-center gap-1">
+                      <Gift size={12} weight="fill" />{t('freeTrial')}
+                    </div>
+                  )}
+
                   <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
                     <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
                   </div>
                 </div>
-                
+
                 <div className="p-5 sm:p-6">
                   <div className="mb-3 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
@@ -692,13 +746,13 @@ function ScriptsPageContent() {
                         if (licenseStatus.isTrial) {
                           return (
                             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                              <Gift size={14} weight="fill" className="inline mr-1" />Free Trial
+                              <Gift size={14} weight="fill" className="inline mr-1" />{t('freeTrial')}
                             </span>
                           );
                         } else {
                           return (
                             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                              <CheckCircle size={14} weight="fill" className="inline mr-1" />Purchased
+                              <CheckCircle size={14} weight="fill" className="inline mr-1" />{t('purchased')}
                             </span>
                           );
                         }
@@ -747,7 +801,7 @@ function ScriptsPageContent() {
                               onClick={() => window.location.href = '/dashboard'}
                               className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-xl transition-all duration-300"
                             >
-                              ✅ Owned
+                              ✅ {t('owned')}
                             </button>
                           );
                         }
@@ -760,13 +814,13 @@ function ScriptsPageContent() {
                                 onClick={() => handleScriptAction(script, 'buy')}
                                 className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                               >
-                                ⬆️ Upgrade
+                                ⬆️ {t('upgrade')}
                               </button>
                               <button 
                                 onClick={() => window.location.href = '/dashboard'}
                                 className="px-4 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl transition-all duration-300"
                               >
-                                📁 My Scripts
+                                📁 {t('myScripts')}
                               </button>
                             </div>
                           );
@@ -780,30 +834,30 @@ function ScriptsPageContent() {
                                 onClick={() => handleScriptAction(script, 'trial')}
                                 className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25"
                               >
-                                <Gift size={14} weight="fill" className="inline mr-1" />Try Free
+                                <Gift size={14} weight="fill" className="inline mr-1" />{t('tryFree')}
                               </button>
-                              <button 
+                              <button
                                 onClick={() => handleScriptAction(script, 'buy')}
                                 className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                               >
-                                Buy
+                                {t('buy')}
                               </button>
                             </div>
                           );
                         } else {
                           return (
-                            <button 
+                            <button
                               onClick={() => handleScriptAction(script, 'buy')}
                               className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                             >
-                              Buy Now
+                              {t('buyNow')}
                             </button>
                           );
                         }
                       })()
                     ) : (
                       <Link href="/auth/login" className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25">
-                        Login to Buy
+                        {t('loginToBuy')}
                       </Link>
                     )}
                   </div>
@@ -1049,6 +1103,32 @@ function ScriptsPageContent() {
       scriptName={confirmModal.script?.title || confirmModal.script?.name}
       scriptPrice={confirmModal.type === 'trial' ? 'FREE (Trial)' : confirmModal.script?.price}
     />
+
+    {/* Quick Preview Modal */}
+    <QuickPreviewModal
+      script={previewScript}
+      onClose={() => setPreviewScript(null)}
+      onTrial={(script) => {
+        setPreviewScript(null);
+        setConfirmModal({ isOpen: true, type: 'trial', script: script as any });
+      }}
+    />
+
+    {/* Compare Bar */}
+    <CompareBar
+      scripts={compareScripts as any}
+      onRemove={(id) => setCompareScripts(prev => prev.filter(s => s.id !== id))}
+      onClear={() => setCompareScripts([])}
+      onCompare={() => setShowCompareModal(true)}
+    />
+
+    {/* Compare Modal */}
+    {showCompareModal && (
+      <CompareModal
+        scripts={compareScripts as any}
+        onClose={() => setShowCompareModal(false)}
+      />
+    )}
     </>
   );
 }
