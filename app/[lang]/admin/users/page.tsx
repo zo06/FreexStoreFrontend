@@ -1,121 +1,107 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { withAdminAuth } from '@/lib/auth-context'
-import { useUsersStore, User } from '@/lib/stores'
+import { User } from '@/lib/stores'
+import { safeAdminApi } from '@/lib/admin-api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Edit, Trash2, Shield, UserX, UserCheck, Eye, Users, ArrowLeft } from 'lucide-react'
+import { Trash2, Shield, Eye, Users, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
 import AdminUserInfoModal from '@/components/admin-user-info-modal'
 
+const PAGE_LIMIT = 20
+
 function AdminUsers() {
   const t = useTranslations('admin.users')
-  // Use Zustand store
-  const { 
-    items: users, 
-    loading, 
-    error,
-    getAll,
-    remove,
-    patch 
-  } = useUsersStore()
+  const router = useRouter()
 
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(false)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [filterValues, setFilterValues] = useState<FilterValues>({
+    search: '',
+    status: 'all',
+    category: 'all',
+    role: 'all',
+    priceMin: 0,
+    priceMax: 1000,
+    isActive: null,
+    dateFrom: undefined,
+    dateTo: undefined,
+    customValues: {},
+  })
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [showUserInfoModal, setShowUserInfoModal] = useState(false)
   const [selectedUserForInfo, setSelectedUserForInfo] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [limit] = useState(10)
-  const router = useRouter()
 
-  // Filter configuration
+  const fetchUsers = useCallback(async (page: number, filters: FilterValues) => {
+    setLoading(true)
+    try {
+      const result = await safeAdminApi.users.getAll({
+        page,
+        limit: PAGE_LIMIT,
+        search: filters.search || undefined,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        role: filters.role !== 'all' ? filters.role : undefined,
+      })
+      if (result) {
+        setUsers(result.data.map((u: any) => ({ ...u, isAdmin: u.role === 'admin' })))
+        setTotal(result.total)
+        setTotalPages(result.totalPages)
+      }
+    } catch {
+      // errors handled by safeAdminApi
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchUsers(currentPage, filterValues)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filterValues.search, filterValues.status, filterValues.role, fetchUsers])
+
+  // Date and isActive filters applied client-side on the current page
+  const displayedUsers = users.filter(user => {
+    if (filterValues.isActive !== null && user.isActive !== filterValues.isActive) return false
+    if (filterValues.dateFrom && user.createdAt && new Date(user.createdAt) < filterValues.dateFrom) return false
+    if (filterValues.dateTo && user.createdAt && new Date(user.createdAt) > filterValues.dateTo) return false
+    return true
+  })
+
   const filterConfig: FilterConfig = {
     searchPlaceholder: t('searchPlaceholder'),
     statusOptions: [
       { value: 'active', label: t('statusOptions.active'), count: users.filter(u => u.isActive).length },
-      { value: 'inactive', label: t('statusOptions.inactive'), count: users.filter(u => !u.isActive).length }
+      { value: 'inactive', label: t('statusOptions.inactive'), count: users.filter(u => !u.isActive).length },
     ],
     roleOptions: [
       { value: 'admin', label: t('roleOptions.admin'), count: users.filter(u => u.isAdmin).length },
-      { value: 'user', label: t('roleOptions.user'), count: users.filter(u => !u.isAdmin).length }
+      { value: 'user', label: t('roleOptions.user'), count: users.filter(u => !u.isAdmin).length },
     ],
     showDateFilter: true,
-    showActiveFilter: true
+    showActiveFilter: true,
   }
 
-  // Load users on mount
-  useEffect(() => {
-    getAll().catch(() => {});
-  }, [getAll])
-
-  // Update filtered users when users change
-  useEffect(() => {
-    setFilteredUsers(users)
-    setTotalPages(Math.ceil(users.length / limit))
-  }, [users, limit])
-
   const handleFilterChange = (filters: FilterValues) => {
-    let filtered = [...users]
-
-    // Search filter
-    if (filters.search) {
-      filtered = filtered.filter(user =>
-        user.username.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (user.discordUsername && user.discordUsername.toLowerCase().includes(filters.search.toLowerCase()))
-      )
-    }
-
-    // Status filter
-    if (filters.status !== 'all') {
-      if (filters.status === 'active') {
-        filtered = filtered.filter(user => user.isActive)
-      } else if (filters.status === 'inactive') {
-        filtered = filtered.filter(user => !user.isActive)
-      }
-    }
-
-    // Role filter
-    if (filters.role !== 'all') {
-      if (filters.role === 'admin') {
-        filtered = filtered.filter(user => user.isAdmin)
-      } else if (filters.role === 'user') {
-        filtered = filtered.filter(user => !user.isAdmin)
-      }
-    }
-
-    // Active status filter
-    if (filters.isActive !== null) {
-      filtered = filtered.filter(user => user.isActive === filters.isActive)
-    }
-
-    // Date filter
-    if (filters.dateFrom) {
-      filtered = filtered.filter(user => 
-        user.createdAt && new Date(user.createdAt) >= filters.dateFrom!
-      )
-    }
-    if (filters.dateTo) {
-      filtered = filtered.filter(user => 
-        user.createdAt && new Date(user.createdAt) <= filters.dateTo!
-      )
-    }
-
-    setFilteredUsers(filtered)
+    setFilterValues(filters)
+    setCurrentPage(1)
   }
 
   const handleExport = () => {
     const csvContent = "data:text/csv;charset=utf-8," +
       `${t('csvHeaders.username')},${t('csvHeaders.discordUsername')},${t('csvHeaders.role')},${t('csvHeaders.status')},${t('csvHeaders.joinDate')},${t('csvHeaders.lastLogin')},${t('csvHeaders.lastIp')}\n` +
-      filteredUsers.map(user =>
+      displayedUsers.map(user =>
         `${user.username},${user.discordUsername || t('csvValues.na')},${user.isAdmin ? t('csvValues.admin') : t('csvValues.user')},${user.isActive ? t('csvValues.active') : t('csvValues.inactive')},${formatDate(user.createdAt || '')},${user.lastLoginAt ? formatDate(user.lastLoginAt) : t('csvValues.never')},${(user as any).lastLoginIp || t('csvValues.na')}`
       ).join("\n")
 
@@ -130,43 +116,38 @@ function AdminUsers() {
 
   const handleToggleAdmin = async (user: User) => {
     try {
-      await patch(user.id, { isAdmin: !user.isAdmin })
+      await safeAdminApi.users.toggleAdmin(user.id)
+      setUsers(prev => prev.map(u =>
+        u.id === user.id ? { ...u, isAdmin: !u.isAdmin, role: u.isAdmin ? 'user' : 'admin' } : u
+      ))
       toast.success(t('toast.adminStatusUpdated', { username: user.username }))
-    } catch (error) {
-      console.error('Failed to toggle admin status:', error)
+    } catch {
       toast.error(t('toast.failedToUpdateAdminStatus'))
     }
   }
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return
-
     try {
-      await remove(selectedUser.id)
+      await safeAdminApi.users.delete(selectedUser.id)
+      setUsers(prev => prev.filter(u => u.id !== selectedUser.id))
+      setTotal(prev => prev - 1)
       toast.success(t('toast.userDeletedSuccess', { username: selectedUser.username }))
       setIsDeleteDialogOpen(false)
       setSelectedUser(null)
-    } catch (error) {
-      console.error('Failed to delete user:', error)
+    } catch {
       toast.error(t('toast.failedToDeleteUser'))
     }
   }
 
   const getStatusBadge = (user: User) => {
-    if (!user.isActive) {
-      return <Badge variant="destructive">{t('badges.inactive')}</Badge>
-    }
-    if (user.isAdmin) {
-      return <Badge variant="default" className="bg-cyan-500">{t('badges.admin')}</Badge>
-    }
+    if (!user.isActive) return <Badge variant="destructive">{t('badges.inactive')}</Badge>
+    if (user.isAdmin) return <Badge variant="default" className="bg-cyan-500">{t('badges.admin')}</Badge>
     return <Badge variant="outline">{t('badges.user')}</Badge>
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString()
-  }
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString()
 
-  // Show loading spinner only on initial page load
   if (loading && users.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
@@ -178,10 +159,10 @@ function AdminUsers() {
   return (
     <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
       {/* Background Effects */}
-<div className="absolute inset-0">
-  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-</div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-2xl sm:blur-3xl from-cyan-500/10 to-blue-500/10"></div>
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
+      </div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-2xl sm:blur-3xl from-cyan-500/10 to-blue-500/10"></div>
 
       <div className="relative z-10 p-3 sm:p-4 md:p-6 mx-auto space-y-3 sm:space-y-4 md:space-y-6 max-w-7xl">
         {/* Header */}
@@ -207,22 +188,22 @@ function AdminUsers() {
           </div>
         </div>
 
-      {/* Admin Filter Component */}
-      <AdminFilter
-        config={filterConfig}
-        onFilterChange={handleFilterChange}
-        onRefresh={() => getAll()}
-        onExport={handleExport}
-        totalCount={users.length}
-        filteredCount={filteredUsers.length}
-        loading={loading}
-      />
+        {/* Admin Filter Component */}
+        <AdminFilter
+          config={filterConfig}
+          onFilterChange={handleFilterChange}
+          onRefresh={() => fetchUsers(currentPage, filterValues)}
+          onExport={handleExport}
+          totalCount={total}
+          filteredCount={displayedUsers.length}
+          loading={loading}
+        />
 
         {/* Users Table */}
         <div className="p-4 sm:p-5 md:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
           <div className="mb-4 sm:mb-5 md:mb-6">
             <h2 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
-              {t('table.users', { count: filteredUsers.length, total: users.length })}
+              {t('table.users', { count: displayedUsers.length, total })}
             </h2>
             <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('table.listDescription')}</p>
           </div>
@@ -241,7 +222,7 @@ function AdminUsers() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {displayedUsers.map((user) => (
                   <TableRow key={user.id} className="transition-colors border-white/10 hover:bg-white/5">
                     <TableCell className="font-medium text-white text-xs sm:text-sm">{user.username}</TableCell>
                     <TableCell className="text-gray-300 text-xs sm:text-sm">{user.discordUsername || t('table.na')}</TableCell>
@@ -252,10 +233,7 @@ function AdminUsers() {
                     <TableCell>
                       <div className="flex justify-end gap-1 sm:gap-2">
                         <Button
-                          onClick={() => {
-                            setSelectedUserForInfo(user)
-                            setShowUserInfoModal(true)
-                          }}
+                          onClick={() => { setSelectedUserForInfo(user); setShowUserInfoModal(true) }}
                           size="sm"
                           className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
                           title={t('table.viewUserDetails')}
@@ -273,10 +251,7 @@ function AdminUsers() {
                           <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
                         <Button
-                          onClick={() => {
-                            setSelectedUser(user)
-                            setIsDeleteDialogOpen(true)
-                          }}
+                          onClick={() => { setSelectedUser(user); setIsDeleteDialogOpen(true) }}
                           size="sm"
                           className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
                         >
@@ -286,6 +261,13 @@ function AdminUsers() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {displayedUsers.length === 0 && !loading && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-gray-400 py-8">
+                      No users found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
@@ -296,23 +278,24 @@ function AdminUsers() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
             <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
               {t('pagination.showing', {
-                from: Math.min((currentPage - 1) * limit + 1, users.length),
-                to: Math.min(currentPage * limit, users.length),
-                total: users.length
+                from: total === 0 ? 0 : (currentPage - 1) * PAGE_LIMIT + 1,
+                to: Math.min(currentPage * PAGE_LIMIT, total),
+                total,
               })}
             </p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || loading}
                 size="sm"
                 className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
               >
                 {t('pagination.previous')}
               </Button>
+              <span className="text-xs text-gray-400 px-1">{currentPage} / {totalPages}</span>
               <Button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || loading}
                 size="sm"
                 className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
               >
@@ -349,10 +332,7 @@ function AdminUsers() {
         {selectedUserForInfo && (
           <AdminUserInfoModal
             isOpen={showUserInfoModal}
-            onClose={() => {
-              setShowUserInfoModal(false)
-              setSelectedUserForInfo(null)
-            }}
+            onClose={() => { setShowUserInfoModal(false); setSelectedUserForInfo(null) }}
             userId={selectedUserForInfo.id}
             userName={selectedUserForInfo.username}
           />

@@ -100,21 +100,25 @@ export interface UpdateCategoryRequest {
 export const adminApi = {
   // User Management
   users: {
-    getAll: async (params?: { page?: number; limit?: number }): Promise<{data: User[], total: number}> => {
+    getAll: async (params?: { page?: number; limit?: number; search?: string; status?: string; role?: string }): Promise<{data: User[], total: number, totalPages: number}> => {
       const queryParams = new URLSearchParams();
       if (params?.page) queryParams.append('page', params.page.toString());
       if (params?.limit) queryParams.append('limit', params.limit.toString());
-      
+      if (params?.search) queryParams.append('search', params.search);
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.role) queryParams.append('role', params.role);
+
       const url = `/admin/users${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      const response = await apiClient.get<{data: User[], total?: number}>(url);
+      const response = await apiClient.get<{data: User[], total?: number, totalPages?: number}>(url);
       return {
         data: response.data,
-        total: response.total || response.data.length
+        total: response.total || response.data.length,
+        totalPages: response.totalPages || 1,
       };
     },
-    
+
     // Alias for backward compatibility
-    getUsers: async (params?: { page?: number; limit?: number }): Promise<{data: User[], total: number}> => {
+    getUsers: async (params?: { page?: number; limit?: number; search?: string; status?: string; role?: string }): Promise<{data: User[], total: number, totalPages: number}> => {
       return adminApi.users.getAll(params);
     },
     

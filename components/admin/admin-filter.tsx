@@ -1,17 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Search, Filter, X, Calendar as CalendarIcon, RefreshCw, Download, SlidersHorizontal } from 'lucide-react'
+import { Search, X, CalendarIcon, RefreshCw, Download, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -56,6 +48,64 @@ interface AdminFilterProps {
   loading?: boolean
 }
 
+function FilterPill({
+  active,
+  onClick,
+  children,
+  count,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+  count?: number
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border',
+        active
+          ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'
+      )}
+    >
+      {children}
+      {count !== undefined && (
+        <span
+          className={cn(
+            'px-1.5 py-0.5 rounded-md text-[10px] font-semibold',
+            active ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/10 text-gray-500'
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  )
+}
+
+function ActiveChip({
+  label,
+  onRemove,
+}: {
+  label: string
+  onRemove: () => void
+}) {
+  return (
+    <span className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/25 rounded-lg text-xs text-cyan-300">
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="ml-0.5 text-cyan-400/60 hover:text-cyan-300 transition-colors"
+      >
+        <X className="w-3 h-3" />
+      </button>
+    </span>
+  )
+}
+
 export function AdminFilter({
   config,
   onFilterChange,
@@ -63,7 +113,7 @@ export function AdminFilter({
   onExport,
   totalCount = 0,
   filteredCount = 0,
-  loading = false
+  loading = false,
 }: AdminFilterProps) {
   const [filters, setFilters] = useState<FilterValues>({
     search: '',
@@ -75,53 +125,56 @@ export function AdminFilter({
     dateFrom: undefined,
     dateTo: undefined,
     isActive: null,
-    customValues: {}
+    customValues: {},
   })
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeFiltersCount, setActiveFiltersCount] = useState(0)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const [localSearch, setLocalSearch] = useState('')
 
-  // Debounce for search input
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [localSearchValue, setLocalSearchValue] = useState('')
+  const hasAdvancedFilters = !!(
+    config.statusOptions ||
+    config.categoryOptions ||
+    config.roleOptions ||
+    config.showDateFilter ||
+    config.showActiveFilter ||
+    config.showPriceFilter ||
+    config.customFilters?.length
+  )
 
-  // Handle search input with debouncing
+  // Debounce search
   useEffect(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current)
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      updateFilters({ search: localSearch })
+    }, 400)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localSearch])
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      updateFilters({ search: localSearchValue })
-    }, 500) // 500ms delay
+  const updateFilters = (patch: Partial<FilterValues>) => {
+    const next = { ...filters, ...patch }
+    setFilters(next)
+    onFilterChange(next)
 
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current)
-      }
-    }
-  }, [localSearchValue])
-
-  const updateFilters = (newFilters: Partial<FilterValues>) => {
-    const updatedFilters = { ...filters, ...newFilters }
-    setFilters(updatedFilters)
-    onFilterChange(updatedFilters)
-    
-    // Count active filters
     let count = 0
-    if (updatedFilters.search) count++
-    if (updatedFilters.status !== 'all') count++
-    if (updatedFilters.category !== 'all') count++
-    if (updatedFilters.role !== 'all') count++
-    if (updatedFilters.isActive !== null) count++
-    if (updatedFilters.dateFrom || updatedFilters.dateTo) count++
-    if (config.showPriceFilter && (updatedFilters.priceMin > (config.priceRange?.min || 0) || updatedFilters.priceMax < (config.priceRange?.max || 1000))) count++
-    
+    if (next.search) count++
+    if (next.status !== 'all') count++
+    if (next.category !== 'all') count++
+    if (next.role !== 'all') count++
+    if (next.isActive !== null) count++
+    if (next.dateFrom || next.dateTo) count++
+    if (
+      config.showPriceFilter &&
+      (next.priceMin > (config.priceRange?.min || 0) ||
+        next.priceMax < (config.priceRange?.max || 1000))
+    ) count++
     setActiveFiltersCount(count)
   }
 
-  const clearAllFilters = () => {
-    const clearedFilters: FilterValues = {
+  const clearAll = () => {
+    const cleared: FilterValues = {
       search: '',
       status: 'all',
       category: 'all',
@@ -131,391 +184,397 @@ export function AdminFilter({
       dateFrom: undefined,
       dateTo: undefined,
       isActive: null,
-      customValues: {}
+      customValues: {},
     }
-    setFilters(clearedFilters)
-    setLocalSearchValue('')
-    onFilterChange(clearedFilters)
+    setFilters(cleared)
+    setLocalSearch('')
+    onFilterChange(cleared)
     setActiveFiltersCount(0)
   }
 
+  // Active chip labels
+  const activeChips: { label: string; clear: () => void }[] = []
+  if (filters.status !== 'all') {
+    const opt = config.statusOptions?.find(o => o.value === filters.status)
+    activeChips.push({ label: `Status: ${opt?.label ?? filters.status}`, clear: () => updateFilters({ status: 'all' }) })
+  }
+  if (filters.category !== 'all') {
+    const opt = config.categoryOptions?.find(o => o.value === filters.category)
+    activeChips.push({ label: `Category: ${opt?.label ?? filters.category}`, clear: () => updateFilters({ category: 'all' }) })
+  }
+  if (filters.role !== 'all') {
+    const opt = config.roleOptions?.find(o => o.value === filters.role)
+    activeChips.push({ label: `Role: ${opt?.label ?? filters.role}`, clear: () => updateFilters({ role: 'all' }) })
+  }
+  if (filters.isActive !== null) {
+    activeChips.push({ label: `Active: ${filters.isActive ? 'Yes' : 'No'}`, clear: () => updateFilters({ isActive: null }) })
+  }
+  if (filters.dateFrom) {
+    activeChips.push({ label: `From: ${format(filters.dateFrom, 'MMM d, yyyy')}`, clear: () => updateFilters({ dateFrom: undefined }) })
+  }
+  if (filters.dateTo) {
+    activeChips.push({ label: `To: ${format(filters.dateTo, 'MMM d, yyyy')}`, clear: () => updateFilters({ dateTo: undefined }) })
+  }
+
   return (
-    <Card className="mb-6 bg-white/5 backdrop-blur-xl border-white/10">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div className="flex flex-wrap gap-2 items-center">
-            <CardTitle className="flex gap-2 items-center text-white text-base sm:text-lg">
-              <Filter className="w-5 h-5" />
-              Search & Filters
-            </CardTitle>
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-0 sm:ml-2 bg-cyan-500/20 text-cyan-400 text-xs">
-                {activeFiltersCount} Active
-              </Badge>
+    <div className="rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10 overflow-hidden">
+
+      {/* ── Top Row ── */}
+      <div className="p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row gap-3">
+
+          {/* Search */}
+          <div className="relative flex-1 group">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-cyan-400 transition-colors" />
+            <input
+              type="text"
+              placeholder={config.searchPlaceholder || 'Search…'}
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation() } }}
+              className="w-full pl-10 pr-9 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.09] focus:shadow-[0_0_0_3px_rgba(6,182,212,0.08)] transition-all"
+            />
+            {localSearch && (
+              <button
+                type="button"
+                onClick={() => { setLocalSearch(''); updateFilters({ search: '' }) }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             )}
-          </div>
-          <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
-            {totalCount > 0 && (
-              <div className="text-xs sm:text-sm text-gray-400">
-                {filteredCount} of {totalCount}
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-300 hover:text-white hover:bg-white/10 flex-1 sm:flex-none justify-center"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="hidden sm:inline ml-1">{isExpanded ? 'Hide' : 'Show'} Filters</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Search Bar - Always Visible */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <div className="flex-1 w-full">
-            <Label htmlFor="search" className="text-gray-300">Search</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-gray-500" />
-              <Input
-                id="search"
-                placeholder={config.searchPlaceholder || "Search..."}
-                value={localSearchValue}
-                onChange={(e) => setLocalSearchValue(e.target.value)}
-                onKeyDown={(e) => {
-                  // Prevent form submission on Enter key
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }
-                }}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-500 focus:border-cyan-500/50 focus:bg-white/[0.15]"
-              />
-            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 items-end">
+          {/* Right-side actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+
+            {/* Count pill */}
+            {totalCount > 0 && (
+              <div className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-sm">
+                <span className="font-semibold text-cyan-400">{filteredCount}</span>
+                <span className="text-gray-600">/</span>
+                <span className="text-gray-400">{totalCount}</span>
+              </div>
+            )}
+
             {onRefresh && (
-              <Button
+              <button
+                type="button"
                 onClick={onRefresh}
-                variant="outline"
-                size="sm"
                 disabled={loading}
-                className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
+                title="Refresh"
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-                <span className="hidden sm:inline ml-1">Refresh</span>
-              </Button>
+                <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+              </button>
             )}
 
             {onExport && (
-              <Button
+              <button
+                type="button"
                 onClick={onExport}
-                variant="outline"
-                size="sm"
-                className="bg-white/5 border-white/20 text-gray-300 hover:bg-white/10 hover:text-white"
+                title="Export CSV"
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden sm:inline ml-1">Export</span>
-              </Button>
+              </button>
             )}
 
-            {activeFiltersCount > 0 && (
-              <Button
-                onClick={clearAllFilters}
-                variant="outline"
-                size="sm"
-                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            {hasAdvancedFilters && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded(v => !v)}
+                className={cn(
+                  'flex items-center gap-1.5 h-9 px-3 rounded-xl border text-sm font-medium transition-all',
+                  isExpanded
+                    ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.12)]'
+                    : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'
+                )}
               >
-                <X className="w-4 h-4" />
-                <span className="hidden sm:inline ml-1">Clear</span>
-              </Button>
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-cyan-500 text-white text-[10px] font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', isExpanded && 'rotate-180')} />
+              </button>
             )}
           </div>
         </div>
 
-        {/* Advanced Filters - Collapsible */}
-        {isExpanded && (
-          <>
-            <Separator />
-            
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {/* Status Filter */}
-              {config.statusOptions && (
-                <div>
-                  <Label className="text-gray-300">Status</Label>
-                  <Select
-                    value={filters.status}
-                    onValueChange={(value: string) => updateFilters({ status: value })}
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
-                      <SelectValue placeholder="Select Status" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/20 text-white">
-                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Statuses</SelectItem>
-                      {config.statusOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
-                          <div className="flex justify-between items-center w-full">
-                            <span>{option.label}</span>
-                            {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2 border-white/20">
-                                {option.count}
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+        {/* Active filter chips */}
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {activeChips.map((chip, i) => (
+              <ActiveChip key={i} label={chip.label} onRemove={chip.clear} />
+            ))}
+            <button
+              type="button"
+              onClick={clearAll}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
+            >
+              <X className="w-3 h-3" />
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
 
-              {/* Category Filter */}
-              {config.categoryOptions && (
-                <div>
-                  <Label className="text-gray-300">Category</Label>
-                  <Select
-                    value={filters.category}
-                    onValueChange={(value: string) => updateFilters({ category: value })}
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/20 text-white">
-                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Categories</SelectItem>
-                      {config.categoryOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
-                          <div className="flex justify-between items-center w-full">
-                            <span>{option.label}</span>
-                            {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2 border-white/20">
-                                {option.count}
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+      {/* ── Advanced Panel ── */}
+      {isExpanded && (
+        <div className="border-t border-white/[0.06] bg-black/10 px-4 sm:px-5 py-4 sm:py-5 space-y-5">
 
-              {/* Role Filter */}
-              {config.roleOptions && (
-                <div>
-                  <Label className="text-gray-300">Role</Label>
-                  <Select
-                    value={filters.role}
-                    onValueChange={(value: string) => updateFilters({ role: value })}
+          {/* Status pills */}
+          {config.statusOptions && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Status</p>
+              <div className="flex flex-wrap gap-2">
+                <FilterPill
+                  active={filters.status === 'all'}
+                  onClick={() => updateFilters({ status: 'all' })}
+                >
+                  All
+                </FilterPill>
+                {config.statusOptions.map(opt => (
+                  <FilterPill
+                    key={opt.value}
+                    active={filters.status === opt.value}
+                    onClick={() => updateFilters({ status: opt.value })}
+                    count={opt.count}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
-                      <SelectValue placeholder="Select Role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/20 text-white">
-                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All Roles</SelectItem>
-                      {config.roleOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
-                          <div className="flex justify-between items-center w-full">
-                            <span>{option.label}</span>
-                            {option.count !== undefined && (
-                              <Badge variant="outline" className="ml-2 border-white/20">
-                                {option.count}
-                              </Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Active Status Filter */}
-              {config.showActiveFilter && (
-                <div>
-                  <Label className="text-gray-300">Active Status</Label>
-                  <Select
-                    value={filters.isActive === null ? 'all' : filters.isActive.toString()}
-                    onValueChange={(value: string) => 
-                      updateFilters({ 
-                        isActive: value === 'all' ? null : value === 'true' 
-                      })
-                    }
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-cyan-500/50 focus:ring-cyan-500/20">
-                      <SelectValue placeholder="Select Status" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-white/20 text-white">
-                      <SelectItem value="all" className="focus:bg-white/10 focus:text-white">All</SelectItem>
-                      <SelectItem value="true" className="focus:bg-white/10 focus:text-white">Active</SelectItem>
-                      <SelectItem value="false" className="focus:bg-white/10 focus:text-white">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-
-            {/* Date Range Filter */}
-            {config.showDateFilter && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label>From Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-start font-normal",
-                          !filters.dateFrom && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 w-4 h-4" />
-                        {filters.dateFrom ? format(filters.dateFrom, "PPP") : "Select Date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-auto">
-                      <Calendar
-                        mode="single"
-                        selected={filters.dateFrom}
-                        onSelect={(date) => updateFilters({ dateFrom: date })}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                
-                <div>
-                  <Label>To Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-start font-normal",
-                          !filters.dateTo && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 w-4 h-4" />
-                        {filters.dateTo ? format(filters.dateTo, "PPP") : "Select Date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-auto">
-                      <Calendar
-                        mode="single"
-                        selected={filters.dateTo}
-                        onSelect={(date) => updateFilters({ dateTo: date })}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                    {opt.label}
+                  </FilterPill>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Price Range Filter */}
-            {config.showPriceFilter && config.priceRange && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label>Minimum Price</Label>
-                  <Input
+          {/* Category pills */}
+          {config.categoryOptions && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Category</p>
+              <div className="flex flex-wrap gap-2">
+                <FilterPill
+                  active={filters.category === 'all'}
+                  onClick={() => updateFilters({ category: 'all' })}
+                >
+                  All
+                </FilterPill>
+                {config.categoryOptions.map(opt => (
+                  <FilterPill
+                    key={opt.value}
+                    active={filters.category === opt.value}
+                    onClick={() => updateFilters({ category: opt.value })}
+                    count={opt.count}
+                  >
+                    {opt.label}
+                  </FilterPill>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Role pills */}
+          {config.roleOptions && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Role</p>
+              <div className="flex flex-wrap gap-2">
+                <FilterPill
+                  active={filters.role === 'all'}
+                  onClick={() => updateFilters({ role: 'all' })}
+                >
+                  All
+                </FilterPill>
+                {config.roleOptions.map(opt => (
+                  <FilterPill
+                    key={opt.value}
+                    active={filters.role === opt.value}
+                    onClick={() => updateFilters({ role: opt.value })}
+                    count={opt.count}
+                  >
+                    {opt.label}
+                  </FilterPill>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Active status pills */}
+          {config.showActiveFilter && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Active Status</p>
+              <div className="flex flex-wrap gap-2">
+                <FilterPill active={filters.isActive === null} onClick={() => updateFilters({ isActive: null })}>All</FilterPill>
+                <FilterPill active={filters.isActive === true} onClick={() => updateFilters({ isActive: true })}>Active</FilterPill>
+                <FilterPill active={filters.isActive === false} onClick={() => updateFilters({ isActive: false })}>Inactive</FilterPill>
+              </div>
+            </div>
+          )}
+
+          {/* Date range */}
+          {config.showDateFilter && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Date Range</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* From */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        'flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border text-sm text-left transition-all',
+                        filters.dateFrom
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+                          : 'bg-white/[0.04] border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/[0.07] hover:border-white/20'
+                      )}
+                    >
+                      <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                      <span>{filters.dateFrom ? format(filters.dateFrom, 'MMM d, yyyy') : 'From date'}</span>
+                      {filters.dateFrom && (
+                        <X
+                          className="w-3.5 h-3.5 ml-auto text-cyan-400/60 hover:text-cyan-300"
+                          onClick={e => { e.stopPropagation(); updateFilters({ dateFrom: undefined }) }}
+                        />
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-auto bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl">
+                    <Calendar
+                      mode="single"
+                      selected={filters.dateFrom}
+                      onSelect={date => updateFilters({ dateFrom: date })}
+                      initialFocus
+                      className="text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* To */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        'flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border text-sm text-left transition-all',
+                        filters.dateTo
+                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+                          : 'bg-white/[0.04] border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/[0.07] hover:border-white/20'
+                      )}
+                    >
+                      <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                      <span>{filters.dateTo ? format(filters.dateTo, 'MMM d, yyyy') : 'To date'}</span>
+                      {filters.dateTo && (
+                        <X
+                          className="w-3.5 h-3.5 ml-auto text-cyan-400/60 hover:text-cyan-300"
+                          onClick={e => { e.stopPropagation(); updateFilters({ dateTo: undefined }) }}
+                        />
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0 w-auto bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl">
+                    <Calendar
+                      mode="single"
+                      selected={filters.dateTo}
+                      onSelect={date => updateFilters({ dateTo: date })}
+                      initialFocus
+                      className="text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
+
+          {/* Price range */}
+          {config.showPriceFilter && config.priceRange && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Price Range</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <input
                     type="number"
                     min={config.priceRange.min}
                     max={config.priceRange.max}
                     value={filters.priceMin}
-                    onChange={(e) => updateFilters({ priceMin: Number(e.target.value) })}
-                    placeholder={`From ${config.priceRange.min}`}
+                    onChange={e => updateFilters({ priceMin: Number(e.target.value) })}
+                    placeholder={`Min ${config.priceRange.min}`}
+                    className="w-full pl-7 pr-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
                   />
                 </div>
-                
-                <div>
-                  <Label>Maximum Price</Label>
-                  <Input
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <input
                     type="number"
                     min={config.priceRange.min}
                     max={config.priceRange.max}
                     value={filters.priceMax}
-                    onChange={(e) => updateFilters({ priceMax: Number(e.target.value) })}
-                    placeholder={`To ${config.priceRange.max}`}
+                    onChange={e => updateFilters({ priceMax: Number(e.target.value) })}
+                    placeholder={`Max ${config.priceRange.max}`}
+                    className="w-full pl-7 pr-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
                   />
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Custom Filters */}
-            {config.customFilters && config.customFilters.length > 0 && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {config.customFilters.map((customFilter) => (
-                  <div key={customFilter.key}>
-                    <Label>{customFilter.label}</Label>
-                    {customFilter.type === 'select' && customFilter.options && (
-                      <Select
-                        value={(filters.customValues[customFilter.key] as string | undefined) || ''}
-                        onValueChange={(value: string) => 
-                          updateFilters({ 
-                            customValues: { 
-                              ...filters.customValues, 
-                              [customFilter.key]: value 
-                            } 
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={`Select ${customFilter.label}`} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {customFilter.options.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    
-                    {customFilter.type === 'input' && (
-                      <Input
-                        value={(filters.customValues[customFilter.key] as string | undefined) || ''}
-                        onChange={(e) => 
-                          updateFilters({ 
-                            customValues: { 
-                              ...filters.customValues, 
-                              [customFilter.key]: e.target.value 
-                            } 
-                          })
-                        }
-                        placeholder={customFilter.label}
+          {/* Custom filters */}
+          {config.customFilters && config.customFilters.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {config.customFilters.map(cf => (
+                <div key={cf.key}>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">{cf.label}</p>
+
+                  {cf.type === 'select' && cf.options && (
+                    <div className="flex flex-wrap gap-2">
+                      {cf.options.map(opt => (
+                        <FilterPill
+                          key={opt.value}
+                          active={(filters.customValues[cf.key] as string) === opt.value}
+                          onClick={() => updateFilters({ customValues: { ...filters.customValues, [cf.key]: opt.value } })}
+                        >
+                          {opt.label}
+                        </FilterPill>
+                      ))}
+                    </div>
+                  )}
+
+                  {cf.type === 'input' && (
+                    <input
+                      value={(filters.customValues[cf.key] as string) || ''}
+                      onChange={e => updateFilters({ customValues: { ...filters.customValues, [cf.key]: e.target.value } })}
+                      placeholder={cf.label}
+                      className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
+                    />
+                  )}
+
+                  {cf.type === 'switch' && (
+                    <button
+                      type="button"
+                      onClick={() => updateFilters({ customValues: { ...filters.customValues, [cf.key]: !filters.customValues[cf.key] } })}
+                      className={cn(
+                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                        filters.customValues[cf.key] ? 'bg-cyan-500' : 'bg-white/10'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                          filters.customValues[cf.key] ? 'translate-x-6' : 'translate-x-1'
+                        )}
                       />
-                    )}
-                    
-                    {customFilter.type === 'switch' && (
-                      <div className="flex items-center mt-2 space-x-2">
-                        <Switch
-                          checked={Boolean(filters.customValues[customFilter.key])}
-                          onCheckedChange={(checked) => 
-                            updateFilters({ 
-                              customValues: { 
-                                ...filters.customValues, 
-                                [customFilter.key]: checked 
-                              } 
-                            })
-                          }
-                        />
-                        <Label>{customFilter.label}</Label>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
 export default AdminFilter
-
