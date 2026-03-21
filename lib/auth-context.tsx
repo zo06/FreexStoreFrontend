@@ -152,8 +152,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearInterval(userDataIntervalRef.current);
     }
 
-    // Refresh user data every 10 minutes
-    userDataIntervalRef.current = setInterval(refreshUserData, 10 * 60 * 1000);
+    // Refresh user data every 30 minutes
+    userDataIntervalRef.current = setInterval(refreshUserData, 30 * 60 * 1000);
   }, [refreshUserData]);
 
   // Login function
