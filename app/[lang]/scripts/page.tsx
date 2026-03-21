@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useScripts, useActiveCategories } from '@/lib/simple-data-fetcher';
-import { CodeSquare, Search, Filter, Grid3X3, List, TrendingUp, Zap, Package, RefreshCw } from 'lucide-react';
+import { CodeSquare, Search, Filter, Grid3X3, List, TrendingUp, Zap, Package, RefreshCw, ShoppingCart } from 'lucide-react';
+import { useCartStore } from '@/lib/stores/cart-store';
 import { Robot, ChartBar, Plug, Cloud, Shield, Rocket, Brain, TrendUp, Eye, Database, Lightning, Warning, Star, Fire, Gift, CheckCircle, ArrowUp, Sparkle, Funnel, SortAscending } from 'phosphor-react';
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
@@ -37,6 +38,7 @@ interface Script {
   requirements?: string;
   isActive: boolean;
   trialAvailable?: boolean;
+  discountPercentage?: number;
   createdAt: string;
   updatedAt: string;
   // Frontend-only properties for display
@@ -183,6 +185,7 @@ function ScriptsPageContent() {
        icon: categoryIcon,
        popular: script.popular || false,
        new: script.new || false,
+       discountPercentage: script.discountPercentage || 0,
      };
    }) || [];
   
@@ -208,6 +211,8 @@ function ScriptsPageContent() {
   });
 
   console.log(filteredScripts)
+
+  const { addItem, isInCart } = useCartStore();
 
   const [trialLoading, setTrialLoading] = useState<string | null>(null);
   const [previewScript, setPreviewScript] = useState<Script | null>(null);
@@ -521,9 +526,25 @@ function ScriptsPageContent() {
                         </div>
                       )}
 
+                      {/* Discount badge */}
+                      {(script.discountPercentage ?? 0) > 0 && (
+                        <div className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold text-red-300 bg-red-500/20 border border-red-500/40 rounded-full backdrop-blur-sm">
+                          -{script.discountPercentage}%
+                        </div>
+                      )}
+
                       {/* Price tag */}
                       <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
-                        <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
+                        {(script.discountPercentage ?? 0) > 0 ? (
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs text-gray-500 line-through">{script.price}</span>
+                            <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                              ${(parseFloat((script.price || '0').replace('$', '')) * (1 - (script.discountPercentage ?? 0) / 100)).toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
+                        )}
                       </div>
                     </div>
 
@@ -597,6 +618,26 @@ function ScriptsPageContent() {
                           title={t('quickPreview')}
                         >
                           <Eye size={14} />
+                        </button>
+                        {/* Add to Cart button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const rawPrice = parseFloat((script.price || '0').replace('$', ''));
+                            if (!isNaN(rawPrice) && rawPrice > 0) {
+                              addItem({ id: script.id, name: script.name || script.title || '', price: rawPrice, discountPercentage: script.discountPercentage, imageUrl: script.imageUrl, slug: script.slug });
+                              if (!isInCart(script.id)) toast.success('Added to cart!');
+                            }
+                          }}
+                          className={`px-2.5 py-2.5 text-xs font-medium border rounded-xl transition-all duration-300 flex-shrink-0 flex items-center gap-1 ${
+                            isInCart(script.id)
+                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                              : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10'
+                          }`}
+                          title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          {isInCart(script.id) ? <span className="text-[10px]">In Cart</span> : null}
                         </button>
                         {/* Compare button */}
                         <button
@@ -728,8 +769,24 @@ function ScriptsPageContent() {
                     </div>
                   )}
 
+                  {/* Discount badge */}
+                  {(script.discountPercentage ?? 0) > 0 && (
+                    <div className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold text-red-300 bg-red-500/20 border border-red-500/40 rounded-full backdrop-blur-sm">
+                      -{script.discountPercentage}%
+                    </div>
+                  )}
+
                   <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
-                    <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
+                    {(script.discountPercentage ?? 0) > 0 ? (
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-gray-500 line-through">{script.price}</span>
+                        <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                          ${(parseFloat((script.price || '0').replace('$', '')) * (1 - (script.discountPercentage ?? 0) / 100)).toFixed(2)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{script.price}</span>
+                    )}
                   </div>
                 </div>
 

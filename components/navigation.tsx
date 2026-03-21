@@ -4,18 +4,22 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Star, Zap, Home, Package, LayoutDashboard, Command, Clock } from 'lucide-react';
+import { LogOut, Settings, Shield, Globe, Crown, ChevronDown, User, Star, Zap, Home, Package, LayoutDashboard, Command, Clock, ShoppingCart } from 'lucide-react';
 import LicensesIpModal from '@/components/licenses-ip-modal';
 import LanguageSwitcher from '@/components/language-switcher';
 import { useTranslations } from 'next-intl';
+import { useCartStore } from '@/lib/stores/cart-store';
+import CartDrawer from '@/components/cart-drawer';
 
 export default function Navigation() {
   const t = useTranslations('nav');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showIpModal, setShowIpModal] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { getCount } = useCartStore();
   const pathname = usePathname();
   const { user, isAdmin, logout, isLoading } = useAuth();
 
@@ -208,6 +212,20 @@ export default function Navigation() {
 
           {/* Auth Section - Ultra Premium */}
               <div className="hidden items-center gap-3 md:flex">
+                {/* Cart Button */}
+                <button
+                  onClick={() => setCartOpen(true)}
+                  className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05] border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300"
+                  aria-label="Open cart"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {getCount() > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center text-[10px] font-bold text-white bg-cyan-500 rounded-full shadow-lg shadow-cyan-500/50">
+                      {getCount()}
+                    </span>
+                  )}
+                </button>
+
                 {/* Language Switcher */}
                 <LanguageSwitcher />
 
@@ -579,6 +597,9 @@ export default function Navigation() {
         isOpen={showIpModal}
         onClose={() => setShowIpModal(false)}
       />
+
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   );
 }
