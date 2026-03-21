@@ -460,7 +460,6 @@ function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>
 
         {/* License Health + Pie */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
