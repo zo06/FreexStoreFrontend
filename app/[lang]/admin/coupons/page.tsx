@@ -50,7 +50,7 @@ export default function CouponsPage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ ...emptyForm });
+  const [form, setForm] = useState<typeof emptyForm & { type: 'short_term' | 'forever_term' }>({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const limit = 20;
