@@ -390,22 +390,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleValidateLicense = async (privateKey: string) => {
-    try {
-      // Pass the user's licenses IP address for validation
-      const result = await apiClient.validateLicenseByPrivateKey(privateKey, licensesIpAddress || undefined);
-      if (result.valid) {
-        toast.success(t('licenseValid'));
-        // Refresh licenses to show updated lastUsedIp
-        window.location.reload();
-      } else {
-        toast.error(t('licenseInvalid'));
-      }
-    } catch (error) {
-      console.error('Failed to validate license:', error);
-      toast.error(t('licenseValidationFailed'));
-    }
-  };
 
   return (
     <main className="overflow-hidden relative pt-16 min-h-screen lg:pt-24 bg-[#030712]">
@@ -754,14 +738,6 @@ export default function Dashboard() {
                               {t('download')}
                             </Button>
 
-                            <Button 
-                               variant="outline" 
-                               size="sm" 
-                               className="px-3 py-2 text-xs cursor-pointer lg:px-4 lg:text-sm"
-                               onClick={() => handleValidateLicense(license.privateKey)}
-                             >
-                               {t('validate')}
-                             </Button>
                           </div>
                         </div>
                       </div>
