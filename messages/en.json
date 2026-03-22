@@ -1369,7 +1369,10 @@
     "paymentSuccessful": "Payment successful! Activating license...",
     "licenseActivated": "License activated! Redirecting to dashboard...",
     "paymentFailed": "Payment succeeded but license activation failed. Contact support.",
-    "activationError": "Error activating license. Please contact support."
+    "activationError": "Error activating license. Please contact support.",
+    "buyNow": "Buy Now",
+    "addToCart": "Add to Cart",
+    "startFreeTrial": "Start Free Trial"
   },
   "trialProtection": {
     "banner": {

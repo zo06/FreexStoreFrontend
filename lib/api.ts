@@ -455,6 +455,23 @@ class ApiClient {
     return this.post('/payment/stripe/confirm-cart', { paymentIntentId, scriptIds, couponCode });
   }
 
+  // Reviews
+  async getScriptReviews(scriptId: string) {
+    return this.request<{ reviews: any[]; averageRating: number; total: number }>(`/reviews/script/${scriptId}`);
+  }
+
+  async getMyReview(scriptId: string) {
+    return this.request<any>(`/reviews/me/${scriptId}`);
+  }
+
+  async submitReview(scriptId: string, rating: number, comment: string) {
+    return this.post('/reviews', { scriptId, rating, comment });
+  }
+
+  async deleteReview(reviewId: string) {
+    return this.request(`/reviews/${reviewId}`, { method: 'DELETE' });
+  }
+
   async getLicensesIp() {
     return this.request<{ data?: { licensesIpAddress: any }; licensesIpAddress?: any }>('/licenses/ip/current');
   }

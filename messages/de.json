@@ -1374,7 +1374,10 @@
     "paymentSuccessful": "Zahlung erfolgreich! Lizenz wird aktiviert...",
     "licenseActivated": "Lizenz aktiviert! Weiterleitung zum Dashboard...",
     "paymentFailed": "Zahlung erfolgreich, aber Lizenzaktivierung fehlgeschlagen. Kontaktieren Sie den Support.",
-    "activationError": "Fehler beim Aktivieren der Lizenz. Bitte kontaktieren Sie den Support."
+    "activationError": "Fehler beim Aktivieren der Lizenz. Bitte kontaktieren Sie den Support.",
+    "buyNow": "Jetzt kaufen",
+    "addToCart": "In den Warenkorb",
+    "startFreeTrial": "Kostenlose Testversion starten"
   },
   "trialProtection": {
     "banner": {

@@ -14,7 +14,6 @@ import {
   Lock, Zap, Users, Award, Flame, Gift, ShoppingCart,
   Sparkles, TrendingUp, Package
 } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { MediaSlider } from '@/components/ui/media-slider';
@@ -73,6 +72,16 @@ export default function ScriptDetailPage() {
   const [justAdded, setJustAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsAvg, setReviewsAvg] = useState(0);
+  const [reviewsTotal, setReviewsTotal] = useState(0);
+  const [myReview, setMyReview] = useState<any>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewHover, setReviewHover] = useState(0);
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   const scriptId = params.scriptId as string;
 
   useEffect(() => {
@@ -85,6 +94,27 @@ export default function ScriptDetailPage() {
         const scriptData = (response as any).data || response;
         setScript(scriptData as Script);
         if (scriptData?.licenseType) setSelectedLicenseType(scriptData.licenseType);
+
+        // Fetch reviews for this script
+        const rid = scriptData?.id || scriptId;
+        try {
+          const rv = await apiClient.getScriptReviews(rid) as any;
+          setReviews(rv?.reviews || []);
+          setReviewsAvg(rv?.averageRating || 0);
+          setReviewsTotal(rv?.total || 0);
+        } catch {}
+
+        // Fetch current user's review if logged in
+        if (user) {
+          try {
+            const mine = await apiClient.getMyReview(rid) as any;
+            if (mine?.id) {
+              setMyReview(mine);
+              setReviewRating(mine.rating);
+              setReviewComment(mine.comment);
+            }
+          } catch {}
+        }
       } catch (err: any) {
         setError(t('scriptNotFound'));
         toast.error(t('scriptNotFound'));
@@ -93,7 +123,46 @@ export default function ScriptDetailPage() {
       }
     };
     fetchScript();
-  }, [scriptId]);
+  }, [scriptId, user]);
+
+  const handleSubmitReview = async () => {
+    if (!script) return;
+    if (reviewComment.trim().length < 10) {
+      toast.error('Comment must be at least 10 characters.');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const saved = await apiClient.submitReview(script.id, reviewRating, reviewComment.trim()) as any;
+      setMyReview(saved);
+      setReviews((prev) => {
+        const idx = prev.findIndex((r) => r.userId === saved.userId);
+        if (idx >= 0) { const next = [...prev]; next[idx] = saved; return next; }
+        return [saved, ...prev];
+      });
+      setReviewsTotal((t) => myReview ? t : t + 1);
+      toast.success(myReview ? 'Review updated!' : 'Review submitted!');
+    } catch (err: any) {
+      toast.error(err?.message || 'You must own a license for this script to leave a review.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    if (!myReview) return;
+    try {
+      await apiClient.deleteReview(myReview.id);
+      setReviews((prev) => prev.filter((r) => r.id !== myReview.id));
+      setMyReview(null);
+      setReviewComment('');
+      setReviewRating(5);
+      setReviewsTotal((t) => t - 1);
+      toast.success('Review deleted.');
+    } catch {
+      toast.error('Failed to delete review.');
+    }
+  };
 
   const getCurrentPrice = () => {
     if (!script) return 0;
@@ -320,26 +389,117 @@ export default function ScriptDetailPage() {
               </div>
             )}
 
-            {/* Social proof */}
+            {/* Reviews */}
             <div className="p-6 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-violet-400" />
-                {t('whyLoveIt')}
-              </h2>
-              <div className="space-y-4">
-                {[
-                  { text: 'Works perfectly out of the box. Best investment for my server!', author: 'SkylineRP', stars: 5 },
-                  { text: 'Clean NUI, no lag. Support team helped me configure in under 10 minutes.', author: 'NightCityDev', stars: 5 },
-                ].map((review, i) => (
-                  <div key={i} className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
-                    <div className="flex items-center gap-1 mb-2">
-                      {[...Array(review.stars)].map((_, s) => <Star key={s} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />)}
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-violet-400" />
+                  Customer Reviews
+                </h2>
+                {reviewsTotal > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-0.5">
+                      {[1,2,3,4,5].map((s) => (
+                        <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(reviewsAvg) ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
+                      ))}
                     </div>
-                    <p className="text-gray-300 text-sm mb-2">"{review.text}"</p>
-                    <span className="text-xs text-gray-500">{review.author} · {t('verifiedBuyer')}</span>
+                    <span className="text-white text-sm font-bold">{reviewsAvg.toFixed(1)}</span>
+                    <span className="text-gray-500 text-xs">({reviewsTotal})</span>
                   </div>
-                ))}
+                )}
               </div>
+
+              {/* Leave a review (logged in users) */}
+              {user && (
+                <div className="mb-5 p-4 bg-white/[0.03] border border-white/[0.07] rounded-xl">
+                  <p className="text-sm font-semibold text-white mb-3">
+                    {myReview ? 'Edit your review' : 'Leave a review'}
+                  </p>
+                  {/* Star picker */}
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1,2,3,4,5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setReviewRating(s)}
+                        onMouseEnter={() => setReviewHover(s)}
+                        onMouseLeave={() => setReviewHover(0)}
+                        className="focus:outline-none"
+                      >
+                        <Star className={`w-6 h-6 transition-colors ${s <= (reviewHover || reviewRating) ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
+                      </button>
+                    ))}
+                    <span className="text-gray-400 text-xs ml-2">{reviewRating}/5</span>
+                  </div>
+                  {/* Comment */}
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Share your experience with this script... (min 10 characters)"
+                    rows={3}
+                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-200 placeholder:text-gray-600 text-sm focus:border-cyan-500/50 focus:outline-none resize-none"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={handleSubmitReview}
+                      disabled={submittingReview || reviewComment.trim().length < 10}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50"
+                    >
+                      {submittingReview ? 'Saving...' : myReview ? 'Update Review' : 'Submit Review'}
+                    </button>
+                    {myReview && (
+                      <button
+                        onClick={handleDeleteReview}
+                        className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold rounded-lg hover:bg-red-500/20 transition-all"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews list */}
+              {reviews.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No reviews yet. Be the first to share your experience!
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="p-4 bg-white/[0.03] rounded-xl border border-white/[0.05]">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {review.user?.discordAvatar ? (
+                            <img src={review.user.discordAvatar} alt="" className="w-7 h-7 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500/40 to-blue-500/40 flex items-center justify-center text-xs font-bold text-white">
+                              {(review.user?.username || '?')[0].toUpperCase()}
+                            </div>
+                          )}
+                          <span className="text-white text-sm font-medium">{review.user?.username || 'Anonymous'}</span>
+                          <span className="text-xs text-gray-600">{t('verifiedBuyer')}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          {[1,2,3,4,5].map((s) => (
+                            <Star key={s} className={`w-3 h-3 ${s <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-700'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-300 text-sm leading-relaxed">"{review.comment}"</p>
+                      <p className="text-xs text-gray-600 mt-2">{new Date(review.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!user && (
+                <div className="mt-4 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl text-center">
+                  <p className="text-gray-500 text-sm">
+                    <Link href={`/${locale}/auth/login`} className="text-cyan-400 hover:underline">Log in</Link> and purchase this script to leave a review.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
