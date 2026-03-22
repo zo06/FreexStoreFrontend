@@ -122,7 +122,6 @@ export default function ScriptDetailPage() {
       name: script.name,
       price: currentPrice,
       imageUrl: script.imageUrl,
-      licenseType: script.licenseType,
     });
     setJustAdded(true);
     toast.success('Added to cart!');
