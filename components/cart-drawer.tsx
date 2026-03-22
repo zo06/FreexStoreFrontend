@@ -77,9 +77,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : (
             items.map((item) => {
-              const discountedPrice = item.discountPercentage && item.discountPercentage > 0
-                ? item.price * (1 - item.discountPercentage / 100)
-                : item.price;
+              const rawPrice = parseFloat(String(item.price).replace(',', '')) || 0;
+              const rawDiscount = parseFloat(String(item.discountPercentage ?? 0)) || 0;
+              const discountedPrice = rawDiscount > 0 ? rawPrice * (1 - rawDiscount / 100) : rawPrice;
               return (
                 <div key={item.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 group">
                   {item.imageUrl ? (
@@ -92,8 +92,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <p className="text-white font-medium text-sm truncate">{item.name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-cyan-400 font-bold text-sm">${discountedPrice.toFixed(2)}</span>
-                      {item.discountPercentage && item.discountPercentage > 0 && (
-                        <span className="text-gray-500 line-through text-xs">${item.price.toFixed(2)}</span>
+                      {rawDiscount > 0 && (
+                        <span className="text-gray-500 line-through text-xs">${rawPrice.toFixed(2)}</span>
                       )}
                     </div>
                   </div>
