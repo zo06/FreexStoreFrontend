@@ -13,9 +13,6 @@ import toast from 'react-hot-toast';
 import PayPalBuyButton from '@/components/PayPalBuyButton';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { MediaSlider } from '@/components/ui/media-slider';
-import { QuickPreviewModal } from '@/components/ui/quick-preview-modal';
-import { CompareBar } from '@/components/ui/compare-bar';
-import { CompareModal } from '@/components/ui/compare-modal';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
@@ -215,9 +212,6 @@ function ScriptsPageContent() {
   const { addItem, isInCart } = useCartStore();
 
   const [trialLoading, setTrialLoading] = useState<string | null>(null);
-  const [previewScript, setPreviewScript] = useState<Script | null>(null);
-  const [compareScripts, setCompareScripts] = useState<Script[]>([]);
-  const [showCompareModal, setShowCompareModal] = useState(false);
   
   // Helper function to check user's license status for a script
   const getLicenseStatus = (scriptId: string) => {
@@ -276,17 +270,6 @@ function ScriptsPageContent() {
     setShowPopup(false);
     setSelectedScript(null);
   };
-
-  const toggleCompare = (script: Script) => {
-    setCompareScripts(prev => {
-      const exists = prev.find(s => s.id === script.id);
-      if (exists) return prev.filter(s => s.id !== script.id);
-      if (prev.length >= 3) { toast.error('You can compare up to 3 scripts'); return prev; }
-      return [...prev, script];
-    });
-  };
-
-  const isInCompare = (id: string) => compareScripts.some(s => s.id === id);
 
   return (
     <>
@@ -611,14 +594,6 @@ function ScriptsPageContent() {
                       
                       {/* Actions */}
                       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        {/* Quick Preview button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setPreviewScript(script); }}
-                          className="px-3 py-2.5 text-sm font-semibold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all duration-300 flex items-center gap-1.5 flex-shrink-0"
-                          title={t('quickPreview')}
-                        >
-                          <Eye size={14} />
-                        </button>
                         {/* Add to Cart button */}
                         <button
                           onClick={(e) => {
@@ -629,27 +604,15 @@ function ScriptsPageContent() {
                               if (!isInCart(script.id)) toast.success('Added to cart!');
                             }
                           }}
-                          className={`px-2.5 py-2.5 text-xs font-medium border rounded-xl transition-all duration-300 flex-shrink-0 flex items-center gap-1 ${
+                          className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 ${
                             isInCart(script.id)
-                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                              : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10'
+                              ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
+                              : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/25'
                           }`}
                           title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" />
-                          {isInCart(script.id) ? <span className="text-[10px]">In Cart</span> : null}
-                        </button>
-                        {/* Compare button */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleCompare(script); }}
-                          className={`px-2.5 py-2.5 text-xs font-medium border rounded-xl transition-all duration-300 flex-shrink-0 ${
-                            isInCompare(script.id)
-                              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                              : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10'
-                          }`}
-                          title={isInCompare(script.id) ? t('removeFromCompare') : t('addToCompare')}
-                        >
-                          ⚖️
+                          <ShoppingCart className="w-4 h-4" />
+                          {isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
                         </button>
                         {user ? (
                           (() => {
@@ -1161,31 +1124,6 @@ function ScriptsPageContent() {
       scriptPrice={confirmModal.type === 'trial' ? 'FREE (Trial)' : confirmModal.script?.price}
     />
 
-    {/* Quick Preview Modal */}
-    <QuickPreviewModal
-      script={previewScript}
-      onClose={() => setPreviewScript(null)}
-      onTrial={(script) => {
-        setPreviewScript(null);
-        setConfirmModal({ isOpen: true, type: 'trial', script: script as any });
-      }}
-    />
-
-    {/* Compare Bar */}
-    <CompareBar
-      scripts={compareScripts as any}
-      onRemove={(id) => setCompareScripts(prev => prev.filter(s => s.id !== id))}
-      onClear={() => setCompareScripts([])}
-      onCompare={() => setShowCompareModal(true)}
-    />
-
-    {/* Compare Modal */}
-    {showCompareModal && (
-      <CompareModal
-        scripts={compareScripts as any}
-        onClose={() => setShowCompareModal(false)}
-      />
-    )}
     </>
   );
 }
