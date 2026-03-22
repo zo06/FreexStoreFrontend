@@ -11,14 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, Shield, Download, Clock, CheckCircle, CreditCard, Star,
-  Lock, Zap, Users, Globe, Award, Flame, Gift, ShoppingCart, Play,
-  ChevronRight, Sparkles, TrendingUp, Package
+  Lock, Zap, Users, Award, Flame, Gift, ShoppingCart,
+  Sparkles, TrendingUp, Package
 } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { MediaSlider } from '@/components/ui/media-slider';
-import { StripeCheckout } from '@/components/payment/StripeCheckout';
+import { useCartStore } from '@/lib/stores/cart-store';
 
 interface Script {
   id: string;
@@ -70,6 +70,8 @@ export default function ScriptDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedLicenseType, setSelectedLicenseType] = useState<'forever' | 'date'>('forever');
   const [viewerCount] = useState(() => Math.floor(Math.random() * 18) + 7);
+  const [justAdded, setJustAdded] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
 
   const scriptId = params.scriptId as string;
 
@@ -113,19 +115,34 @@ export default function ScriptDetailPage() {
     return [];
   };
 
-  const handleStripeSuccess = async (paymentIntent: any) => {
-    toast.success(t('paymentSuccessful'));
-    try {
-      const result = await apiClient.confirmStripePayment(paymentIntent.id) as any;
-      if (result.success) {
-        toast.success(t('licenseActivated'));
-        setTimeout(() => router.push('/dashboard'), 2000);
-      } else {
-        toast.error(t('paymentFailed'));
-      }
-    } catch {
-      toast.error(t('activationError'));
+  const handleAddToCart = () => {
+    if (!script) return;
+    addItem({
+      id: script.id,
+      name: script.name,
+      price: currentPrice,
+      imageUrl: script.imageUrl,
+      licenseType: script.licenseType,
+    });
+    setJustAdded(true);
+    toast.success('Added to cart!');
+    setTimeout(() => setJustAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      router.push(`/${locale}/auth/login?redirect=/${locale}/script/${scriptId}`);
+      return;
     }
+    router.push(`/${locale}/payment/${script?.slug || scriptId}`);
+  };
+
+  const handleFreeTrial = () => {
+    if (!user) {
+      router.push(`/${locale}/auth/login?redirect=/${locale}/script/${scriptId}`);
+      return;
+    }
+    router.push(`/${locale}/payment/${script?.slug || scriptId}?trial=true`);
   };
 
   // Loading State
@@ -160,30 +177,6 @@ export default function ScriptDetailPage() {
               {t('backToScripts')}
             </Button>
           </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center p-8 bg-white/[0.04] border border-cyan-500/20 rounded-2xl backdrop-blur-xl">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">{t('authRequired')}</h2>
-          <p className="text-gray-400 text-sm mb-6">{t('pleaseLogin')}</p>
-          <div className="flex flex-col gap-3">
-            <Link href={`/${locale}/auth/login`}>
-              <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500">{t('logIn')}</Button>
-            </Link>
-            <Link href={`/${locale}/scripts`}>
-              <Button variant="outline" className="w-full border-white/10 text-gray-400 hover:bg-white/5">
-                <ArrowLeft className="mr-2 h-4 w-4" />{t('backToScripts')}
-              </Button>
-            </Link>
-          </div>
         </div>
       </div>
     );
@@ -394,30 +387,36 @@ export default function ScriptDetailPage() {
                 </div>
               </div>
 
-              {/* Stripe checkout */}
+              {/* Action buttons */}
               <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.06] p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm font-semibold text-white">{t('payWithCard')}</span>
-                  </div>
-                  <StripeCheckout
-                    amount={currentPrice}
-                    currency="usd"
-                    metadata={{ scriptId: script.id, licenseType: selectedLicenseType }}
-                    onSuccess={(paymentIntent) => handleStripeSuccess(paymentIntent)}
-                    onError={(err) => console.error(err)}
-                  />
-                </div>
+                <button
+                  onClick={handleBuyNow}
+                  className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  {t('buyNow')} — ${currentPrice}
+                </button>
+
+                <button
+                  onClick={handleAddToCart}
+                  className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border ${
+                    justAdded
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                      : 'bg-white/[0.05] border-white/[0.1] text-gray-300 hover:bg-white/[0.08] hover:text-white'
+                  }`}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {justAdded ? 'Added!' : t('addToCart')}
+                </button>
 
                 {script.trialAvailable && (
-                  <div className="p-3 bg-emerald-500/8 border border-emerald-500/20 rounded-xl text-center">
-                    <div className="flex items-center justify-center gap-2 text-emerald-300 text-sm font-semibold mb-1">
-                      <Gift className="w-4 h-4" />
-                      {t('freeTrialAvailable')}
-                    </div>
-                    <p className="text-xs text-gray-500">{t('trialNoCreditCard')}</p>
-                  </div>
+                  <button
+                    onClick={handleFreeTrial}
+                    className="w-full py-3 px-4 rounded-xl font-bold text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Gift className="w-4 h-4" />
+                    {t('startFreeTrial')}
+                  </button>
                 )}
               </div>
 
