@@ -339,6 +339,7 @@ function AdminScripts() {
                   <TableHead className="font-semibold text-gray-300">{t('table.category')}</TableHead>
                   <TableHead className="font-semibold text-gray-300">{t('table.description')}</TableHead>
                   <TableHead className="font-semibold text-gray-300">{t('table.price')}</TableHead>
+                  <TableHead className="font-semibold text-gray-300">Discount</TableHead>
                   <TableHead className="font-semibold text-gray-300">{t('table.status')}</TableHead>
                   <TableHead className="font-semibold text-gray-300">{t('table.createdDate')}</TableHead>
                   <TableHead className="font-semibold text-gray-300">{t('table.actions')}</TableHead>
@@ -355,6 +356,15 @@ function AdminScripts() {
                     </TableCell>
                     <TableCell className="max-w-xs text-gray-300 truncate">{script.description || t('table.noDescription')}</TableCell>
                     <TableCell className="text-gray-300">${script.price || 0}</TableCell>
+                    <TableCell>
+                      {(script as any).discountPercentage > 0 ? (
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                          -{(script as any).discountPercentage}%
+                        </span>
+                      ) : (
+                        <span className="text-gray-600 text-xs">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>{getStatusBadge(script)}</TableCell>
                     <TableCell className="text-gray-300">{formatDate(script.createdAt || '')}</TableCell>
                     <TableCell>

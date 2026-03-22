@@ -29,6 +29,7 @@ interface ScriptFormData {
   category?: string
   developerIds: string[]
   price: number
+  discountPercentage: number
   scriptUUID: string
   isActive: boolean
   popular: boolean
@@ -70,6 +71,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
     category: ((script?.category as { id?: string } | undefined)?.id) || undefined,
     developerIds: (script as any)?.developers?.map((d: any) => d.id) || [],
     price: script?.price || 0,
+    discountPercentage: (script as any)?.discountPercentage ?? 0,
     scriptUUID: (script as any)?.scriptUUID || '',
     isActive: script?.isActive ?? true,
     popular: script?.popular ?? false,
@@ -124,6 +126,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         category: ((script.category as { id?: string } | undefined)?.id) || (script as any).categoryId || undefined,
         developerIds: (script as any)?.developers?.map((d: any) => d.id) || [],
         price: script.price || 0,
+        discountPercentage: (script as any)?.discountPercentage ?? 0,
         scriptUUID: (script as any)?.scriptUUID || '',
         isActive: script.isActive ?? true,
         popular: script.popular ?? false,
@@ -268,6 +271,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
         category: formData.category || 'General',
         developerIds: formData.developerIds || [],
         price: basePrice,
+        discountPercentage: formData.discountPercentage ?? 0,
         isActive: formData.isActive,
         popular: formData.popular,
         new: formData.new,
@@ -482,7 +486,7 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div>
                 <Label htmlFor="price" className="text-white">{formData.licenseType === 'forever' ? 'Price Forever (USD) *' : 'Price per Month (USD) *'}</Label>
                 <Input
@@ -497,7 +501,30 @@ export function ScriptForm({ mode, script, categories: initialCategories, develo
                   required
                 />
               </div>
-              
+
+              <div>
+                <Label htmlFor="discountPercentage" className="text-white">
+                  Default Discount (%)
+                  {formData.discountPercentage > 0 && (
+                    <span className="ml-2 text-xs font-normal text-emerald-400">
+                      → ${((formData.price || 0) * (1 - formData.discountPercentage / 100)).toFixed(2)} after discount
+                    </span>
+                  )}
+                </Label>
+                <Input
+                  id="discountPercentage"
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  value={formData.discountPercentage}
+                  onChange={(e) => setFormData({ ...formData, discountPercentage: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                  placeholder="0"
+                  className="mt-1 text-white bg-white/10 border-white/20 placeholder:text-gray-400"
+                />
+                <p className="mt-1 text-xs text-gray-500">0 = no discount · shown as strikethrough on store</p>
+              </div>
+
               <div>
                 <Label htmlFor="licenseType" className="text-white">License Type</Label>
                 <div className="mt-1">
