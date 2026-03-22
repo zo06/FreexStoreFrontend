@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                         <p className="text-xs text-gray-500 mt-0.5">Lifetime License</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-cyan-400 font-bold text-sm">${finalPrice.toFixed(2)}</span>
-                          {item.discountPercentage && item.discountPercentage > 0 && (
+                          {(item.discountPercentage ?? 0) > 0 && (
                             <>
                               <span className="text-gray-600 line-through text-xs">${rawPrice.toFixed(2)}</span>
                               <span className="text-xs text-red-400 font-medium">-{item.discountPercentage}%</span>
