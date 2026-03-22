@@ -48,9 +48,10 @@ export const useCartStore = create<CartState>()(
 
       getSubtotal: () =>
         get().items.reduce((sum, item) => {
+          const price = parseFloat(String(item.price).replace('$', '')) || 0;
           const discount = item.discountPercentage || 0;
-          const price = discount > 0 ? item.price * (1 - discount / 100) : item.price;
-          return sum + price;
+          const finalPrice = discount > 0 ? price * (1 - discount / 100) : price;
+          return sum + finalPrice;
         }, 0),
 
       getTotal: () => {

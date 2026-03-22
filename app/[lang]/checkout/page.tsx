@@ -11,7 +11,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import toast from 'react-hot-toast';
 import {
   ArrowLeft, ShoppingCart, Trash2, Tag, Shield, Lock, CreditCard,
-  CheckCircle, Loader2, X, Package, Sparkles,
+  CheckCircle, Loader2, X, Package, BadgePercent,
 } from 'lucide-react';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -300,10 +300,11 @@ export default function CheckoutPage() {
 
               <div className="p-4 space-y-3">
                 {items.map((item) => {
+                  const rawPrice = parseFloat(String(item.price).replace('$', '')) || 0;
                   const finalPrice =
                     item.discountPercentage && item.discountPercentage > 0
-                      ? item.price * (1 - item.discountPercentage / 100)
-                      : item.price;
+                      ? rawPrice * (1 - item.discountPercentage / 100)
+                      : rawPrice;
                   return (
                     <div
                       key={item.id}
@@ -331,7 +332,7 @@ export default function CheckoutPage() {
                           <span className="text-cyan-400 font-bold text-sm">${finalPrice.toFixed(2)}</span>
                           {item.discountPercentage && item.discountPercentage > 0 && (
                             <>
-                              <span className="text-gray-600 line-through text-xs">${item.price.toFixed(2)}</span>
+                              <span className="text-gray-600 line-through text-xs">${rawPrice.toFixed(2)}</span>
                               <span className="text-xs text-red-400 font-medium">-{item.discountPercentage}%</span>
                             </>
                           )}
@@ -424,7 +425,7 @@ export default function CheckoutPage() {
             {/* Totals */}
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 space-y-3">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <BadgePercent className="w-4 h-4 text-cyan-400" />
                 <span className="font-semibold text-white text-sm">Price Summary</span>
               </div>
 

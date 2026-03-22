@@ -150,9 +150,11 @@ export default function LicenseProfileModal({ licenseKey, onClose }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('Profile')
 
+  const parsedKey = (licenseKey.match(/FREEX-[A-Z0-9]+/i) ?? [licenseKey])[0].toUpperCase()
+
   useEffect(() => {
     const token = localStorage.getItem('access_token')
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/licenses/admin/lookup/${encodeURIComponent(licenseKey)}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/licenses/admin/lookup/${encodeURIComponent(parsedKey)}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async r => {
@@ -162,7 +164,7 @@ export default function LicenseProfileModal({ licenseKey, onClose }: Props) {
       .then(setData)
       .catch(e => setError(e.message || 'Failed to load profile'))
       .finally(() => setLoading(false))
-  }, [licenseKey])
+  }, [parsedKey])
 
   const fmt = (d?: string | null) => d ? new Date(d).toLocaleString() : '—'
   const fmtUnix = (ts: number) => new Date(ts * 1000).toLocaleString()
