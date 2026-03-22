@@ -45,11 +45,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
       {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-[#0a0f1e] border-l border-white/10 z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-[#0a0f1e] border-l border-white/10 z-[201] flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <button onClick={clearCart} className="px-4 py-2.5 text-sm text-gray-400 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all">
                 Clear
               </button>
-              <Link href="/scripts" onClick={onClose} className="flex-1 py-2.5 text-sm font-bold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all flex items-center justify-center gap-2">
+              <Link href="/checkout" onClick={onClose} className="flex-1 py-2.5 text-sm font-bold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all flex items-center justify-center gap-2">
                 Checkout <ChevronRight className="w-4 h-4" />
               </Link>
             </div>

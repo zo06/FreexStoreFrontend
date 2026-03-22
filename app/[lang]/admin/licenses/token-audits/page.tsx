@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
@@ -74,7 +75,7 @@ function CopyCell({ value, className = '' }: { value: string; className?: string
   )
 }
 
-function DetailModal({ audit, onClose }: { audit: TokenAudit; onClose: () => void }) {
+function DetailModal({ audit, onClose, onViewProfile }: { audit: TokenAudit; onClose: () => void; onViewProfile: () => void }) {
   const formatUnix = (ts: number) => new Date(ts * 1000).toLocaleString()
   const fields: { label: string; value: string }[] = [
     { label: 'ID', value: audit.id },
@@ -93,7 +94,7 @@ function DetailModal({ audit, onClose }: { audit: TokenAudit; onClose: () => voi
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -149,10 +150,17 @@ function DetailModal({ audit, onClose }: { audit: TokenAudit; onClose: () => voi
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-2 border-t border-white/10">
+        <div className="px-5 pb-5 pt-2 border-t border-white/10 flex gap-2">
+          <button
+            onClick={() => { onClose(); onViewProfile(); }}
+            className="flex-1 py-2 rounded-xl text-sm font-medium text-violet-300 border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 hover:text-violet-200 transition-all flex items-center justify-center gap-2"
+          >
+            <Activity className="w-4 h-4" />
+            View User Profile
+          </button>
           <button
             onClick={onClose}
-            className="w-full py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+            className="flex-1 py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
           >
             Close
           </button>
@@ -235,8 +243,14 @@ function AdminLicenseTokenAudits() {
       </div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
 
-      {selectedAudit && <DetailModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} />}
-      {profileKey && <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />}
+      {selectedAudit && typeof document !== 'undefined' && createPortal(
+        <DetailModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} onViewProfile={() => setProfileKey(selectedAudit.licenseKey)} />,
+        document.body
+      )}
+      {profileKey && typeof document !== 'undefined' && createPortal(
+        <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />,
+        document.body
+      )}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -370,7 +384,7 @@ function AdminLicenseTokenAudits() {
                   </TableRow>
                 ) : (
                   audits.map(audit => (
-                    <TableRow key={audit.id} className="border-white/10 hover:bg-white/5 transition-colors group">
+                    <TableRow key={audit.id} className="border-white/10 hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setSelectedAudit(audit)}>
                       <TableCell className="whitespace-nowrap">{getStatusBadge(audit.status)}</TableCell>
                       <TableCell className="font-mono text-xs text-gray-400">
                         <CopyCell value={audit.licenseKey} />
@@ -396,7 +410,7 @@ function AdminLicenseTokenAudits() {
                       <TableCell className="font-mono text-xs text-gray-600 hidden 2xl:table-cell">
                         <CopyCell value={audit.jti} />
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => setSelectedAudit(audit)}

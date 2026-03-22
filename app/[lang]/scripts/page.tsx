@@ -212,6 +212,19 @@ function ScriptsPageContent() {
   const { addItem, isInCart } = useCartStore();
 
   const [trialLoading, setTrialLoading] = useState<string | null>(null);
+  const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
+
+  const handleAddToCart = (e: React.MouseEvent, script: { id: string; name?: string; title?: string; price?: string; discountPercentage?: number; imageUrl?: string; slug?: string }) => {
+    e.stopPropagation();
+    const rawPrice = parseFloat((script.price || '0').replace('$', ''));
+    if (isNaN(rawPrice) || rawPrice <= 0) return;
+    if (!isInCart(script.id)) {
+      addItem({ id: script.id, name: script.name || script.title || '', price: rawPrice, discountPercentage: script.discountPercentage, imageUrl: script.imageUrl, slug: script.slug });
+      toast.success('Added to cart!');
+      setJustAdded(prev => new Set(prev).add(script.id));
+      setTimeout(() => setJustAdded(prev => { const n = new Set(prev); n.delete(script.id); return n; }), 1500);
+    }
+  };
   
   // Helper function to check user's license status for a script
   const getLicenseStatus = (scriptId: string) => {
@@ -596,23 +609,23 @@ function ScriptsPageContent() {
                       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         {/* Add to Cart button */}
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const rawPrice = parseFloat((script.price || '0').replace('$', ''));
-                            if (!isNaN(rawPrice) && rawPrice > 0) {
-                              addItem({ id: script.id, name: script.name || script.title || '', price: rawPrice, discountPercentage: script.discountPercentage, imageUrl: script.imageUrl, slug: script.slug });
-                              if (!isInCart(script.id)) toast.success('Added to cart!');
-                            }
-                          }}
+                          onClick={(e) => handleAddToCart(e, script)}
                           className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 ${
-                            isInCart(script.id)
+                            justAdded.has(script.id)
+                              ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 scale-105'
+                              : isInCart(script.id)
                               ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
                               : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/25'
                           }`}
                           title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
                         >
-                          <ShoppingCart className="w-4 h-4" />
-                          {isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
+                          {justAdded.has(script.id) ? (
+                            <><CheckCircle size={16} weight="fill" /> Added!</>
+                          ) : isInCart(script.id) ? (
+                            <><ShoppingCart className="w-4 h-4" /> In Cart</>
+                          ) : (
+                            <><ShoppingCart className="w-4 h-4" /> Add to Cart</>
+                          )}
                         </button>
                         {user ? (
                           (() => {

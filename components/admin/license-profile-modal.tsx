@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   X, User, Key, Activity, Shield, CreditCard, Copy, Check,
   CheckCircle, XCircle, AlertTriangle, Clock, Globe, Mail,
@@ -166,8 +167,10 @@ export default function LicenseProfileModal({ licenseKey, onClose }: Props) {
   const fmt = (d?: string | null) => d ? new Date(d).toLocaleString() : '—'
   const fmtUnix = (ts: number) => new Date(ts * 1000).toLocaleString()
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
         className="relative z-10 w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-white/10 bg-slate-900/98 shadow-2xl backdrop-blur-xl overflow-hidden"
@@ -464,6 +467,7 @@ export default function LicenseProfileModal({ licenseKey, onClose }: Props) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

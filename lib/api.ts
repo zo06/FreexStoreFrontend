@@ -451,6 +451,10 @@ class ApiClient {
     });
   }
 
+  async confirmStripeCartPayment(paymentIntentId: string, scriptIds: string[], couponCode?: string) {
+    return this.post('/payment/stripe/confirm-cart', { paymentIntentId, scriptIds, couponCode });
+  }
+
   async getLicensesIp() {
     return this.request<{ data?: { licensesIpAddress: any }; licensesIpAddress?: any }>('/licenses/ip/current');
   }

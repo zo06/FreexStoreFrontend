@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
@@ -74,7 +75,7 @@ function CopyCell({ value, className = '' }: { value: string; className?: string
   )
 }
 
-function DetailModal({ log, onClose }: { log: EventLog; onClose: () => void }) {
+function DetailModal({ log, onClose, onViewProfile }: { log: EventLog; onClose: () => void; onViewProfile?: () => void }) {
   const fields: { label: string; value: string }[] = [
     { label: 'ID', value: log.id },
     { label: 'Event', value: log.event },
@@ -90,7 +91,7 @@ function DetailModal({ log, onClose }: { log: EventLog; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -146,10 +147,19 @@ function DetailModal({ log, onClose }: { log: EventLog; onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-2 border-t border-white/10">
+        <div className="px-5 pb-5 pt-2 border-t border-white/10 flex gap-2">
+          {onViewProfile && (
+            <button
+              onClick={() => { onClose(); onViewProfile(); }}
+              className="flex-1 py-2 rounded-xl text-sm font-medium text-violet-300 border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 hover:text-violet-200 transition-all flex items-center justify-center gap-2"
+            >
+              <Activity className="w-4 h-4" />
+              View User Profile
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="w-full py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+            className="flex-1 py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
           >
             Close
           </button>
@@ -236,8 +246,14 @@ function AdminLicenseEventLogs() {
       </div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
 
-      {selectedLog && <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
-      {profileKey && <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />}
+      {selectedLog && typeof document !== 'undefined' && createPortal(
+        <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} onViewProfile={selectedLog.licenseKey ? () => setProfileKey(selectedLog.licenseKey!) : undefined} />,
+        document.body
+      )}
+      {profileKey && typeof document !== 'undefined' && createPortal(
+        <LicenseProfileModal licenseKey={profileKey} onClose={() => setProfileKey(null)} />,
+        document.body
+      )}
 
       <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
@@ -378,7 +394,7 @@ function AdminLicenseEventLogs() {
                   </TableRow>
                 ) : (
                   logs.map(log => (
-                    <TableRow key={log.id} className="border-white/10 hover:bg-white/5 transition-colors group">
+                    <TableRow key={log.id} className="border-white/10 hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setSelectedLog(log)}>
                       <TableCell className="whitespace-nowrap">{getEventBadge(log.event)}</TableCell>
                       <TableCell className="text-xs text-gray-300">
                         <CopyCell value={log.details || ''} />
@@ -404,7 +420,7 @@ function AdminLicenseEventLogs() {
                       <TableCell className="text-xs text-gray-400 whitespace-nowrap">
                         <CopyCell value={formatDate(log.createdAt)} />
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => setSelectedLog(log)}
