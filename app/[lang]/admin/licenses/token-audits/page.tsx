@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check, Activity } from 'lucide-react'
+import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check, Activity, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LicenseProfileModal from '@/components/admin/license-profile-modal'
 
@@ -180,7 +180,29 @@ function AdminLicenseTokenAudits() {
   const [total, setTotal] = useState(0)
   const [selectedAudit, setSelectedAudit] = useState<TokenAudit | null>(null)
   const [profileKey, setProfileKey] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const limit = 20
+
+  const handleDelete = async (olderThanDays?: number) => {
+    const label = olderThanDays ? `older than ${olderThanDays} days` : 'all'
+    if (!confirm(`Delete ${label} token audits? This cannot be undone.`)) return
+    setDeleting(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const url = olderThanDays
+        ? `${process.env.NEXT_PUBLIC_API_URL}/licenses/token-audits/cleanup?olderThanDays=${olderThanDays}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/licenses/token-audits/cleanup`
+      const res = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      if (!res.ok) throw new Error('Failed to delete')
+      const { deleted } = await res.json()
+      toast.success(`Deleted ${deleted} token audit${deleted !== 1 ? 's' : ''}`)
+      fetchAudits()
+    } catch {
+      toast.error('Failed to delete token audits')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   // Filters
   const [licenseKey, setLicenseKey] = useState('')
@@ -277,6 +299,33 @@ function AdminLicenseTokenAudits() {
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
+              </Button>
+              <Button
+                onClick={() => handleDelete(7)}
+                disabled={deleting}
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-orange-700 to-orange-600 border border-white/10 shadow-lg hover:from-orange-600 hover:to-orange-500 hover:scale-105 transition-all duration-300"
+                title="Delete token audits older than 7 days"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                &gt;7d
+              </Button>
+              <Button
+                onClick={() => handleDelete(14)}
+                disabled={deleting}
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-red-700 to-red-600 border border-white/10 shadow-lg hover:from-red-600 hover:to-red-500 hover:scale-105 transition-all duration-300"
+                title="Delete token audits older than 14 days"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                &gt;14d
+              </Button>
+              <Button
+                onClick={() => handleDelete()}
+                disabled={deleting}
+                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-rose-800 to-rose-700 border border-white/10 shadow-lg hover:from-rose-700 hover:to-rose-600 hover:scale-105 transition-all duration-300"
+                title="Delete all token audits"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete All
               </Button>
               <Button
                 onClick={() => router.push('/admin/licenses')}

@@ -11,7 +11,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import toast from 'react-hot-toast';
 import {
   ArrowLeft, ShoppingCart, Trash2, Tag, Shield, Lock, CreditCard,
-  CheckCircle, Loader2, X, Package, BadgePercent,
+  CheckCircle, Loader2, X, Package, BadgePercent, LogIn, UserPlus,
 } from 'lucide-react';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -186,8 +186,77 @@ export default function CheckoutPage() {
   if (!mounted) return null;
 
   if (!user) {
-    router.replace('/auth/login');
-    return null;
+    return (
+      <div className="min-h-screen bg-[#030712] relative overflow-x-hidden flex items-center justify-center px-4">
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]" />
+        </div>
+        <div className="relative z-10 w-full max-w-md">
+          {/* Cart preview */}
+          {items.length > 0 && (
+            <div className="mb-6 p-4 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl space-y-2">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-3">
+                Your cart · {items.length} {items.length === 1 ? 'item' : 'items'}
+              </p>
+              {items.slice(0, 3).map((item) => {
+                const p = parseFloat(String(item.price).replace('$', '')) || 0;
+                return (
+                  <div key={item.id} className="flex items-center gap-3">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${item.imageUrl}` : item.imageUrl}
+                        alt={item.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex-shrink-0" />
+                    )}
+                    <span className="flex-1 text-sm text-gray-300 truncate">{item.name}</span>
+                    <span className="text-sm font-bold text-cyan-400">${p.toFixed(2)}</span>
+                  </div>
+                );
+              })}
+              {items.length > 3 && (
+                <p className="text-xs text-gray-600 text-center pt-1">+{items.length - 3} more items</p>
+              )}
+              <div className="border-t border-white/10 pt-2 flex justify-between font-bold text-white">
+                <span className="text-sm">Total</span>
+                <span className="text-cyan-400">${getTotal().toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Login prompt */}
+          <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl text-center space-y-6">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white mb-2">Login to Checkout</h2>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Your cart is saved. Sign in or create an account to complete your purchase.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <Link
+                href={`/auth/login?redirect=/checkout`}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all hover:shadow-lg hover:shadow-cyan-500/25"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In & Checkout
+              </Link>
+              <Link
+                href={`/auth/register?redirect=/checkout`}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 transition-all"
+              >
+                <UserPlus className="w-4 h-4" />
+                Create Account
+              </Link>
+            </div>
+            <Link href="/scripts" className="block text-xs text-gray-600 hover:text-gray-400 transition-colors">
+              ← Continue browsing
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (items.length === 0) {

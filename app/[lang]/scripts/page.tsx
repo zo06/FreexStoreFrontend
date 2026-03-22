@@ -606,89 +606,134 @@ function ScriptsPageContent() {
                       </div>
                       
                       {/* Actions */}
-                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        {/* Add to Cart button */}
-                        <button
-                          onClick={(e) => handleAddToCart(e, script)}
-                          className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 ${
-                            justAdded.has(script.id)
-                              ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 scale-105'
-                              : isInCart(script.id)
-                              ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
-                              : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/25'
-                          }`}
-                          title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
-                        >
-                          {justAdded.has(script.id) ? (
-                            <><CheckCircle size={16} weight="fill" /> Added!</>
-                          ) : isInCart(script.id) ? (
-                            <><ShoppingCart className="w-4 h-4" /> In Cart</>
-                          ) : (
-                            <><ShoppingCart className="w-4 h-4" /> Add to Cart</>
-                          )}
-                        </button>
+                      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                         {user ? (
                           (() => {
                             const licenseStatus = getLicenseStatus(script.id);
 
-                            // User has purchased the script
+                            // Owned
                             if (licenseStatus && !licenseStatus.isTrial) {
                               return (
                                 <button
                                   onClick={() => window.location.href = '/dashboard'}
-                                  className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl transition-all duration-300"
+                                  className="w-full py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl transition-all duration-300"
                                 >
                                   <CheckCircle size={14} weight="fill" className="inline mr-1" />{t('ownedView')}
                                 </button>
                               );
                             }
 
-                            // User has trial license - show upgrade button only
+                            // Trial active — upgrade
                             if (licenseStatus && licenseStatus.isTrial) {
                               return (
                                 <button
                                   onClick={() => handleScriptAction(script, 'buy')}
-                                  className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25 animate-pulse"
+                                  className="w-full py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25 animate-pulse"
                                 >
                                   <ArrowUp size={14} weight="bold" className="inline mr-1" />{t('upgradeFull')}
                                 </button>
                               );
                             }
 
-                            // No license - show trial/buy options (only if trialAvailable is true)
+                            // No license + trial available → 3 buttons
                             if (script.trialAvailable && user.trialEndAt && new Date(user.trialEndAt) > new Date()) {
                               return (
-                                <div className="flex flex-1 gap-2">
-                                  <button
-                                    onClick={() => handleScriptAction(script, 'trial')}
-                                    className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25"
-                                  >
-                                    <Gift size={14} weight="fill" className="inline mr-1" />{t('tryFree')}
-                                  </button>
+                                <div className="space-y-2">
                                   <button
                                     onClick={() => handleScriptAction(script, 'buy')}
-                                    className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
+                                    className="w-full py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
                                   >
-                                    {t('buy')}
+                                    {t('buyNow')}
                                   </button>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={(e) => handleAddToCart(e, script)}
+                                      className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                                        justAdded.has(script.id)
+                                          ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 scale-105'
+                                          : isInCart(script.id)
+                                          ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
+                                          : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                                      }`}
+                                    >
+                                      {justAdded.has(script.id) ? (
+                                        <><CheckCircle size={14} weight="fill" /> Added!</>
+                                      ) : isInCart(script.id) ? (
+                                        <><ShoppingCart className="w-3.5 h-3.5" /> In Cart</>
+                                      ) : (
+                                        <><ShoppingCart className="w-3.5 h-3.5" /> Add to Cart</>
+                                      )}
+                                    </button>
+                                    <button
+                                      onClick={() => handleScriptAction(script, 'trial')}
+                                      className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center gap-1.5"
+                                    >
+                                      <Gift size={14} weight="fill" />{t('tryFree')}
+                                    </button>
+                                  </div>
                                 </div>
                               );
                             }
 
-                            // No trial available or trial expired - show buy only
+                            // No trial — Buy Now + Add to Cart
                             return (
-                              <button
-                                onClick={() => handleScriptAction(script, 'buy')}
-                                className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
-                              >
-                                {t('buyNow')}
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleScriptAction(script, 'buy')}
+                                  className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
+                                >
+                                  {t('buyNow')}
+                                </button>
+                                <button
+                                  onClick={(e) => handleAddToCart(e, script)}
+                                  className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-1.5 ${
+                                    justAdded.has(script.id)
+                                      ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 scale-105'
+                                      : isInCart(script.id)
+                                      ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
+                                      : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                                  }`}
+                                  title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
+                                >
+                                  {justAdded.has(script.id) ? (
+                                    <><CheckCircle size={14} weight="fill" /> Added!</>
+                                  ) : isInCart(script.id) ? (
+                                    <><ShoppingCart className="w-3.5 h-3.5" /> In Cart</>
+                                  ) : (
+                                    <><ShoppingCart className="w-3.5 h-3.5" /></>
+                                  )}
+                                </button>
+                              </div>
                             );
                           })()
                         ) : (
-                          <Link href="/auth/login" className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25">
-                            {t('loginToBuy')}
-                          </Link>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleScriptAction(script, 'buy')}
+                              className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
+                            >
+                              {t('buyNow')}
+                            </button>
+                            <button
+                              onClick={(e) => handleAddToCart(e, script)}
+                              className={`flex-shrink-0 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center gap-1.5 ${
+                                justAdded.has(script.id)
+                                  ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 scale-105'
+                                  : isInCart(script.id)
+                                  ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
+                                  : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
+                              }`}
+                              title={isInCart(script.id) ? 'In Cart' : 'Add to Cart'}
+                            >
+                              {justAdded.has(script.id) ? (
+                                <><CheckCircle size={14} weight="fill" /> Added!</>
+                              ) : isInCart(script.id) ? (
+                                <><ShoppingCart className="w-3.5 h-3.5" /> In Cart</>
+                              ) : (
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
