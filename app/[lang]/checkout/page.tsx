@@ -99,28 +99,28 @@ function PaymentPanel({
   onSuccess: () => void;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [initializing, setInitializing] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const piIdRef = useRef<string | null>(null);
   const completedRef = useRef(false);
 
-  const initPayment = async () => {
-    if (clientSecret) { setReady(true); return; }
-    setInitializing(true);
-    try {
-      const data = await (apiClient as any).createStripeIntent(total, 'usd', {
-        cartItems: scriptIds.join(','),
-        couponCode: couponCode ?? '',
-      }) as { clientSecret: string; id: string };
-      setClientSecret(data.clientSecret);
-      piIdRef.current = data.id;
-      setReady(true);
-    } catch {
-      toast.error('Failed to initialize payment. Please try again.');
-    } finally {
-      setInitializing(false);
-    }
-  };
+  useEffect(() => {
+    const initPayment = async () => {
+      try {
+        const data = await (apiClient as any).createStripeIntent(total, 'usd', {
+          cartItems: scriptIds.join(','),
+          couponCode: couponCode ?? '',
+        }) as { clientSecret: string; id: string };
+        setClientSecret(data.clientSecret);
+        piIdRef.current = data.id;
+      } catch {
+        toast.error('Failed to initialize payment. Please try again.');
+      } finally {
+        setInitializing(false);
+      }
+    };
+    initPayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -135,23 +135,11 @@ function PaymentPanel({
     onSuccess();
   };
 
-  if (!ready) {
+  if (initializing) {
     return (
-      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-4">
-        <CreditCard className="w-12 h-12 mx-auto text-cyan-400 opacity-70" />
-        <p className="text-gray-300 font-medium">Ready to complete your purchase?</p>
-        <p className="text-sm text-gray-500">Click below to securely enter your payment details.</p>
-        <button
-          onClick={initPayment}
-          disabled={initializing}
-          className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-        >
-          {initializing ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Initializing...</>
-          ) : (
-            <><CreditCard className="w-4 h-4" /> Proceed to Payment</>
-          )}
-        </button>
+      <div className="flex items-center justify-center py-8 gap-3">
+        <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+        <span className="text-sm text-gray-400">Loading payment options...</span>
       </div>
     );
   }

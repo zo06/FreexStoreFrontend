@@ -270,8 +270,11 @@ function ScriptsPageContent() {
         setConfirmLoading(false);
       }
     } else if (confirmModal.type === 'buy') {
+      const s = confirmModal.script!;
+      const rawPrice = parseFloat(String(s.price || '0').replace('$', '')) || 0;
+      addItem({ id: s.id, name: s.name || (s as any).title || '', price: rawPrice, discountPercentage: s.discountPercentage, imageUrl: s.imageUrl, slug: s.slug });
       setConfirmModal({ isOpen: false, type: 'buy', script: null });
-      window.location.href = `/script/${confirmModal.script.slug}`;
+      window.location.href = `/${locale}/checkout`;
     }
   };
 

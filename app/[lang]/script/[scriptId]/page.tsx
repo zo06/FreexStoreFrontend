@@ -202,15 +202,25 @@ export default function ScriptDetailPage() {
       router.push(`/${locale}/auth/login?redirect=/${locale}/script/${scriptId}`);
       return;
     }
-    router.push(`/${locale}/payment/${script?.slug || scriptId}`);
+    if (script) {
+      addItem({ id: script.id, name: script.name, price: currentPrice, imageUrl: script.imageUrl });
+    }
+    router.push(`/${locale}/checkout`);
   };
 
-  const handleFreeTrial = () => {
+  const handleFreeTrial = async () => {
     if (!user) {
       router.push(`/${locale}/auth/login?redirect=/${locale}/script/${scriptId}`);
       return;
     }
-    router.push(`/${locale}/payment/${script?.slug || scriptId}?trial=true`);
+    if (!script) return;
+    try {
+      await apiClient.createTrialLicense(script.id);
+      toast.success('Trial license created! Check your dashboard.');
+      router.push(`/${locale}/dashboard`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to claim trial. Please try again.');
+    }
   };
 
   // Loading State
