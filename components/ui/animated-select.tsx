@@ -14,6 +14,7 @@ interface AnimatedSelectProps {
   options: Option[]
   value?: string
   onChange: (value: string) => void
+  onInputChange?: (inputValue: string) => void
   placeholder?: string
   className?: string
   isDisabled?: boolean
@@ -147,10 +148,12 @@ const customStyles: StylesConfig<Option, false, GroupBase<Option>> = {
   }),
 }
 
+
 export function AnimatedSelect({
   options,
   value,
   onChange,
+  onInputChange,
   placeholder = "Select an option",
   className,
   isDisabled = false,
@@ -162,6 +165,7 @@ export function AnimatedSelect({
         options={options}
         value={selectedOption}
         onChange={(option) => onChange(option?.value || '')}
+        onInputChange={(inputValue) => onInputChange?.(inputValue)}
         placeholder={placeholder}
         isDisabled={isDisabled}
         isSearchable={true}

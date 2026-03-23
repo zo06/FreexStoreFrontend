@@ -103,6 +103,11 @@ function LicenseManagementContent() {
     }
   };
 
+  const handleUserSearch = async (inputValue: string) => {
+    const result = await safeAdminApi.users.getAll({ search: inputValue, limit: 20 });
+    if (result?.data) setUsers(result.data);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -297,6 +302,7 @@ function LicenseManagementContent() {
                       options={users.map(user => ({ value: user.id, label: `${user.username} (${user.email})` }))}
                       value={formData.userId}
                       onChange={(value) => setFormData(prev => ({ ...prev, userId: value }))}
+                      onInputChange={handleUserSearch}
                       placeholder="Select a user"
                       isDisabled={isEditing}
                     />
