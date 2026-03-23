@@ -166,6 +166,7 @@ export function AnimatedSelect({
         value={selectedOption}
         onChange={(option) => onChange(option?.value || '')}
         onInputChange={(inputValue) => onInputChange?.(inputValue)}
+        filterOption={onInputChange ? () => true : undefined}
         placeholder={placeholder}
         isDisabled={isDisabled}
         isSearchable={true}
