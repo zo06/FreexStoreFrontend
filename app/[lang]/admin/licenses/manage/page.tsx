@@ -143,7 +143,6 @@ function LicenseManagementContent() {
         };
         
         const result = await safeAdminApi.licenses.create(createData);
-        console.log(result)
         if (result) {
           // Show success message with activity log details
           const expiryDateFormatted = isForeverScript 

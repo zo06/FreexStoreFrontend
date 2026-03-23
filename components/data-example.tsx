@@ -13,9 +13,6 @@ export function DataExample() {
 
   useEffect(() => {
     // Data is automatically fetched by the simple system
-    console.log('Current user:', currentUser);
-    console.log('Users data:', usersData);
-    console.log('Admin users:', adminUsers);
   }, [currentUser, usersData, adminUsers]);
 
   if (currentUserLoading || usersLoading) {

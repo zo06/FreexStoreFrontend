@@ -102,7 +102,6 @@ function DeveloperSalesDetailContent() {
       }
 
       const data = await response.json()
-      console.log(data)
       setSalesStats(data.data)
     } catch (error) {
       console.error('Error loading sales stats:', error)

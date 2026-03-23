@@ -24,11 +24,9 @@ export default function ClientLayout({
   
   // Log errors for debugging
   if (publicError) {
-    console.log(publicError, "public data error");
   }
   
   if (adminError) {
-    console.log(adminError, "admin data error");
   }
 
   return <>{children}</>;

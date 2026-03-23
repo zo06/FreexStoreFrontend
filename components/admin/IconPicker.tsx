@@ -61,7 +61,6 @@ export default function IconPicker({ selectedIcon, onIconSelect, onClose, catego
         // If categoryId is provided, upload to server
         if (categoryId) {
           const response = await safeAdminApi.categories.uploadIcon(categoryId, file);
-          console.log(response)
           if (response) {
             setUploadedImage(response.iconUrl);
             setUploadSuccess('Image uploaded successfully!');

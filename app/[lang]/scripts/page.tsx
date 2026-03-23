@@ -168,11 +168,9 @@ function ScriptsPageContent() {
      : (scriptsData as any)?.data || [];
 
    const transformedScripts = rawScripts.map((script: any) => {
-    // console.log(script)
      const displayPrice = script.price;
      const categoryName = script.category?.name || 'Uncategorized';
      const categoryIcon = renderCategoryIcon(script.category?.icon, categoryName);
-    //  console.log(displayPrice)
      return {
        ...script,
        title: script.name, // Map name to title for display
@@ -207,7 +205,6 @@ function ScriptsPageContent() {
     return matchesCategory && matchesSearch && matchesFilter;
   });
 
-  console.log(filteredScripts)
 
   const { addItem, isInCart } = useCartStore();
 
@@ -250,7 +247,6 @@ function ScriptsPageContent() {
     
     setSelectedScript(script);
     setShowPopup(true);
-    console.log(`Action: ${action} on script:`, script);
   };
 
   const handleConfirmAction = async () => {
@@ -476,7 +472,6 @@ function ScriptsPageContent() {
              (() => {
                const scriptElements: React.ReactElement[] = [];
               filteredScripts.forEach((script: Script, index: number) => {
-                console.log("MyScript" ,script)
                 scriptElements.push(
                   <div
                     key={script.id}

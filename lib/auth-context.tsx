@@ -119,7 +119,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (accessToken && isTokenExpired(accessToken)) {
         const success = await refreshTokens();
         if (!success) {
-          console.log('Auto token refresh failed, logging out');
         }
       }
     }, TOKEN_REFRESH_INTERVAL);
@@ -166,7 +165,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Fetch user data
       const response = await apiClient.getProfile();
       const userData = response as User;
-      console.log(userData)
       setUser(userData);
       setIsAuthenticated(true);
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
@@ -256,7 +254,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const response = await apiClient.getProfile();
           const freshUserData = response;
-          console.log(response)
           setUser(freshUserData as User);
           setIsAuthenticated(true);
           localStorage.setItem(USER_DATA_KEY, JSON.stringify(response));

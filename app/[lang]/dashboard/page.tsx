@@ -181,7 +181,6 @@ export default function Dashboard() {
         setActivityLoading(true)
         const response = await apiClient.getUserActivity(1, 10)
         if (response?.data) {
-          console.log(response)
           setRecentActivity(response.data)
         }
       } catch (error) {
@@ -216,7 +215,6 @@ export default function Dashboard() {
     const fetchTransactions = async () => {
       try {
         const transactions = await apiClient.getMyTransactions();
-        console.log('User transactions:', transactions);
         
         if (transactions && transactions.length > 0) {
           const purchases = transactions.map((transaction: any) => {
@@ -647,7 +645,6 @@ export default function Dashboard() {
                 {licenses?.data?.map((license, index) => {
                   // Use actual license data instead of mock data
                   let licenseStatus = !license.isActive ? 'Revoked' :  (!license.isRevoked && !license.isActive) ? 'Expired' : 'Active'
-                  console.log('License data:', license)
                   return (
                     <div key={license.id} className="p-4 rounded-lg border transition-colors lg:p-6 bg-white/5 border-cyan-500/20 hover:bg-white/10 group">
                       <div className="flex flex-col gap-4 justify-between lg:flex-row lg:items-start">
@@ -814,7 +811,6 @@ export default function Dashboard() {
             <div className="flex gap-3">
               <button 
                 onClick={() => {
-                  console.log(`${selectedScript.action} script:`, selectedScript);
                   closePopup();
                 }}
                 className="flex-1 py-3 font-semibold cursor-pointer btn-primary"

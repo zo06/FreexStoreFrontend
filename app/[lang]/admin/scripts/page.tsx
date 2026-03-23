@@ -86,8 +86,6 @@ function AdminScripts() {
     ? dbCategories.map(cat => ({ value: cat.name, label: cat.name }))
     : []
   
-  console.log('dbCategories:', dbCategories)
-  console.log('categoryOptions:', categoryOptions)
 
   // Expiration duration options
   const expirationOptions = [
