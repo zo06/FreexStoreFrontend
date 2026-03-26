@@ -6,20 +6,37 @@ import { usePathname, useParams, useRouter } from 'next/navigation';
 import { Clock, Shield, Home, LogOut, LayoutDashboard, ChevronDown, Crown, Menu, X } from 'lucide-react';
 import { useAuth } from '../../../lib/auth-context';
 import { useLanguage } from '../../../lib/contexts/LanguageContext';
+import { hrApi } from '../../../lib/api/hr-api';
 
 export default function HrLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
   const lang = params?.lang || 'en';
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isAuthenticated, isLoading, logout } = useAuth();
   const { t } = useLanguage();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [hrAccessStatus, setHrAccessStatus] = useState<'checking' | 'allowed' | 'denied'>('checking');
 
   useEffect(() => { setIsClient(true); }, []);
   useEffect(() => { setIsMobileMenuOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      router.replace(`/${lang}/auth/login`);
+      return;
+    }
+    if (isAdmin) {
+      setHrAccessStatus('allowed');
+      return;
+    }
+    hrApi.getStats()
+      .then(() => setHrAccessStatus('allowed'))
+      .catch(() => setHrAccessStatus('denied'));
+  }, [isAuthenticated, isLoading, isAdmin]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -37,6 +54,32 @@ export default function HrLayout({ children }: { children: ReactNode }) {
   ];
 
   const isActive = (href: string) => pathname?.startsWith(href);
+
+  if (isLoading || hrAccessStatus === 'checking') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (hrAccessStatus === 'denied') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-white">
+        <div className="text-center space-y-4">
+          <Shield className="w-12 h-12 text-red-400 mx-auto" />
+          <h1 className="text-2xl font-bold">{t('hr.layout.accessDenied') || 'Access Denied'}</h1>
+          <p className="text-gray-400">{t('hr.layout.accessDeniedMsg') || 'You do not have permission to access the HR system.'}</p>
+          <button
+            onClick={() => router.replace(`/${lang}`)}
+            className="px-6 py-2 bg-sky-600 hover:bg-sky-500 rounded-xl text-sm font-medium transition"
+          >
+            {t('hr.layout.backToSite') || 'Back to Site'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white">

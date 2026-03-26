@@ -28,7 +28,7 @@ const statusStyle: Record<string, string> = {
 };
 
 export default function HrAdminPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const lang = params?.lang || 'en';
@@ -51,8 +51,11 @@ export default function HrAdminPage() {
   const [showDetail, setShowDetail]         = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) router.replace(`/${lang}/auth/login`);
-  }, [isAuthenticated, authLoading]);
+    if (!authLoading) {
+      if (!isAuthenticated) router.replace(`/${lang}/auth/login`);
+      else if (!isAdmin) router.replace(`/${lang}/hr/dashboard`);
+    }
+  }, [isAuthenticated, isAdmin, authLoading]);
 
   useEffect(() => {
     if (isAuthenticated) loadData();
@@ -109,7 +112,7 @@ export default function HrAdminPage() {
     setShowDetail(true);
   }
 
-  if (authLoading || loading) {
+  if (authLoading || loading || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
