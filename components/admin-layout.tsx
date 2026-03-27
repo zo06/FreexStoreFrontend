@@ -254,6 +254,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       ],
     },
     { href: '/admin/transactions', icon: Receipt, label: t('transactionsLabel') },
+    { href: '/admin/invoices', icon: FileText, label: 'Invoices' },
     { href: '/admin/coupons', icon: Ticket, label: 'Coupons' },
     { href: '/admin/accounting', icon: Calculator, label: t('accountingLabel') },
     { href: '/admin/contact-messages', icon: Mail, label: t('contactMessagesLabel') },

@@ -330,6 +330,42 @@ export const adminApi = {
     }
   },
   
+  // Invoice Management
+  invoices: {
+    getAll: async (page = 1, limit = 20) => {
+      const response = await apiClient.get<any>(`/admin/invoices?page=${page}&limit=${limit}`);
+      return response;
+    },
+    getById: async (id: string) => {
+      const response = await apiClient.get<any>(`/admin/invoices/${id}`);
+      return response;
+    },
+    create: async (data: {
+      customerEmail: string;
+      customerName?: string;
+      description: string;
+      amount: number;
+      currency?: string;
+      daysUntilDue?: number;
+      notes?: string;
+    }) => {
+      const response = await apiClient.post<any>('/admin/invoices', data);
+      return response;
+    },
+    syncStatus: async (id: string) => {
+      const response = await apiClient.patch<any>(`/admin/invoices/${id}/sync`, {});
+      return response;
+    },
+    voidInvoice: async (id: string) => {
+      const response = await apiClient.patch<any>(`/admin/invoices/${id}/void`, {});
+      return response;
+    },
+    sendInvoice: async (id: string) => {
+      const response = await apiClient.post<any>(`/admin/invoices/${id}/send`, {});
+      return response;
+    },
+  },
+
   // Analytics and Stats
   analytics: {
     getDashboardStats: async () => {
@@ -438,6 +474,14 @@ export const safeAdminApi = {
     getUserStats: withErrorHandling(adminApi.analytics.getUserStats),
     getScriptStats: withErrorHandling(adminApi.analytics.getScriptStats),
     getLicenseStats: withErrorHandling(adminApi.analytics.getLicenseStats)
+  },
+  invoices: {
+    getAll: withErrorHandling(adminApi.invoices.getAll),
+    getById: withErrorHandling(adminApi.invoices.getById),
+    create: withErrorHandling(adminApi.invoices.create),
+    syncStatus: withErrorHandling(adminApi.invoices.syncStatus),
+    voidInvoice: withErrorHandling(adminApi.invoices.voidInvoice),
+    sendInvoice: withErrorHandling(adminApi.invoices.sendInvoice),
   }
 };
 

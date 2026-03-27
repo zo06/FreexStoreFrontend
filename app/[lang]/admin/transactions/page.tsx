@@ -13,13 +13,13 @@ import { AnimatedSelect } from '@/components/ui/animated-select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
-import { 
-  DollarSign, 
-  TrendingUp, 
+import {
+  DollarSign,
+  TrendingUp,
   TrendingDown,
-  Download, 
-  ArrowLeft, 
-  RefreshCw, 
+  Download,
+  ArrowLeft,
+  RefreshCw,
   Calendar,
   CreditCard,
   CheckCircle,
@@ -36,7 +36,12 @@ import {
   Key,
   History,
   FileText,
-  Copy
+  Copy,
+  ShoppingCart,
+  ExternalLink,
+  Layers,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -75,6 +80,24 @@ function AdminTransactions() {
   const [refundNotes, setRefundNotes] = useState('')
   const [isRefunding, setIsRefunding] = useState(false)
   const [showLicenseKey, setShowLicenseKey] = useState(false)
+
+  // Cart state
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [cartItems, setCartItems] = useState<any[]>([])
+  const [cartLoading, setCartLoading] = useState(false)
+  const [cartOrderId, setCartOrderId] = useState('')
+
+  // Cart History view
+  const [showCartHistory, setShowCartHistory] = useState(false)
+  const [cartHistory, setCartHistory] = useState<any[]>([])
+  const [cartHistoryLoading, setCartHistoryLoading] = useState(false)
+  const [cartHistoryPage, setCartHistoryPage] = useState(1)
+  const [cartHistoryTotalPages, setCartHistoryTotalPages] = useState(1)
+  const [expandedCart, setExpandedCart] = useState<string | null>(null)
+
+  // User current Stripe cart
+  const [userCurrentCart, setUserCurrentCart] = useState<any>(null)
+  const [currentCartLoading, setCurrentCartLoading] = useState(false)
 
   // Load transactions on mount
   useEffect(() => {
@@ -176,6 +199,7 @@ function AdminTransactions() {
     setDetailsLoading(true)
     setUserTransactionHistory([])
     setShowLicenseKey(false) // Reset spoiler state
+    setUserCurrentCart(null)
     
     try {
       // Fetch full transaction details
@@ -318,6 +342,57 @@ function AdminTransactions() {
     }
   }
 
+  // View cart details for a specific orderId
+  const handleViewCart = async (orderId: string) => {
+    setCartOrderId(orderId)
+    setIsCartOpen(true)
+    setCartLoading(true)
+    try {
+      const res = await apiClient.get<any[]>(`/transactions/carts/${orderId}`)
+      setCartItems(Array.isArray(res) ? res : [])
+    } catch {
+      toast.error('Failed to load cart details')
+      setCartItems([])
+    } finally {
+      setCartLoading(false)
+    }
+  }
+
+  // Load cart history (grouped)
+  const loadCartHistory = async (page = 1) => {
+    setCartHistoryLoading(true)
+    try {
+      const res = await apiClient.get<any>(`/transactions/carts?page=${page}&limit=20`)
+      const data = (res as any).data || res
+      setCartHistory(Array.isArray(data) ? data : data.data || [])
+      setCartHistoryTotalPages((res as any).totalPages || 1)
+      setCartHistoryPage(page)
+    } catch {
+      toast.error('Failed to load cart history')
+    } finally {
+      setCartHistoryLoading(false)
+    }
+  }
+
+  const handleToggleCartHistory = () => {
+    if (!showCartHistory) loadCartHistory(1)
+    setShowCartHistory(!showCartHistory)
+    setExpandedCart(null)
+  }
+
+  const fetchUserCurrentCart = async (userId: string) => {
+    setCurrentCartLoading(true)
+    setUserCurrentCart(null)
+    try {
+      const res = await apiClient.get<any>(`/transactions/user/${userId}/current-cart`)
+      setUserCurrentCart(res)
+    } catch {
+      toast.error('Failed to load current cart')
+    } finally {
+      setCurrentCartLoading(false)
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -396,7 +471,15 @@ function AdminTransactions() {
           </div>
           
           <div className="flex gap-3">
-            <Button 
+            <Button
+              onClick={handleToggleCartHistory}
+              variant="outline"
+              className={`border-purple-500/30 hover:bg-purple-700/50 ${showCartHistory ? 'text-purple-300 bg-purple-800/30' : 'text-white'}`}
+            >
+              <ShoppingCart className="mr-2 w-4 h-4" />
+              {showCartHistory ? 'All Transactions' : 'Cart History'}
+            </Button>
+            <Button
               onClick={() => getTransactions()}
               variant="outline"
               className="text-white border-cyan-500/30 hover:bg-cyan-700/50"
@@ -404,7 +487,7 @@ function AdminTransactions() {
               <RefreshCw className="mr-2 w-4 h-4" />
               Refresh
             </Button>
-            <Button 
+            <Button
               onClick={handleExport}
               className="text-white bg-gradient-to-r from-green-600 to-emerald-600"
             >
@@ -630,6 +713,115 @@ function AdminTransactions() {
           </div>
         </div>
 
+        {/* ── Cart History View ───────────────────────────────────────── */}
+        {showCartHistory && (
+          <div className="overflow-hidden p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-purple-900/20 to-slate-800/30 border-purple-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-purple-400" />
+                Cart Purchase History
+              </h3>
+              {cartHistoryLoading && <RefreshCw className="w-5 h-5 text-purple-400 animate-spin" />}
+            </div>
+
+            {cartHistory.length === 0 && !cartHistoryLoading ? (
+              <div className="text-center py-12 text-gray-400">
+                <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No cart purchases found</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {cartHistory.map((cart: any) => (
+                  <div key={cart.orderId} className="rounded-xl border border-purple-500/20 bg-purple-900/10 overflow-hidden">
+                    {/* Cart header row */}
+                    <button
+                      onClick={() => setExpandedCart(expandedCart === cart.orderId ? null : cart.orderId)}
+                      className="w-full flex flex-wrap items-center justify-between gap-3 p-4 hover:bg-purple-500/10 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-500/20 rounded-lg">
+                          <ShoppingCart className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-medium">{cart.user?.username || 'Unknown'}</span>
+                            <span className="text-xs text-gray-500">{cart.user?.email}</span>
+                          </div>
+                          <div className="text-xs text-gray-400 font-mono">{String(cart.orderId).substring(0, 24)}…</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-xs text-gray-400">Items</p>
+                          <p className="font-bold text-purple-300">{Number(cart.itemCount)}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-gray-400">Total</p>
+                          <p className="font-bold text-green-400">${Number(cart.totalAmount).toFixed(2)}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-gray-400">Date</p>
+                          <p className="text-xs text-white">{cart.createdAt ? new Date(cart.createdAt).toLocaleDateString() : '—'}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <a
+                            href={`https://dashboard.stripe.com/payments/${cart.orderId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            title="View in Stripe"
+                            className="p-1.5 text-gray-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded-md transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${expandedCart === cart.orderId ? 'rotate-90' : ''}`} />
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Expanded: individual scripts */}
+                    {expandedCart === cart.orderId && (
+                      <div className="border-t border-purple-500/20 divide-y divide-purple-500/10">
+                        {(cart.items || []).map((item: any) => (
+                          <div key={item.id} className="flex items-center gap-3 px-5 py-3">
+                            {item.script?.imageUrl && (
+                              <img src={item.script.imageUrl} alt={item.script?.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white text-sm font-medium truncate">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
+                              <p className="text-xs text-gray-400">{item.script?.version || '—'} · {item.script?.licenseType || '—'}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-green-400 font-semibold text-sm">${Number(item.amount).toFixed(2)}</p>
+                              {item.license && (
+                                <p className="text-xs text-gray-500 font-mono">{item.license.privateKey?.substring(0, 12)}…</p>
+                              )}
+                            </div>
+                            <Badge className={`${getStatusColor(item.status)} text-xs flex-shrink-0`}>{item.status}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {cartHistoryTotalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <Button size="sm" variant="outline" disabled={cartHistoryPage === 1} onClick={() => loadCartHistory(cartHistoryPage - 1)} className="text-white border-slate-600/30">
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-gray-400">Page {cartHistoryPage} / {cartHistoryTotalPages}</span>
+                <Button size="sm" variant="outline" disabled={cartHistoryPage === cartHistoryTotalPages} onClick={() => loadCartHistory(cartHistoryPage + 1)} className="text-white border-slate-600/30">
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Transactions Table */}
         <div className="overflow-hidden p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-slate-900/60 to-slate-800/30 border-slate-500/20">
           <div className="overflow-x-auto">
@@ -691,21 +883,45 @@ function AdminTransactions() {
                         {transaction.createdAt ? formatDate(transaction.createdAt) : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 flex-wrap">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleViewDetails(transaction)}
                             className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                            title="View details"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
+                          {(transaction as any).metadata?.isCartPurchase && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleViewCart(transaction.orderId!)}
+                              className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
+                              title="View cart"
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {transaction.paymentId && (
+                            <a
+                              href={`https://dashboard.stripe.com/payments/${transaction.paymentId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Open in Stripe"
+                              className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded-md transition-colors"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
                           {transaction.status === 'completed' && (
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => handleOpenRefund(transaction)}
                               className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
+                              title="Refund"
                             >
                               <RotateCcw className="w-4 h-4" />
                             </Button>
@@ -836,7 +1052,20 @@ function AdminTransactions() {
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
                       <span className="text-gray-400">Payment ID</span>
-                      <span className="font-mono text-xs">{selectedTransaction.paymentId || 'N/A'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs">{selectedTransaction.paymentId || 'N/A'}</span>
+                        {selectedTransaction.paymentId && (
+                          <a
+                            href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open in Stripe Dashboard"
+                            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
                       <span className="text-gray-400">Type</span>
@@ -905,9 +1134,75 @@ function AdminTransactions() {
                           {selectedTransaction.user.role}
                         </Badge>
                       </div>
-                      <div className="flex justify-between items-center py-2">
+                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
                         <span className="text-gray-400">Member Since</span>
                         <span className="text-sm">{selectedTransaction.user.createdAt ? formatDate(selectedTransaction.user.createdAt) : 'N/A'}</span>
+                      </div>
+                      {/* Current Stripe Cart */}
+                      <div className="pt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => fetchUserCurrentCart(selectedTransaction.user.id)}
+                          disabled={currentCartLoading}
+                          className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10 mb-3"
+                        >
+                          {currentCartLoading ? <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" /> : <ShoppingCart className="w-3.5 h-3.5 mr-2" />}
+                          Check Current Stripe Cart
+                        </Button>
+                        {userCurrentCart && (
+                          <div className="rounded-lg bg-purple-900/20 border border-purple-500/20 p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-400">Stripe Customer</span>
+                              {userCurrentCart.customerId ? (
+                                <a
+                                  href={`https://dashboard.stripe.com/customers/${userCurrentCart.customerId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                                >
+                                  {userCurrentCart.customerId}
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              ) : <span className="text-xs text-gray-500">No customer</span>}
+                            </div>
+                            {userCurrentCart.activePaymentIntents?.length > 0 && (
+                              <div>
+                                <p className="text-xs text-yellow-400 font-medium mb-1">Active Payment Intents ({userCurrentCart.activePaymentIntents.length})</p>
+                                {userCurrentCart.activePaymentIntents.map((pi: any) => (
+                                  <div key={pi.id} className="flex items-center justify-between p-2 bg-yellow-900/20 rounded border border-yellow-500/20 mb-1">
+                                    <div>
+                                      <p className="text-xs font-mono text-white">{pi.id.substring(0, 20)}…</p>
+                                      <p className="text-xs text-gray-400">${pi.amount} · {pi.status}</p>
+                                    </div>
+                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {userCurrentCart.recentSucceeded?.length > 0 && (
+                              <div>
+                                <p className="text-xs text-green-400 font-medium mb-1">Recent Payments ({userCurrentCart.recentSucceeded.length})</p>
+                                {userCurrentCart.recentSucceeded.map((pi: any) => (
+                                  <div key={pi.id} className="flex items-center justify-between p-2 bg-green-900/10 rounded border border-green-500/20 mb-1">
+                                    <div>
+                                      <p className="text-xs font-mono text-white">{pi.id.substring(0, 20)}…</p>
+                                      <p className="text-xs text-gray-400">${pi.amount} · {new Date(pi.created).toLocaleDateString()}</p>
+                                    </div>
+                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {!userCurrentCart.activePaymentIntents?.length && !userCurrentCart.recentSucceeded?.length && (
+                              <p className="text-xs text-gray-500 text-center py-2">No recent payment intents</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -1152,6 +1447,112 @@ function AdminTransactions() {
                   )}
                 </Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      {/* Cart Details Dialog */}
+      <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600/30 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-purple-400" />
+              Cart Details
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 font-mono text-xs">
+              {cartOrderId}
+            </DialogDescription>
+          </DialogHeader>
+
+          {cartLoading ? (
+            <div className="flex justify-center py-12">
+              <RefreshCw className="w-8 h-8 text-purple-400 animate-spin" />
+            </div>
+          ) : cartItems.length === 0 ? (
+            <div className="p-8 text-center text-gray-400">
+              <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-30" />
+              <p>No items found for this cart</p>
+            </div>
+          ) : (
+            <div className="space-y-3 mt-2">
+              {/* Summary */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/20">
+                <div>
+                  <p className="text-sm text-gray-400">Total Items</p>
+                  <p className="text-2xl font-bold text-purple-300">{cartItems.length}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400">Cart Total</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    ${cartItems.reduce((s: number, i: any) => s + Number(i.amount), 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400 mb-1">Buyer</p>
+                  <p className="text-sm text-white">{cartItems[0]?.user?.username || 'Unknown'}</p>
+                  <p className="text-xs text-gray-500">{cartItems[0]?.user?.email}</p>
+                </div>
+              </div>
+
+              {/* Items */}
+              <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-600/30 overflow-hidden">
+                {cartItems.map((item: any, idx: number) => (
+                  <div key={item.id} className="p-4 bg-slate-800/30 hover:bg-slate-700/30 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-300">
+                        {idx + 1}
+                      </div>
+                      {item.script?.imageUrl && (
+                        <img src={item.script.imageUrl} alt={item.script?.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-semibold text-white">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
+                            <div className="flex gap-2 mt-1 flex-wrap">
+                              {item.script?.version && <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.script.version}</Badge>}
+                              {item.script?.licenseType && <Badge className="bg-green-500/20 text-green-400 text-xs">{item.script.licenseType}</Badge>}
+                              <Badge className={`${getStatusColor(item.status)} text-xs`}>{item.status}</Badge>
+                            </div>
+                          </div>
+                          <p className="font-bold text-green-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
+                        </div>
+                        {/* License key */}
+                        {item.license && (
+                          <div className="mt-2 p-2 bg-slate-700/50 rounded-lg flex items-center gap-2">
+                            <Key className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                            <code className="text-xs font-mono text-gray-300 flex-1 truncate">
+                              {item.license.privateKey}
+                            </code>
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('License key copied!') }}
+                              className="text-gray-400 hover:text-white flex-shrink-0"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <Badge className={item.license.isActive && !item.license.isRevoked ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-red-500/20 text-red-400 text-xs'}>
+                              {item.license.isRevoked ? 'Revoked' : item.license.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Stripe link */}
+              {cartItems[0]?.paymentId && (
+                <a
+                  href={`https://dashboard.stripe.com/payments/${cartItems[0].paymentId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View Payment in Stripe Dashboard
+                </a>
+              )}
             </div>
           )}
         </DialogContent>

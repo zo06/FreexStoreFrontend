@@ -67,7 +67,7 @@ export default function Navigation() {
     { href: '/', label: t('home'), icon: Home },
     { href: '/scripts', label: t('scripts'), icon: Package },
     ...(user ? [{ href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard }] : []),
-    ...(user ? [{ href: '/hr/dashboard', label: 'Work Duty', icon: Clock }] : []),
+    ...(isAdmin ? [{ href: '/hr/dashboard', label: 'Work Duty', icon: Clock }] : []),
     ...(isAdmin ? [{ href: '/admin', label: t('admin'), icon: Command }] : [])
   ];
 

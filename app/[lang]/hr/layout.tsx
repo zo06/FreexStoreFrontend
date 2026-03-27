@@ -6,7 +6,6 @@ import { usePathname, useParams, useRouter } from 'next/navigation';
 import { Clock, Shield, Home, LogOut, LayoutDashboard, ChevronDown, Crown, Menu, X } from 'lucide-react';
 import { useAuth } from '../../../lib/auth-context';
 import { useLanguage } from '../../../lib/contexts/LanguageContext';
-import { hrApi } from '../../../lib/api/hr-api';
 
 export default function HrLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -31,11 +30,9 @@ export default function HrLayout({ children }: { children: ReactNode }) {
     }
     if (isAdmin) {
       setHrAccessStatus('allowed');
-      return;
+    } else {
+      setHrAccessStatus('denied');
     }
-    hrApi.getStats()
-      .then(() => setHrAccessStatus('allowed'))
-      .catch(() => setHrAccessStatus('denied'));
   }, [isAuthenticated, isLoading, isAdmin]);
 
   useEffect(() => {
