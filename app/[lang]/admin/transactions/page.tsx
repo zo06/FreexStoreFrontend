@@ -99,6 +99,14 @@ function AdminTransactions() {
   const [userCurrentCart, setUserCurrentCart] = useState<any>(null)
   const [currentCartLoading, setCurrentCartLoading] = useState(false)
 
+  // Inline cart items inside details dialog
+  const [dialogCartItems, setDialogCartItems] = useState<any[]>([])
+  const [dialogCartLoading, setDialogCartLoading] = useState(false)
+
+  // Inline invoice details inside details dialog
+  const [dialogInvoice, setDialogInvoice] = useState<any>(null)
+  const [dialogInvoiceLoading, setDialogInvoiceLoading] = useState(false)
+
   // Load transactions on mount
   useEffect(() => {
     getTransactions().catch(() => {})
@@ -200,6 +208,8 @@ function AdminTransactions() {
     setUserTransactionHistory([])
     setShowLicenseKey(false) // Reset spoiler state
     setUserCurrentCart(null)
+    setDialogCartItems([])
+    setDialogInvoice(null)
     
     try {
       // Fetch full transaction details
@@ -221,6 +231,25 @@ function AdminTransactions() {
           setHistoryLoading(false)
         }
       }
+      // Sideload cart items if it's a cart purchase
+      if ((fullTransaction.metadata as any)?.isCartPurchase && fullTransaction.orderId) {
+        setDialogCartLoading(true)
+        apiClient.get<any[]>(`/transactions/carts/${fullTransaction.orderId}`)
+          .then((res) => setDialogCartItems(Array.isArray(res) ? res : []))
+          .catch(() => setDialogCartItems([]))
+          .finally(() => setDialogCartLoading(false))
+      }
+
+      // Sideload invoice details if it's an invoice transaction
+      const meta = (fullTransaction.metadata || (transaction as any).metadata) as any
+      if (meta?.invoiceId) {
+        setDialogInvoiceLoading(true)
+        apiClient.get<any>(`/admin/invoices/${meta.invoiceId}`)
+          .then((res) => setDialogInvoice(res))
+          .catch(() => setDialogInvoice(null))
+          .finally(() => setDialogInvoiceLoading(false))
+      }
+
     } catch (error) {
       console.error('Failed to load transaction details:', error)
       // Keep showing the basic info if fetch fails
@@ -1014,12 +1043,28 @@ function AdminTransactions() {
               </div>
 
               {/* Tabs */}
-              <Tabs defaultValue="transaction" className="w-full">
-                <TabsList className="w-full bg-slate-800/50 border border-slate-600/30 mb-4">
+              <Tabs defaultValue={
+                (selectedTransaction.metadata as any)?.isCartPurchase ? 'cart'
+                : (selectedTransaction.metadata as any)?.invoiceId ? 'invoice'
+                : 'transaction'
+              } className="w-full">
+                <TabsList className="w-full bg-slate-800/50 border border-slate-600/30 mb-4 flex-wrap h-auto gap-1 p-1">
                   <TabsTrigger value="transaction" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
                     <FileText className="w-3 h-3 mr-1" />
                     Transaction
                   </TabsTrigger>
+                  {(selectedTransaction.metadata as any)?.isCartPurchase && (
+                    <TabsTrigger value="cart" className="flex-1 data-[state=active]:bg-purple-600 text-xs">
+                      <ShoppingCart className="w-3 h-3 mr-1" />
+                      Cart Items
+                    </TabsTrigger>
+                  )}
+                  {(selectedTransaction.metadata as any)?.invoiceId && (
+                    <TabsTrigger value="invoice" className="flex-1 data-[state=active]:bg-blue-600 text-xs">
+                      <Layers className="w-3 h-3 mr-1" />
+                      Invoice
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="user" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
                     <User className="w-3 h-3 mr-1" />
                     User
@@ -1097,6 +1142,204 @@ function AdminTransactions() {
                       </div>
                     )}
                   </div>
+                </TabsContent>
+
+                {/* Cart Items Tab */}
+                <TabsContent value="cart" className="space-y-3">
+                  {dialogCartLoading ? (
+                    <div className="flex justify-center py-10">
+                      <RefreshCw className="w-7 h-7 text-purple-400 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
+                      {/* Cart summary */}
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/20">
+                        <div>
+                          <p className="text-xs text-gray-400">Items in Cart</p>
+                          <p className="text-2xl font-bold text-purple-300">{dialogCartItems.length}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-400">Cart Total</p>
+                          <p className="text-2xl font-bold text-green-400">
+                            ${dialogCartItems.reduce((s: number, i: any) => s + Number(i.amount), 0).toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-400">Order ID</p>
+                          <p className="font-mono text-xs text-gray-300">{selectedTransaction.orderId?.substring(0, 20)}…</p>
+                        </div>
+                      </div>
+
+                      {/* Metadata summary */}
+                      {(selectedTransaction.metadata as any)?.couponCode && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-500/20 text-xs">
+                          <span className="text-gray-400">Coupon:</span>
+                          <Badge className="bg-yellow-500/20 text-yellow-400">{(selectedTransaction.metadata as any).couponCode}</Badge>
+                          <span className="text-gray-400 ml-auto">Total paid: ${(selectedTransaction.metadata as any)?.totalCartAmount?.toFixed(2) || '—'}</span>
+                        </div>
+                      )}
+
+                      {/* Items list */}
+                      <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-600/30 overflow-hidden">
+                        {dialogCartItems.length === 0 ? (
+                          <div className="p-8 text-center text-gray-400">
+                            <ShoppingCart className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                            <p>No cart items found</p>
+                          </div>
+                        ) : dialogCartItems.map((item: any, idx: number) => (
+                          <div key={item.id} className={`p-4 bg-slate-800/30 ${item.id === selectedTransaction.id ? 'border-l-2 border-purple-400' : ''}`}>
+                            <div className="flex items-start gap-3">
+                              <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-500/20 text-xs font-bold text-purple-300">{idx + 1}</span>
+                              {item.script?.imageUrl && (
+                                <img src={item.script.imageUrl} alt={item.script?.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="font-semibold text-white">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
+                                    <div className="flex gap-2 mt-1 flex-wrap">
+                                      {item.script?.version && <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.script.version}</Badge>}
+                                      {item.script?.licenseType && <Badge className="bg-green-500/20 text-green-400 text-xs">{item.script.licenseType}</Badge>}
+                                      <Badge className={`${getStatusColor(item.status)} text-xs`}>{item.status}</Badge>
+                                      {item.id === selectedTransaction.id && <Badge className="bg-purple-500/20 text-purple-300 text-xs">← this transaction</Badge>}
+                                    </div>
+                                  </div>
+                                  <p className="font-bold text-green-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
+                                </div>
+                                {item.license && (
+                                  <div className="mt-2 p-2 bg-slate-700/50 rounded-lg flex items-center gap-2">
+                                    <Key className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                                    <code className="text-xs font-mono text-gray-300 flex-1 truncate">{item.license.privateKey}</code>
+                                    <button onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('Copied!') }} className="text-gray-400 hover:text-white flex-shrink-0">
+                                      <Copy className="w-3.5 h-3.5" />
+                                    </button>
+                                    <Badge className={item.license.isActive && !item.license.isRevoked ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-red-500/20 text-red-400 text-xs'}>
+                                      {item.license.isRevoked ? 'Revoked' : item.license.isActive ? 'Active' : 'Inactive'}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Stripe link */}
+                      {selectedTransaction.paymentId && (
+                        <a
+                          href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          View Payment in Stripe Dashboard
+                        </a>
+                      )}
+                    </>
+                  )}
+                </TabsContent>
+
+                {/* Invoice Tab */}
+                <TabsContent value="invoice" className="space-y-3">
+                  {dialogInvoiceLoading ? (
+                    <div className="flex justify-center py-10">
+                      <RefreshCw className="w-7 h-7 text-blue-400 animate-spin" />
+                    </div>
+                  ) : dialogInvoice ? (
+                    <>
+                      {/* Invoice header */}
+                      <div className="p-4 rounded-xl bg-blue-900/20 border border-blue-500/20 flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs text-gray-400 mb-1">Invoice</p>
+                          <p className="font-bold text-white text-lg">{dialogInvoice.description}</p>
+                          <p className="text-xs font-mono text-gray-500 mt-1">{dialogInvoice.stripeInvoiceId}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-3xl font-bold text-green-400">${Number(dialogInvoice.amount).toFixed(2)}</p>
+                          <Badge className={
+                            dialogInvoice.status === 'paid' ? 'bg-green-500/20 text-green-400'
+                            : dialogInvoice.status === 'open' ? 'bg-yellow-500/20 text-yellow-400'
+                            : dialogInvoice.status === 'void' ? 'bg-gray-500/20 text-gray-400'
+                            : 'bg-red-500/20 text-red-400'
+                          }>{dialogInvoice.status}</Badge>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
+                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                          <span className="text-gray-400">Customer Email</span>
+                          <span className="text-white">{dialogInvoice.customerEmail}</span>
+                        </div>
+                        {dialogInvoice.customerName && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                            <span className="text-gray-400">Customer Name</span>
+                            <span className="text-white">{dialogInvoice.customerName}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                          <span className="text-gray-400">Currency</span>
+                          <span className="text-white uppercase">{dialogInvoice.currency}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                          <span className="text-gray-400">Due Date</span>
+                          <span className="text-white">{dialogInvoice.dueDate ? formatDate(dialogInvoice.dueDate) : '—'}</span>
+                        </div>
+                        {dialogInvoice.paidAt && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                            <span className="text-gray-400">Paid At</span>
+                            <span className="text-green-400">{formatDate(dialogInvoice.paidAt)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                          <span className="text-gray-400">Created By</span>
+                          <span className="text-white">{dialogInvoice.creator?.username || '—'}</span>
+                        </div>
+                        {dialogInvoice.notes && (
+                          <div className="py-2 border-b border-slate-700/50">
+                            <span className="text-gray-400 block mb-1">Notes</span>
+                            <span className="text-sm text-gray-300">{dialogInvoice.notes}</span>
+                          </div>
+                        )}
+                        {dialogInvoice.user && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+                            <span className="text-gray-400">Linked User</span>
+                            <span className="text-cyan-400">{dialogInvoice.user.username} ({dialogInvoice.user.email})</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        {dialogInvoice.paymentUrl && (
+                          <a
+                            href={dialogInvoice.paymentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-blue-500/20 bg-blue-900/10 text-blue-400 hover:bg-blue-500/10 transition-colors text-sm"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Open Payment Link
+                          </a>
+                        )}
+                        {dialogInvoice.stripeInvoiceId && (
+                          <a
+                            href={`https://dashboard.stripe.com/invoices/${dialogInvoice.stripeInvoiceId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            View in Stripe
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-8 text-center text-gray-400 bg-slate-800/50 rounded-lg">
+                      <Layers className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Invoice details not available</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 {/* User Tab */}

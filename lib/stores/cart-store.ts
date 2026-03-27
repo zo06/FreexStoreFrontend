@@ -24,6 +24,19 @@ interface CartState {
   isInCart: (id: string) => boolean;
 }
 
+/** Fire-and-forget: sync current cart item IDs to the backend */
+function syncCartToBackend(scriptIds: string[]) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  if (!token) return;
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (!url) return;
+  fetch(`${url}/users/me/cart/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ scriptIds }),
+  }).catch(() => {/* silent */});
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -33,12 +46,23 @@ export const useCartStore = create<CartState>()(
       addItem: (item) => {
         const { items } = get();
         if (items.find((i) => i.id === item.id)) return;
-        set({ items: [...items, item] });
+        const next = [...items, item];
+        set({ items: next });
+        syncCartToBackend(next.map((i) => i.id));
       },
 
-      removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+      removeItem: (id) => {
+        set((state) => {
+          const next = state.items.filter((i) => i.id !== id);
+          syncCartToBackend(next.map((i) => i.id));
+          return { items: next };
+        });
+      },
 
-      clearCart: () => set({ items: [], appliedCoupon: null }),
+      clearCart: () => {
+        set({ items: [], appliedCoupon: null });
+        syncCartToBackend([]);
+      },
 
       applyCoupon: (coupon) => set({ appliedCoupon: coupon }),
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, User as UserIcon, Mail, Calendar, Shield, Globe, Server, Activity, Package, CreditCard, Clock, CheckCircle, XCircle, Eye, Key, DollarSign, FileText, Search, Filter } from 'lucide-react'
+import { X, User as UserIcon, Mail, Calendar, Shield, Globe, Server, Activity, Package, CreditCard, Clock, CheckCircle, XCircle, Eye, Key, DollarSign, FileText, Search, Filter, ShoppingCart, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -31,6 +31,10 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
   const [transactions, setTransactions] = useState<any[]>([])
   const [activities, setActivities] = useState<any[]>([])
 
+  // Saved cart state
+  const [savedCart, setSavedCart] = useState<any[]>([])
+  const [cartLoading, setCartLoading] = useState(false)
+
   // License event logs state
   const [eventLogs, setEventLogs] = useState<any[]>([])
   const [logsLoading, setLogsLoading] = useState(false)
@@ -52,6 +56,13 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
       fetchLicenseLogs()
     }
   }, [activeTab, logsPage, logsEventFilter, isOpen, userId])
+
+  // Fetch saved cart when switching to the cart tab
+  useEffect(() => {
+    if (activeTab === 'cart' && isOpen && userId) {
+      fetchSavedCart()
+    }
+  }, [activeTab, isOpen, userId])
 
   const fetchUserData = async () => {
     try {
@@ -93,6 +104,24 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
       toast.error('Failed to load user information')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSavedCart = async () => {
+    try {
+      setCartLoading(true)
+      const token = localStorage.getItem('access_token')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/cart`, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSavedCart(Array.isArray(data) ? data : [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch saved cart:', error)
+    } finally {
+      setCartLoading(false)
     }
   }
 
@@ -154,6 +183,7 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
     { id: 'details', label: 'User Details', icon: UserIcon },
     { id: 'scripts', label: 'Active Scripts', icon: Package },
     { id: 'transactions', label: 'Transactions', icon: CreditCard },
+    { id: 'cart', label: 'Saved Cart', icon: ShoppingCart },
     { id: 'activity', label: 'Activity Log', icon: Activity },
     { id: 'logs', label: 'License Logs', icon: FileText },
   ]
@@ -471,6 +501,101 @@ export default function AdminUserInfoModal({ isOpen, onClose, userId, userName }
                     <div className="py-12 text-center text-gray-400">
                       <CreditCard className="mx-auto mb-3 w-16 h-16 opacity-50" />
                       <p>No transactions found</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Saved Cart Tab */}
+              {activeTab === 'cart' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5 text-purple-400" />
+                      Saved Cart
+                      <span className="text-sm font-normal text-gray-400">({savedCart.length} items)</span>
+                    </h3>
+                    <Button
+                      onClick={fetchSavedCart}
+                      disabled={cartLoading}
+                      size="sm"
+                      className="h-8 px-3 text-xs text-white bg-gradient-to-r from-purple-600 to-purple-500 border border-white/10 hover:from-purple-500 hover:to-purple-400"
+                    >
+                      {cartLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    </Button>
+                  </div>
+
+                  {cartLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-8 h-8 rounded-full border-b-2 border-purple-400 animate-spin" />
+                    </div>
+                  ) : savedCart.length > 0 ? (
+                    <>
+                      {/* Summary bar */}
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/20">
+                        <div>
+                          <p className="text-xs text-gray-400">Total Items</p>
+                          <p className="text-2xl font-bold text-purple-300">{savedCart.length}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-400">Cart Value</p>
+                          <p className="text-2xl font-bold text-green-400">
+                            ${savedCart.reduce((sum: number, item: any) => {
+                              const price = Number(item.script?.price || 0)
+                              const discount = item.script?.discountPercentage || 0
+                              return sum + (discount > 0 ? price * (1 - discount / 100) : price)
+                            }, 0).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {savedCart.map((item: any) => {
+                          const price = Number(item.script?.price || 0)
+                          const discount = item.script?.discountPercentage || 0
+                          const finalPrice = discount > 0 ? price * (1 - discount / 100) : price
+                          return (
+                            <div key={item.id} className="flex items-center gap-4 p-4 rounded-lg border bg-white/5 border-white/10">
+                              {item.script?.imageUrl ? (
+                                <img src={item.script.imageUrl} alt={item.script.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                              ) : (
+                                <div className="w-14 h-14 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-6 h-6 text-purple-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-white truncate">{item.script?.name || 'Unknown Script'}</p>
+                                <div className="flex gap-2 mt-1 flex-wrap">
+                                  {item.script?.version && (
+                                    <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.script.version}</Badge>
+                                  )}
+                                  {!item.script?.isActive && (
+                                    <Badge className="bg-red-500/20 text-red-400 text-xs">Unavailable</Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Added: {new Date(item.addedAt).toLocaleString()}</p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                {discount > 0 ? (
+                                  <>
+                                    <p className="text-sm text-gray-400 line-through">${price.toFixed(2)}</p>
+                                    <p className="font-bold text-green-400">${finalPrice.toFixed(2)}</p>
+                                    <Badge className="bg-orange-500/20 text-orange-400 text-xs">-{discount}%</Badge>
+                                  </>
+                                ) : (
+                                  <p className="font-bold text-green-400">${price.toFixed(2)}</p>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="py-12 text-center text-gray-400">
+                      <ShoppingCart className="mx-auto mb-3 w-16 h-16 opacity-30" />
+                      <p>No items in saved cart</p>
+                      <p className="mt-1 text-xs text-gray-600">Items are saved when the user adds them to their cart</p>
                     </div>
                   )}
                 </div>
