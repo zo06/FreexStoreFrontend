@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    optimizeCss: true,
-  },
   webpack: (config, { dev }) => {
     if (dev) {
       config.watchOptions = {
