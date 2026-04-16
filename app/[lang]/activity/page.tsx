@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Download, Activity } from 'lucide-react'
-import { 
-  ShoppingCart, 
-  ArrowsClockwise, 
-  ChatCircle, 
+import { Download, Activity, ArrowLeft } from 'lucide-react'
+import {
+  ShoppingCart,
+  ArrowsClockwise,
+  ChatCircle,
   ClipboardText,
   Key,
   Gear,
   Scroll,
   Package,
-  ArrowLeft
 } from 'phosphor-react'
 import { apiClient } from '@/lib/api'
 import Link from 'next/link'
@@ -60,7 +58,7 @@ export default function ActivityPage() {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'download': return <Download size={20} />;
+      case 'download': return <Download className="w-5 h-5" />;
       case 'purchase': return <ShoppingCart size={20} />;
       case 'update': return <ArrowsClockwise size={20} />;
       case 'support': return <ChatCircle size={20} />;
@@ -73,22 +71,18 @@ export default function ActivityPage() {
   }
 
   const translateActivityDescription = (description: string) => {
-    // Special handling for admin actions with details
     if (/Admin action.*Granted license to user:/i.test(description)) {
       const match = description.match(/Admin action: Granted license to user: (.+) for script ID: (.+)/i);
       if (match) {
         return `${tActivity('adminGrantedLicense')}: ${match[1]} ${tActivity('forScriptId')}: ${match[2]}`;
       }
     }
-    
-    // Special handling for IP address changed with details
     if (/IP address changed from/i.test(description)) {
       const match = description.match(/IP address changed from (.+) to (.+)/i);
       if (match) {
         return `${tActivity('ipChanged')} ${tActivity('from')} ${match[1]} ${tActivity('to')} ${match[2]}`;
       }
     }
-
     const patterns = [
       { regex: /Downloaded script/i, key: 'downloadedScript' },
       { regex: /Purchased script/i, key: 'purchasedScript' },
@@ -113,11 +107,8 @@ export default function ActivityPage() {
       { regex: /Activated user/i, key: 'userActivated' },
       { regex: /Deactivated user/i, key: 'userDeactivated' },
     ];
-
     for (const pattern of patterns) {
-      if (pattern.regex.test(description)) {
-        return tActivity(pattern.key);
-      }
+      if (pattern.regex.test(description)) return tActivity(pattern.key);
     }
     return description;
   };
@@ -129,7 +120,6 @@ export default function ActivityPage() {
     const diffMins = Math.floor(diffMs / (1000 * 60))
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
     if (diffMins < 1) return tTime('justNow')
     if (diffMins < 60) return tTime('minutesAgo', { minutes: diffMins })
     if (diffHours < 24) return tTime('hoursAgo', { hours: diffHours })
@@ -139,92 +129,86 @@ export default function ActivityPage() {
 
   const formatFullDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     })
   }
 
   return (
-    <main className="overflow-hidden relative pt-16 min-h-screen lg:pt-24">
-      {/* Background Elements */}
-      <div className="rotating-gradient"></div>
-      <div className="left-10 top-20 w-20 h-20 floating-orb lg:w-32 lg:h-32"></div>
-      <div className="right-20 top-40 w-16 h-16 opacity-60 floating-orb lg:w-24 lg:h-24" style={{animationDelay: '2s'}}></div>
-      
-      <div className="container px-4 py-4 mx-auto lg:px-6 lg:py-8">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 mb-4 text-sm text-muted hover:text-white transition-colors">
-            <ArrowLeft size={16} />
-            {t('backToDashboard')}
-          </Link>
-          <h1 className="mb-2 text-2xl font-bold lg:text-4xl text-gradient">{t('title')}</h1>
-          <p className="text-sm text-muted lg:text-base">{t('subtitle')}</p>
-        </div>
-
-        {/* Activity List */}
-        <div className="p-4 card-modern lg:p-6 animate-slide-up">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white lg:text-xl">{t('allActivity')}</h3>
-            <span className="text-sm text-muted">{t('activitiesCount', { count: activities.length })}</span>
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="page-container">
+        <div className="page-section">
+          {/* Header */}
+          <div className="mb-8">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 mb-5 text-sm text-[#888] hover:text-[#51a2ff] transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              {t('backToDashboard')}
+            </Link>
+            <h1 className="text-3xl font-bold text-white mb-1">{t('title')}</h1>
+            <p className="text-[#888] text-sm">{t('subtitle')}</p>
           </div>
-          
-          <div className="space-y-3 lg:space-y-4">
-            {loading && activities.length === 0 ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="w-8 h-8 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
-              </div>
-            ) : activities.length > 0 ? (
-              activities.map((activity) => (
-                <div key={activity.id} className="flex gap-3 items-start p-4 rounded-xl transition-colors bg-white/5 hover:bg-white/10 border border-white/5 hover:border-cyan-500/30">
-                  <div className="flex flex-shrink-0 justify-center items-center w-10 h-10 bg-gradient-to-r rounded-xl from-cyan-500/20 to-blue-500/20">
-                    <div className="text-cyan-400">{getActivityIcon(activity.type)}</div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white font-medium">
-                          {translateActivityDescription(activity.description || activity.action)}
-                        </p>
-                        {activity.details && (
-                          <p className="mt-1 text-xs text-muted">{activity.details}</p>
-                        )}
-                        <p className="mt-1 text-xs text-slate-500">{formatFullDate(activity.createdAt || activity.time)}</p>
+
+          {/* Activity List */}
+          <div className="card-base p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-white">{t('allActivity')}</h3>
+              <span className="text-sm text-[#555]">{t('activitiesCount', { count: activities.length })}</span>
+            </div>
+
+            <div className="space-y-3">
+              {loading && activities.length === 0 ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="w-8 h-8 rounded-full border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] animate-spin" />
+                </div>
+              ) : activities.length > 0 ? (
+                activities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex gap-3 items-start p-4 rounded-xl transition-colors bg-[#111] hover:bg-[#161616] border border-[rgba(255,255,255,0.05)] hover:border-[rgba(81,162,255,0.2)]"
+                  >
+                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#1a1a1a] flex items-center justify-center" style={{ border: '1px solid rgba(81,162,255,0.15)' }}>
+                      <span className="text-[#51a2ff]">{getActivityIcon(activity.type)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col gap-1 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-medium">
+                            {translateActivityDescription(activity.description || activity.action)}
+                          </p>
+                          {activity.details && (
+                            <p className="mt-1 text-xs text-[#555]">{activity.details}</p>
+                          )}
+                          <p className="mt-1 text-xs text-[#444]">{formatFullDate(activity.createdAt || activity.time)}</p>
+                        </div>
+                        <span className="flex-shrink-0 text-xs text-[#555] px-3 py-1 rounded-full bg-[#1a1a1a] whitespace-nowrap">
+                          {formatActivityTime(activity.createdAt || activity.time)}
+                        </span>
                       </div>
-                      <span className="flex-shrink-0 text-xs text-muted lg:text-sm px-3 py-1 rounded-full bg-white/5">
-                        {formatActivityTime(activity.createdAt || activity.time)}
-                      </span>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="py-16 text-center">
+                  <Activity className="w-12 h-12 text-[#333] mx-auto mb-4" />
+                  <p className="text-white font-medium mb-1">{t('noActivity')}</p>
+                  <p className="text-[#555] text-sm">{t('noActivityDescription')}</p>
                 </div>
-              ))
-            ) : (
-              <div className="py-12 text-center text-muted">
-                <Activity size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">{t('noActivity')}</p>
-                <p className="text-sm mt-2">{t('noActivityDescription')}</p>
+              )}
+            </div>
+
+            {hasMore && activities.length > 0 && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="btn-ghost btn-sm"
+                >
+                  {loading ? t('loading') : t('loadMore')}
+                </button>
               </div>
             )}
           </div>
-          
-          {hasMore && activities.length > 0 && (
-            <div className="mt-6 text-center">
-              <Button 
-                variant="outline" 
-                onClick={loadMore}
-                disabled={loading}
-                className="px-6 py-2 cursor-pointer"
-              >
-                {loading ? t('loading') : t('loadMore')}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </main>
   )
 }
-

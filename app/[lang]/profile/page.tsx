@@ -2,13 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'react-hot-toast';
 import { User, Shield, Activity, Save, RefreshCw } from 'lucide-react';
 import apiClient from '@/lib/api';
@@ -21,29 +14,19 @@ interface SecurityStats {
   accountLocked: boolean;
 }
 
+type Tab = 'profile' | 'security' | 'activity';
+
 export default function ProfilePage() {
   const t = useTranslations('profile');
   const { user, updateProfile, logout, logoutAll } = useAuth();
-  const [profileData, setProfileData] = useState({
-    username: '',
-    email: '',
-    displayName: ''
-  });
-
+  const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const [profileData, setProfileData] = useState({ username: '', email: '', displayName: '' });
   const [securityStats, setSecurityStats] = useState<SecurityStats | null>(null);
-  const [isLoading, setIsLoading] = useState({
-    profile: false,
-
-    security: false
-  });
+  const [isLoading, setIsLoading] = useState({ profile: false, security: false });
 
   useEffect(() => {
     if (user) {
-      setProfileData({
-        username: user.username || '',
-        email: user.email || '',
-        displayName: user.displayName || ''
-      });
+      setProfileData({ username: user.username || '', email: user.email || '', displayName: user.displayName || '' });
     }
     loadSecurityStats();
   }, [user]);
@@ -63,7 +46,6 @@ export default function ProfilePage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(prev => ({ ...prev, profile: true }));
-    
     try {
       await updateProfile(profileData);
       toast.success('Profile updated successfully');
@@ -74,11 +56,9 @@ export default function ProfilePage() {
     }
   };
 
-
-
   const handleLogoutAll = async () => {
     try {
-      await logoutAll(); // Logout from all devices
+      await logoutAll();
       toast.success('Logged out from all devices');
     } catch (error: any) {
       toast.error(error.message || 'Failed to logout from all devices');
@@ -87,173 +67,172 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="text-xl text-white">Loading...</div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     );
   }
 
+  const tabs: { key: Tab; label: string; icon: typeof User }[] = [
+    { key: 'profile', label: 'Profile', icon: User },
+    { key: 'security', label: 'Security', icon: Shield },
+    { key: 'activity', label: 'Activity', icon: Activity },
+  ];
+
   return (
-    <div className="p-4 min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      <div className="mx-auto space-y-6 max-w-4xl">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-          <p className="text-slate-400">Manage your account settings and preferences</p>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="page-container">
+        <div className="page-section">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-white mb-1">Profile Settings</h1>
+            <p className="text-[#888] text-sm">Manage your account settings and preferences</p>
+          </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid grid-cols-3 w-full bg-slate-800/50">
-            <TabsTrigger value="profile" className="data-[state=active]:bg-cyan-600">
-              <User className="mr-2 w-4 h-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="security" className="data-[state=active]:bg-cyan-600">
-              <Shield className="mr-2 w-4 h-4" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-cyan-600">
-              <Activity className="mr-2 w-4 h-4" />
-              Activity
-            </TabsTrigger>
-          </TabsList>
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Tab bar */}
+            <div className="flex gap-1 p-1 rounded-xl bg-[#111]" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+              {tabs.map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === key
+                      ? 'bg-[#51a2ff] text-white'
+                      : 'text-[#888] hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
 
-          <TabsContent value="profile">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Profile Information</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Update your personal information and preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="card-base p-6 space-y-6">
+                <div>
+                  <h2 className="text-white font-semibold mb-0.5">Profile Information</h2>
+                  <p className="text-[#555] text-sm">Update your personal information and preferences</p>
+                </div>
                 <form onSubmit={handleProfileUpdate} className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="username" className="text-white">Username</Label>
-                      <Input
-                        id="username"
-                        value={profileData.username}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                        className="text-white bg-slate-700 border-slate-600"
-                        placeholder="Enter username"
-                        required
-                      />
-                    </div>
-
+                  <div className="space-y-1.5">
+                    <label htmlFor="username" className="text-sm font-medium text-[#ccc]">Username</label>
+                    <input
+                      id="username"
+                      value={profileData.username}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
+                      className="input-base w-full"
+                      placeholder="Enter username"
+                      required
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="displayName" className="text-white">Display Name</Label>
-                    <Input
+                  <div className="space-y-1.5">
+                    <label htmlFor="displayName" className="text-sm font-medium text-[#ccc]">Display Name</label>
+                    <input
                       id="displayName"
                       value={profileData.displayName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
-                      className="text-white bg-slate-700 border-slate-600"
+                      className="input-base w-full"
                       placeholder="Enter display name"
                     />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={user.isAdmin ? 'default' : 'secondary'}>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className={`badge-blue text-xs ${user.isAdmin ? '' : 'opacity-60'}`}>
                       {user.isAdmin ? 'Administrator' : 'User'}
-                    </Badge>
-                    <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                    </span>
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium border ${
+                      user.isActive
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-red-500/10 text-red-400 border-red-500/20'
+                    }`}>
                       {user.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    </span>
                   </div>
-                  <Button
+                  <button
                     type="submit"
-                    className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+                    className="btn-primary flex items-center gap-2"
                     disabled={isLoading.profile}
                   >
                     {isLoading.profile ? (
-                      <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Save className="mr-2 w-4 h-4" />
+                      <Save className="w-4 h-4" />
                     )}
                     {isLoading.profile ? 'Updating...' : 'Update Profile'}
-                  </Button>
+                  </button>
                 </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            )}
 
-          <TabsContent value="security">
-            <div className="space-y-6">
+            {/* Security Tab */}
+            {activeTab === 'security' && (
+              <div className="card-base p-6 space-y-6">
+                <div>
+                  <h2 className="text-white font-semibold mb-0.5">Session Management</h2>
+                  <p className="text-[#555] text-sm">Manage your active sessions and security settings</p>
+                </div>
+                <button
+                  onClick={handleLogoutAll}
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-red-400 transition-colors"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                >
+                  Logout from All Devices
+                </button>
+              </div>
+            )}
 
-
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Session Management</CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Manage your active sessions and security settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button
-                    onClick={handleLogoutAll}
-                    variant="destructive"
-                    className="w-full"
-                  >
-                    Logout from All Devices
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="activity">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Security Activity</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Monitor your account security and recent activity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            {/* Activity Tab */}
+            {activeTab === 'activity' && (
+              <div className="card-base p-6 space-y-6">
+                <div>
+                  <h2 className="text-white font-semibold mb-0.5">Security Activity</h2>
+                  <p className="text-[#555] text-sm">Monitor your account security and recent activity</p>
+                </div>
                 {isLoading.security ? (
-                  <div className="flex justify-center items-center py-8">
-                    <RefreshCw className="w-6 h-6 text-cyan-400 animate-spin" />
+                  <div className="flex justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
                   </div>
                 ) : securityStats ? (
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="text-white">Active Sessions</Label>
-                      <div className="text-2xl font-bold text-cyan-400">{securityStats.activeTokens}</div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-white">Last Login</Label>
-                      <div className="text-sm text-slate-400">
-                        {new Date(securityStats.lastLogin).toLocaleString()}
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: 'Active Sessions', value: securityStats.activeTokens },
+                      { label: 'Last Login', value: new Date(securityStats.lastLogin).toLocaleString(), small: true },
+                      { label: 'Recent Login Attempts', value: securityStats.loginAttempts },
+                      {
+                        label: 'Account Status',
+                        badge: securityStats.accountLocked
+                          ? 'bg-red-500/10 text-red-400 border-red-500/20 Locked'
+                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 Active'
+                      },
+                    ].map(({ label, value, small, badge }) => (
+                      <div key={label} className="space-y-1">
+                        <p className="text-sm text-[#555]">{label}</p>
+                        {badge ? (
+                          <span className={`text-xs px-3 py-1 rounded-full font-medium border ${badge.split(' ').slice(0, 3).join(' ')}`}>
+                            {badge.split(' ').slice(3).join(' ')}
+                          </span>
+                        ) : (
+                          <div className={`font-bold text-white ${small ? 'text-sm' : 'text-2xl text-[#51a2ff]'}`}>{value}</div>
+                        )}
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-white">Recent Login Attempts</Label>
-                      <div className="text-2xl font-bold text-blue-400">{securityStats.loginAttempts}</div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-white">Account Status</Label>
-                      <Badge variant={securityStats.accountLocked ? 'destructive' : 'default'}>
-                        {securityStats.accountLocked ? 'Locked' : 'Active'}
-                      </Badge>
-                    </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-slate-400">
-                    Failed to load security statistics
-                  </div>
+                  <div className="py-8 text-center text-[#555] text-sm">Failed to load security statistics</div>
                 )}
-                <Separator className="my-4 bg-slate-600" />
-                <Button
-                  onClick={loadSecurityStats}
-                  variant="outline"
-                  className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
-                >
-                  <RefreshCw className="mr-2 w-4 h-4" />
-                  Refresh Activity
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div className="border-t border-[rgba(255,255,255,0.06)] pt-4">
+                  <button
+                    onClick={loadSecurityStats}
+                    className="btn-ghost btn-sm flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh Activity
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

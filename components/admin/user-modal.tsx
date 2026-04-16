@@ -16,7 +16,7 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
   const { user: currentUser, refreshUserData } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     isAdmin: false
   });
@@ -50,7 +50,7 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
           isAdmin: formData.isAdmin
         };
         await safeAdminApi.users.update(user.id, updateData);
-        
+
         // If the updated user is the current logged-in user, refresh their data
         if (currentUser && currentUser.id === user.id) {
           await refreshUserData();
@@ -71,12 +71,12 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
 
   const handleToggleAdmin = async () => {
     if (!isEditing || !user) return;
-    
+
     try {
       setLoading(true);
       const updatedUser = await safeAdminApi.users.toggleAdmin(user.id);
       setFormData(prev => ({ ...prev, isAdmin: updatedUser.isAdmin }));
-      
+
       // If the toggled user is the current logged-in user, refresh their data
       if (currentUser && currentUser.id === user.id) {
         await refreshUserData();
@@ -91,13 +91,13 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
   if (!isOpen) return null;
 
   return (
-    <div className="flex fixed inset-0 z-50 justify-center items-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="w-full max-w-md rounded-2xl border backdrop-blur-xl bg-gray-900/95 border-white/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+      <div className="rounded-2xl w-full max-w-md" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-white/10">
+        <div className="flex justify-between items-center p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex gap-3 items-center">
-            <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-r rounded-xl from-blue-500/20 to-cyan-500/20">
-              <User className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <User className="w-5 h-5 text-[#51a2ff]" />
             </div>
             <h2 className="text-xl font-semibold text-white">
               {isEditing ? 'Edit User' : 'Add New User'}
@@ -105,9 +105,10 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
           </div>
           <button
             onClick={onClose}
-            className="flex justify-center items-center w-8 h-8 rounded-lg transition-colors bg-white/5 hover:bg-white/10"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#555] hover:text-white transition-colors"
+            style={{ background: '#1a1a1a' }}
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -122,12 +123,12 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
 
 
           {/* Admin Status */}
-          <div className="flex justify-between items-center p-4 rounded-lg border bg-white/5 border-white/10">
+          <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex gap-3 items-center">
-              <Shield className="w-5 h-5 text-cyan-400" />
+              <Shield className="w-5 h-5 text-[#51a2ff]" />
               <div>
                 <p className="font-medium text-white">Admin Access</p>
-                <p className="text-sm text-gray-400">Grant administrative privileges</p>
+                <p className="text-sm text-[#555]">Grant administrative privileges</p>
               </div>
             </div>
             <div className="flex gap-2 items-center">
@@ -136,7 +137,8 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
                   type="button"
                   onClick={handleToggleAdmin}
                   disabled={loading}
-                  className="px-3 py-1 text-sm btn-secondary"
+                  className="px-3 py-1 text-xs rounded-lg font-medium text-[#51a2ff] transition-colors"
+                  style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.2)' }}
                 >
                   Toggle
                 </button>
@@ -145,7 +147,8 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
                 type="checkbox"
                 checked={formData.isAdmin}
                 onChange={(e) => setFormData(prev => ({ ...prev, isAdmin: e.target.checked }))}
-                className="w-4 h-4 text-cyan-500 rounded border bg-white/5 border-white/10 focus:ring-cyan-500/50"
+                className="w-4 h-4 rounded border accent-[#51a2ff]"
+                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
               />
             </div>
           </div>
@@ -155,14 +158,14 @@ export default function UserModal({ isOpen, onClose, user, onUserSaved }: UserMo
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 font-medium text-gray-300 rounded-lg border transition-colors bg-white/5 hover:bg-white/10 border-white/10"
+              className="btn-ghost flex-1"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex flex-1 gap-2 justify-center items-center px-4 py-3 font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg transition-all duration-300 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

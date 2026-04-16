@@ -63,20 +63,23 @@ function FilterPill({
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border',
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border"
+      style={
         active
-          ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
-          : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'
-      )}
+          ? { background: 'rgba(81,162,255,0.1)', borderColor: 'rgba(81,162,255,0.3)', color: '#51a2ff' }
+          : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+      }
     >
-      {children}
+      {!active && <span className="text-[#888] hover:text-white transition-all">{children}</span>}
+      {active && children}
       {count !== undefined && (
         <span
-          className={cn(
-            'px-1.5 py-0.5 rounded-md text-[10px] font-semibold',
-            active ? 'bg-cyan-500/20 text-cyan-300' : 'bg-white/10 text-gray-500'
-          )}
+          className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold"
+          style={
+            active
+              ? { background: 'rgba(81,162,255,0.15)', color: '#51a2ff' }
+              : { background: 'rgba(255,255,255,0.1)', color: '#888' }
+          }
         >
           {count}
         </span>
@@ -93,12 +96,15 @@ function ActiveChip({
   onRemove: () => void
 }) {
   return (
-    <span className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/25 rounded-lg text-xs text-cyan-300">
+    <span
+      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs"
+      style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.2)', color: '#51a2ff' }}
+    >
       {label}
       <button
         type="button"
         onClick={onRemove}
-        className="ml-0.5 text-cyan-400/60 hover:text-cyan-300 transition-colors"
+        className="ml-0.5 transition-colors text-[#51a2ff]/60 hover:text-[#51a2ff]"
       >
         <X className="w-3 h-3" />
       </button>
@@ -217,7 +223,7 @@ export function AdminFilter({
   }
 
   return (
-    <div className="rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10 overflow-hidden">
+    <div className="rounded-2xl border overflow-hidden" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
 
       {/* ── Top Row ── */}
       <div className="p-4 sm:p-5">
@@ -225,20 +231,21 @@ export function AdminFilter({
 
           {/* Search */}
           <div className="relative flex-1 group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-cyan-400 transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555] group-focus-within:text-[#51a2ff] transition-colors" />
             <input
               type="text"
               placeholder={config.searchPlaceholder || 'Search…'}
               value={localSearch}
               onChange={e => setLocalSearch(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation() } }}
-              className="w-full pl-10 pr-9 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.09] focus:shadow-[0_0_0_3px_rgba(6,182,212,0.08)] transition-all"
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl text-sm text-white placeholder:text-[#555] focus:outline-none transition-all"
+              style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
             />
             {localSearch && (
               <button
                 type="button"
                 onClick={() => { setLocalSearch(''); updateFilters({ search: '' }) }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-white transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -250,10 +257,13 @@ export function AdminFilter({
 
             {/* Count pill */}
             {totalCount > 0 && (
-              <div className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-sm">
-                <span className="font-semibold text-cyan-400">{filteredCount}</span>
-                <span className="text-gray-600">/</span>
-                <span className="text-gray-400">{totalCount}</span>
+              <div
+                className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl text-sm"
+                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <span className="font-semibold text-[#51a2ff]">{filteredCount}</span>
+                <span className="text-[#333]">/</span>
+                <span className="text-[#888]">{totalCount}</span>
               </div>
             )}
 
@@ -263,7 +273,8 @@ export function AdminFilter({
                 onClick={onRefresh}
                 disabled={loading}
                 title="Refresh"
-                className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-9 h-9 rounded-xl text-[#888] hover:text-white hover:bg-[#222] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
               </button>
@@ -274,7 +285,8 @@ export function AdminFilter({
                 type="button"
                 onClick={onExport}
                 title="Export CSV"
-                className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                className="flex items-center justify-center w-9 h-9 rounded-xl text-[#888] hover:text-white hover:bg-[#222] transition-all"
+                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <Download className="w-4 h-4" />
               </button>
@@ -284,17 +296,20 @@ export function AdminFilter({
               <button
                 type="button"
                 onClick={() => setIsExpanded(v => !v)}
-                className={cn(
-                  'flex items-center gap-1.5 h-9 px-3 rounded-xl border text-sm font-medium transition-all',
+                className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm font-medium transition-all"
+                style={
                   isExpanded
-                    ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.12)]'
-                    : 'bg-white/[0.04] border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'
-                )}
+                    ? { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)', color: '#51a2ff' }
+                    : { background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                }
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span className="hidden sm:inline">Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-cyan-500 text-white text-[10px] font-bold">
+                  <span
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                    style={{ background: '#51a2ff' }}
+                  >
                     {activeFiltersCount}
                   </span>
                 )}
@@ -313,7 +328,7 @@ export function AdminFilter({
             <button
               type="button"
               onClick={clearAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#555] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
             >
               <X className="w-3 h-3" />
               Clear all
@@ -324,12 +339,15 @@ export function AdminFilter({
 
       {/* ── Advanced Panel ── */}
       {isExpanded && (
-        <div className="border-t border-white/[0.06] bg-black/10 px-4 sm:px-5 py-4 sm:py-5 space-y-5">
+        <div
+          className="px-4 sm:px-5 py-4 sm:py-5 space-y-5"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}
+        >
 
           {/* Status pills */}
           {config.statusOptions && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Status</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Status</p>
               <div className="flex flex-wrap gap-2">
                 <FilterPill
                   active={filters.status === 'all'}
@@ -354,7 +372,7 @@ export function AdminFilter({
           {/* Category pills */}
           {config.categoryOptions && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Category</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Category</p>
               <div className="flex flex-wrap gap-2">
                 <FilterPill
                   active={filters.category === 'all'}
@@ -379,7 +397,7 @@ export function AdminFilter({
           {/* Role pills */}
           {config.roleOptions && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Role</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Role</p>
               <div className="flex flex-wrap gap-2">
                 <FilterPill
                   active={filters.role === 'all'}
@@ -404,7 +422,7 @@ export function AdminFilter({
           {/* Active status pills */}
           {config.showActiveFilter && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Active Status</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Active Status</p>
               <div className="flex flex-wrap gap-2">
                 <FilterPill active={filters.isActive === null} onClick={() => updateFilters({ isActive: null })}>All</FilterPill>
                 <FilterPill active={filters.isActive === true} onClick={() => updateFilters({ isActive: true })}>Active</FilterPill>
@@ -416,31 +434,31 @@ export function AdminFilter({
           {/* Date range */}
           {config.showDateFilter && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Date Range</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Date Range</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* From */}
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border text-sm text-left transition-all',
+                      className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-left transition-all"
+                      style={
                         filters.dateFrom
-                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
-                          : 'bg-white/[0.04] border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/[0.07] hover:border-white/20'
-                      )}
+                          ? { background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.2)', color: '#51a2ff' }
+                          : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                      }
                     >
                       <CalendarIcon className="w-4 h-4 flex-shrink-0" />
                       <span>{filters.dateFrom ? format(filters.dateFrom, 'MMM d, yyyy') : 'From date'}</span>
                       {filters.dateFrom && (
                         <X
-                          className="w-3.5 h-3.5 ml-auto text-cyan-400/60 hover:text-cyan-300"
+                          className="w-3.5 h-3.5 ml-auto text-[#51a2ff]/60 hover:text-[#51a2ff]"
                           onClick={e => { e.stopPropagation(); updateFilters({ dateFrom: undefined }) }}
                         />
                       )}
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0 w-auto bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl">
+                  <PopoverContent className="p-0 w-auto shadow-2xl" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <Calendar
                       mode="single"
                       selected={filters.dateFrom}
@@ -456,24 +474,24 @@ export function AdminFilter({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className={cn(
-                        'flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border text-sm text-left transition-all',
+                      className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-left transition-all"
+                      style={
                         filters.dateTo
-                          ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
-                          : 'bg-white/[0.04] border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/[0.07] hover:border-white/20'
-                      )}
+                          ? { background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.2)', color: '#51a2ff' }
+                          : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                      }
                     >
                       <CalendarIcon className="w-4 h-4 flex-shrink-0" />
                       <span>{filters.dateTo ? format(filters.dateTo, 'MMM d, yyyy') : 'To date'}</span>
                       {filters.dateTo && (
                         <X
-                          className="w-3.5 h-3.5 ml-auto text-cyan-400/60 hover:text-cyan-300"
+                          className="w-3.5 h-3.5 ml-auto text-[#51a2ff]/60 hover:text-[#51a2ff]"
                           onClick={e => { e.stopPropagation(); updateFilters({ dateTo: undefined }) }}
                         />
                       )}
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0 w-auto bg-slate-900/95 border-white/10 backdrop-blur-xl shadow-2xl">
+                  <PopoverContent className="p-0 w-auto shadow-2xl" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <Calendar
                       mode="single"
                       selected={filters.dateTo}
@@ -490,10 +508,10 @@ export function AdminFilter({
           {/* Price range */}
           {config.showPriceFilter && config.priceRange && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">Price Range</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">Price Range</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555] text-sm">$</span>
                   <input
                     type="number"
                     min={config.priceRange.min}
@@ -501,11 +519,11 @@ export function AdminFilter({
                     value={filters.priceMin}
                     onChange={e => updateFilters({ priceMin: Number(e.target.value) })}
                     placeholder={`Min ${config.priceRange.min}`}
-                    className="w-full pl-7 pr-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
+                    className="input-base w-full pl-7"
                   />
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555] text-sm">$</span>
                   <input
                     type="number"
                     min={config.priceRange.min}
@@ -513,7 +531,7 @@ export function AdminFilter({
                     value={filters.priceMax}
                     onChange={e => updateFilters({ priceMax: Number(e.target.value) })}
                     placeholder={`Max ${config.priceRange.max}`}
-                    className="w-full pl-7 pr-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
+                    className="input-base w-full pl-7"
                   />
                 </div>
               </div>
@@ -525,7 +543,7 @@ export function AdminFilter({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {config.customFilters.map(cf => (
                 <div key={cf.key}>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-2">{cf.label}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#555] mb-2">{cf.label}</p>
 
                   {cf.type === 'select' && cf.options && (
                     <div className="flex flex-wrap gap-2">
@@ -546,7 +564,8 @@ export function AdminFilter({
                       value={(filters.customValues[cf.key] as string) || ''}
                       onChange={e => updateFilters({ customValues: { ...filters.customValues, [cf.key]: e.target.value } })}
                       placeholder={cf.label}
-                      className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/40 focus:bg-white/[0.07] transition-all"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-white placeholder:text-[#444] focus:outline-none transition-all"
+                      style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                     />
                   )}
 
@@ -554,10 +573,8 @@ export function AdminFilter({
                     <button
                       type="button"
                       onClick={() => updateFilters({ customValues: { ...filters.customValues, [cf.key]: !filters.customValues[cf.key] } })}
-                      className={cn(
-                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                        filters.customValues[cf.key] ? 'bg-cyan-500' : 'bg-white/10'
-                      )}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                      style={{ background: filters.customValues[cf.key] ? '#51a2ff' : 'rgba(255,255,255,0.1)' }}
                     >
                       <span
                         className={cn(

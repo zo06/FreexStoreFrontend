@@ -4,11 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, Shield, RefreshCw, Search, X, Filter, Clock, Eye, Copy, Check, Activity, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LicenseProfileModal from '@/components/admin/license-profile-modal'
@@ -40,12 +35,12 @@ interface PaginatedResponse {
 
 function getStatusBadge(status: number) {
   if (status === 200)
-    return <Badge className="border text-xs bg-green-500/20 text-green-400 border-green-500/30">200 Valid</Badge>
+    return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">200 Valid</span>
   if (status === 403)
-    return <Badge className="border text-xs bg-red-500/20 text-red-400 border-red-500/30">403 Denied</Badge>
+    return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20">403 Denied</span>
   if (status === 404)
-    return <Badge className="border text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/30">404 Not Found</Badge>
-  return <Badge className="border text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">{status}</Badge>
+    return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20">404 Not Found</span>
+  return <span className="text-xs px-2 py-0.5 rounded-full font-medium border" style={{ background: 'rgba(255,255,255,0.05)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}>{status}</span>
 }
 
 function CopyCell({ value, className = '' }: { value: string; className?: string }) {
@@ -68,8 +63,8 @@ function CopyCell({ value, className = '' }: { value: string; className?: string
       <span className="truncate max-w-[160px]">{value || '—'}</span>
       {value && value !== '—' && (
         copied
-          ? <Check className="w-3 h-3 text-green-400 flex-shrink-0 opacity-80" />
-          : <Copy className="w-3 h-3 text-gray-500 flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
+          ? <Check className="w-3 h-3 text-emerald-400 flex-shrink-0 opacity-80" />
+          : <Copy className="w-3 h-3 text-[#555] flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
       )}
     </span>
   )
@@ -97,25 +92,26 @@ function DetailModal({ audit, onClose, onViewProfile }: { audit: TokenAudit; onC
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60" />
       <div
-        className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        className="relative z-10 w-full max-w-lg card-base overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-white/10">
-              <Shield className="w-5 h-5 text-cyan-400" />
+            <div className="p-2 rounded-lg" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <Shield className="w-5 h-5 text-[#51a2ff]" />
             </div>
             <div>
               <h2 className="text-base font-bold text-white">Token Audit Details</h2>
-              <p className="text-xs text-gray-400 mt-0.5 font-mono truncate max-w-[260px]">{audit.jti}</p>
+              <p className="text-xs text-[#888] mt-0.5 font-mono truncate max-w-[260px]">{audit.jti}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -130,16 +126,16 @@ function DetailModal({ audit, onClose, onViewProfile }: { audit: TokenAudit; onC
         <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
           {fields.map(f => (
             <div key={f.label} className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-24 flex-shrink-0 pt-0.5">{f.label}</span>
+              <span className="text-xs text-[#555] w-24 flex-shrink-0 pt-0.5">{f.label}</span>
               <span className="flex items-center gap-1.5 flex-1 group">
-                <span className="text-xs text-gray-200 font-mono break-all">{f.value}</span>
+                <span className="text-xs text-[#ccc] font-mono break-all">{f.value}</span>
                 {f.value !== '—' && (
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(f.value)
                       toast.success('Copied!')
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-gray-500 hover:text-cyan-400"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-[#555] hover:text-[#51a2ff]"
                   >
                     <Copy className="w-3 h-3" />
                   </button>
@@ -150,7 +146,7 @@ function DetailModal({ audit, onClose, onViewProfile }: { audit: TokenAudit; onC
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-2 border-t border-white/10 flex gap-2">
+        <div className="px-5 pb-5 pt-2 flex gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <button
             onClick={() => { onClose(); onViewProfile(); }}
             className="flex-1 py-2 rounded-xl text-sm font-medium text-violet-300 border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 hover:text-violet-200 transition-all flex items-center justify-center gap-2"
@@ -160,7 +156,8 @@ function DetailModal({ audit, onClose, onViewProfile }: { audit: TokenAudit; onC
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+            className="flex-1 py-2 rounded-xl text-sm text-[#888] hover:text-white transition-all"
+            style={{ border: '1px solid rgba(255,255,255,0.07)' }}
           >
             Close
           </button>
@@ -252,19 +249,14 @@ function AdminLicenseTokenAudits() {
 
   if (loading && audits.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900">
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
-      </div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
-
+    <main className="min-h-screen bg-[#0a0a0a]">
       {selectedAudit && typeof document !== 'undefined' && createPortal(
         <DetailModal audit={selectedAudit} onClose={() => setSelectedAudit(null)} onViewProfile={() => setProfileKey(selectedAudit.licenseKey)} />,
         document.body
@@ -274,74 +266,77 @@ function AdminLicenseTokenAudits() {
         document.body
       )}
 
-      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
+      <div className="p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-white/10">
-                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
+              <div className="p-2 sm:p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                   License Token Audits
                 </h1>
-                <p className="mt-1 text-xs sm:text-sm text-gray-400">
+                <p className="mt-1 text-xs sm:text-sm text-[#888]">
                   Every JWT token issued to Lua clients — {total} total records
                 </p>
               </div>
             </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <button
                 onClick={() => fetchAudits()}
                 disabled={loading}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-cyan-600 to-blue-600 border border-white/10 shadow-lg hover:from-cyan-500 hover:to-blue-500 hover:scale-105 transition-all duration-300"
+                className="btn-primary flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete(7)}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-orange-700 to-orange-600 border border-white/10 shadow-lg hover:from-orange-600 hover:to-orange-500 hover:scale-105 transition-all duration-300"
                 title="Delete token audits older than 7 days"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 &gt;7d
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete(14)}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-red-700 to-red-600 border border-white/10 shadow-lg hover:from-red-600 hover:to-red-500 hover:scale-105 transition-all duration-300"
                 title="Delete token audits older than 14 days"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 &gt;14d
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete()}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-rose-800 to-rose-700 border border-white/10 shadow-lg hover:from-rose-700 hover:to-rose-600 hover:scale-105 transition-all duration-300"
                 title="Delete all token audits"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 Delete All
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => router.push('/admin/licenses')}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 shadow-lg hover:from-slate-600 hover:to-slate-500 hover:scale-105 transition-all duration-300"
+                className="btn-ghost flex items-center gap-2 flex-1 sm:flex-none"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4" />
                 Back
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 text-cyan-400" />
+            <Filter className="w-4 h-4 text-[#51a2ff]" />
             <span className="text-sm font-semibold text-white">Filters</span>
             {hasActiveFilters && (
               <button
@@ -355,160 +350,161 @@ function AdminLicenseTokenAudits() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 placeholder="License key..."
                 value={licenseKey}
                 onChange={e => { setLicenseKey(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50"
+                className="w-full pl-8 h-9 text-sm text-white placeholder:text-[#555] rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
-            <Select value={status} onValueChange={v => { setStatus(v); setPage(1) }}>
-              <SelectTrigger className="h-9 text-sm bg-white/5 border-white/10 text-white focus:border-cyan-500/50">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10 text-white">
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="200">200 — Valid</SelectItem>
-                <SelectItem value="403">403 — Denied</SelectItem>
-                <SelectItem value="404">404 — Not Found</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              value={status}
+              onChange={e => { setStatus(e.target.value); setPage(1) }}
+              className="h-9 text-sm text-white rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <option value="all">All statuses</option>
+              <option value="200">200 — Valid</option>
+              <option value="403">403 — Denied</option>
+              <option value="404">404 — Not Found</option>
+            </select>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 type="datetime-local"
                 value={dateFrom}
                 onChange={e => { setDateFrom(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white focus:border-cyan-500/50 [color-scheme:dark]"
+                className="w-full pl-8 h-9 text-sm text-white rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3 [color-scheme:dark]"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 type="datetime-local"
                 value={dateTo}
                 onChange={e => { setDateTo(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white focus:border-cyan-500/50 [color-scheme:dark]"
+                className="w-full pl-8 h-9 text-sm text-white rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3 [color-scheme:dark]"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-[#555]">
             Showing {audits.length} of {total} records
-            {hasActiveFilters && <span className="ml-1 text-cyan-400">(filtered)</span>}
-            <span className="ml-2 text-gray-600">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
+            {hasActiveFilters && <span className="ml-1 text-[#51a2ff]">(filtered)</span>}
+            <span className="ml-2 text-[#444]">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
           </p>
         </div>
 
         {/* Table */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300">
+        <div className="card-base p-6">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Status</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">License Key</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden sm:table-cell">Message</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden md:table-cell">Version</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden lg:table-cell">IP</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Issued At</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Expires At</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden 2xl:table-cell">JTI</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Status</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">License Key</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Message</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Version</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">IP</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Issued At</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Expires At</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Created At</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden 2xl:table-cell">JTI</th>
+                  <th className="text-right text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Details</th>
+                </tr>
+              </thead>
+              <tbody>
                 {audits.length === 0 ? (
-                  <TableRow>
-                    <td colSpan={10} className="py-16 text-center text-gray-400">
+                  <tr>
+                    <td colSpan={10} className="py-16 text-center text-[#555]">
                       <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
                       <p className="text-sm">No token audit records found</p>
                       {hasActiveFilters && (
-                        <button onClick={clearFilters} className="mt-2 text-xs text-cyan-400 hover:underline">
+                        <button onClick={clearFilters} className="mt-2 text-xs text-[#51a2ff] hover:underline">
                           Clear filters
                         </button>
                       )}
                     </td>
-                  </TableRow>
+                  </tr>
                 ) : (
                   audits.map(audit => (
-                    <TableRow key={audit.id} className="border-white/10 hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setSelectedAudit(audit)}>
-                      <TableCell className="whitespace-nowrap">{getStatusBadge(audit.status)}</TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400">
+                    <tr key={audit.id} className="border-b transition-colors hover:bg-[#161616] cursor-pointer" style={{ borderColor: 'rgba(255,255,255,0.04)' }} onClick={() => setSelectedAudit(audit)}>
+                      <td className="py-3 px-4 whitespace-nowrap">{getStatusBadge(audit.status)}</td>
+                      <td className="py-3 px-4 font-mono text-[#ccc] text-xs">
                         <CopyCell value={audit.licenseKey} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-300 hidden sm:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs hidden sm:table-cell">
                         <CopyCell value={audit.message} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 hidden md:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs hidden md:table-cell">
                         <CopyCell value={audit.version || ''} />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400 hidden lg:table-cell">
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[#ccc] text-xs hidden lg:table-cell">
                         <CopyCell value={audit.ip || ''} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 whitespace-nowrap hidden xl:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs whitespace-nowrap hidden xl:table-cell">
                         <CopyCell value={formatUnix(audit.iat)} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 whitespace-nowrap hidden xl:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs whitespace-nowrap hidden xl:table-cell">
                         <CopyCell value={formatUnix(audit.exp)} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 whitespace-nowrap">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs whitespace-nowrap">
                         <CopyCell value={formatDate(audit.createdAt)} />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-600 hidden 2xl:table-cell">
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[#555] text-xs hidden 2xl:table-cell">
                         <CopyCell value={audit.jti} />
-                      </TableCell>
-                      <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+                      </td>
+                      <td className="py-3 px-4 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => setSelectedAudit(audit)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-[#555] hover:text-[#51a2ff] hover:bg-[rgba(81,162,255,0.1)] transition-colors"
                             title="View token audit details"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => setProfileKey(audit.licenseKey)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-[#555] hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
                             title="View full user profile by license key"
                           >
                             <Activity className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))
                 )}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Pagination */}
-        <div className="p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+            <p className="text-xs sm:text-sm text-[#888] text-center sm:text-left">
               Page {page} of {totalPages} — {Math.min((page - 1) * limit + 1, total)}–{Math.min(page * limit, total)} of {total}
             </p>
             <div className="flex gap-2 items-center">
-              <Button
+              <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                size="sm"
-                className="text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-all"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm text-gray-400 px-2">{page} / {totalPages}</span>
-              <Button
+              </button>
+              <span className="text-sm text-[#888] px-2">{page} / {totalPages}</span>
+              <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || totalPages === 0}
-                size="sm"
-                className="text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-all"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4 rotate-180" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

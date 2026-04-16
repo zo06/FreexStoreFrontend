@@ -6,15 +6,6 @@ import { withAdminAuth } from '@/lib/auth-context'
 import { useLicensesStore, useUsersStore, useScriptsStore, License, User, Script } from '@/lib/stores'
 import { safeAdminApi } from '@/lib/admin-api'
 import apiClient from '@/lib/api/client'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-
 import { Plus, Trash2, CheckCircle, XCircle, RefreshCw, Download, Eye, Key, ArrowLeft, AlertTriangle, RotateCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
@@ -261,12 +252,12 @@ function AdminLicenses() {
 
   const getStatusBadge = (license: License) => {
     if (!license.isActive) {
-      return <Badge variant="destructive">{t('revoked')}</Badge>
+      return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20">{t('revoked')}</span>
     }
     if (license.expiresAt && new Date(license.expiresAt) < new Date()) {
-      return <Badge variant="destructive">{t('expired')}</Badge>
+      return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20">{t('expired')}</span>
     }
-    return <Badge variant="default" className="bg-green-500">{t('active')}</Badge>
+    return <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{t('active')}</span>
   }
 
   const getUserName = (license: License) => {
@@ -291,59 +282,55 @@ function AdminLicenses() {
   // Show loading spinner only on initial page load
   if (loading && licenses.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-<div className="absolute inset-0">
-  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-</div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-4 sm:p-6 mx-auto space-y-4 sm:space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
-              <div className="p-2 sm:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Key className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+              <div className="p-2 sm:p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Key className="w-6 h-6 sm:w-8 sm:h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{t('title')}</h1>
+                <p className="mt-1 text-xs sm:text-sm text-[#888]">{t('subtitle')}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              <Button
+              <button
                 onClick={() => router.push('/admin')}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+                className="btn-ghost flex items-center gap-2 flex-1 sm:flex-none"
               >
-                <ArrowLeft className="mr-2 w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('backToDashboard')}</span>
                 <span className="sm:hidden">Back</span>
-              </Button>
+              </button>
               {statusFilter === 'revoked' || !statusFilter ? (
-                <Button
+                <button
                   onClick={() => setIsDeleteRevokedDialogOpen(true)}
-                  className="flex-1 sm:flex-none text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                 >
-                  <Trash2 className="mr-2 w-4 h-4" />
+                  <Trash2 className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('deleteAllRevoked')}</span>
                   <span className="sm:hidden">Delete</span>
-                </Button>
+                </button>
               ) : null}
-              <Button
+              <button
                 onClick={() => router.push('/admin/licenses/manage')}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                className="btn-primary flex items-center gap-2 flex-1 sm:flex-none"
               >
-                <Plus className="mr-2 w-4 h-4" />
+                <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('createLicense')}</span>
                 <span className="sm:hidden">Create</span>
-            </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -360,217 +347,227 @@ function AdminLicenses() {
         />
 
         {/* Licenses Table */}
-        <div className="p-3 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+        <div className="card-base p-6">
           <div className="mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">
               {t('licenses')} ({filteredLicenses.length} {t('of')} {total})
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('listDescription')}</p>
+            <p className="mt-1 text-xs sm:text-sm text-[#888]">{t('listDescription')}</p>
           </div>
 
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('user')}</TableHead>
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('script')}</TableHead>
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap">{t('status')}</TableHead>
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">{t('expiryDate')}</TableHead>
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap hidden lg:table-cell">{t('createdDate')}</TableHead>
-                <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm whitespace-nowrap text-right">{t('actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLicenses.map((license) => (
-                <TableRow key={license.id} className="transition-colors border-white/10 hover:bg-white/5">
-                  <TableCell className="font-medium text-white text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getUserName(license)}</TableCell>
-                  <TableCell className="text-gray-300 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getScriptName(license)}</TableCell>
-                  <TableCell>{getStatusBadge(license)}</TableCell>
-                  <TableCell className="text-gray-300 text-xs sm:text-sm hidden md:table-cell">{formatDateTime(license.expiresAt)}</TableCell>
-                  <TableCell className="text-gray-300 text-xs sm:text-sm hidden lg:table-cell">{formatDate(license.createdAt || '')}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-1 sm:gap-2">
-                      <Button
-                        onClick={() => {
-                          navigator.clipboard.writeText(license.privateKey || '')
-                          toast.success(t('licenseKeyCopied'))
-                        }}
-                        size="sm"
-                        title={t('copyLicenseKey')}
-                        className="text-white bg-gradient-to-r from-green-600 to-green-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-green-500 hover:to-green-400 border-white/10 hover:shadow-xl hover:scale-105 p-1 sm:p-2"
-                      >
-                        <Key className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => openEditDialog(license)}
-                        size="sm"
-                        disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
-                        title={t('editLicense')}
-                        className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
-                      >
-                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                      {license.isRevoked ? (
-                        <Button
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">{t('user')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">{t('script')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">{t('status')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden md:table-cell">{t('expiryDate')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{t('createdDate')}</th>
+                  <th className="text-right text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">{t('actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLicenses.map((license) => (
+                  <tr key={license.id} className="border-b transition-colors hover:bg-[#161616]" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                    <td className="py-3 px-4 text-[#ccc] font-medium text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getUserName(license)}</td>
+                    <td className="py-3 px-4 text-[#ccc] text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{getScriptName(license)}</td>
+                    <td className="py-3 px-4">{getStatusBadge(license)}</td>
+                    <td className="py-3 px-4 text-[#ccc] text-xs sm:text-sm hidden md:table-cell">{formatDateTime(license.expiresAt)}</td>
+                    <td className="py-3 px-4 text-[#ccc] text-xs sm:text-sm hidden lg:table-cell">{formatDate(license.createdAt || '')}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex justify-end gap-1 sm:gap-2">
+                        <button
                           onClick={() => {
-                            setSelectedLicense(license)
-                            setIsReactivateDialogOpen(true)
+                            navigator.clipboard.writeText(license.privateKey || '')
+                            toast.success(t('licenseKeyCopied'))
                           }}
-                          size="sm"
-                          title={t('reactivateLicense')}
-                          className="text-white bg-gradient-to-r from-emerald-600 to-emerald-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-emerald-500 hover:to-emerald-400 border-white/10 hover:shadow-xl hover:scale-105 p-1 sm:p-2"
+                          title={t('copyLicenseKey')}
+                          className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                         >
-                          <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            setSelectedLicense(license)
-                            setIsRevokeDialogOpen(true)
-                          }}
-                          size="sm"
+                          <Key className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </button>
+                        <button
+                          onClick={() => openEditDialog(license)}
                           disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
-                          title={t('revokeLicense')}
-                          className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 p-1 sm:p-2"
+                          title={t('editLicense')}
+                          className="p-2 rounded-lg text-[#888] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                         >
-                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </button>
+                        {license.isRevoked ? (
+                          <button
+                            onClick={() => {
+                              setSelectedLicense(license)
+                              setIsReactivateDialogOpen(true)
+                            }}
+                            title={t('reactivateLicense')}
+                            className="p-2 rounded-lg text-emerald-400 hover:text-emerald-300 transition-colors"
+                            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                          >
+                            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setSelectedLicense(license)
+                              setIsRevokeDialogOpen(true)
+                            }}
+                            disabled={!license.isActive || !!(license.expiresAt && new Date(license.expiresAt) < new Date())}
+                            title={t('revokeLicense')}
+                            className="p-2 rounded-lg text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                          >
+                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Pagination */}
-        <div className="p-3 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
-            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+            <p className="text-xs sm:text-sm text-[#888] text-center sm:text-left">
               {t('showing')} {Math.min((currentPage - 1) * limit + 1, total)}-{Math.min(currentPage * limit, total)} {t('of')} {total} {t('licenses')} ({t('pageOf', { current: currentPage, total: totalPages })})
             </p>
             <div className="flex gap-2 items-center">
-              <Button
+              <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 px-2 sm:px-3"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline ml-1">{t('previous')}</span>
-              </Button>
-              <div className="flex items-center px-2 sm:px-3 text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+              </button>
+              <div className="flex items-center px-2 sm:px-3 text-xs sm:text-sm text-[#888] whitespace-nowrap">
                 {currentPage} / {totalPages}
               </div>
-              <Button
+              <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages || totalPages === 0}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 px-2 sm:px-3"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="hidden sm:inline mr-1">{t('next')}</span>
                 <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
-
-
-        {/* Reactivate Confirmation Dialog */}
-        <AlertDialog open={isReactivateDialogOpen} onOpenChange={setIsReactivateDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white text-lg sm:text-xl">{t('reactivateDialogTitle')}</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
+        {/* Reactivate Confirmation Modal */}
+        {isReactivateDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsReactivateDialogOpen(false)}>
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 w-full max-w-lg card-base p-6" onClick={e => e.stopPropagation()}>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">{t('reactivateDialogTitle')}</h2>
+              <p className="text-[#888] text-sm sm:text-base mb-6">
                 {t('reactivateDialogDescription', {
                   user: selectedLicense ? getUserName(selectedLicense) : '',
                   script: selectedLicense ? getScriptName(selectedLicense) : ''
                 })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <AlertDialogCancel className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto">{t('cancel')}</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleReactivateLicense}
-                className="text-white bg-gradient-to-r from-emerald-600 to-emerald-500 border backdrop-blur-sm hover:from-emerald-500 hover:to-emerald-400 border-white/10 w-full sm:w-auto"
-              >
-                <RotateCcw className="mr-2 w-4 h-4" />
-                {t('confirmReactivate')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                <button
+                  onClick={() => setIsReactivateDialogOpen(false)}
+                  className="btn-ghost flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={handleReactivateLicense}
+                  className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {t('confirmReactivate')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Revoke Confirmation Dialog */}
-        <AlertDialog open={isRevokeDialogOpen} onOpenChange={setIsRevokeDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white text-lg sm:text-xl">{t('revokeDialogTitle')}</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
+        {/* Revoke Confirmation Modal */}
+        {isRevokeDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsRevokeDialogOpen(false)}>
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 w-full max-w-lg card-base p-6" onClick={e => e.stopPropagation()}>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">{t('revokeDialogTitle')}</h2>
+              <p className="text-[#888] text-sm sm:text-base mb-6">
                 {t('revokeDialogDescription', {
                   user: selectedLicense ? getUserName(selectedLicense) : '',
                   script: selectedLicense ? getScriptName(selectedLicense) : ''
                 })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <AlertDialogCancel className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto">{t('cancel')}</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleRevokeLicense}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10 w-full sm:w-auto"
-              >
-                {t('confirmRevoke')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                <button
+                  onClick={() => setIsRevokeDialogOpen(false)}
+                  className="btn-ghost flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={handleRevokeLicense}
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center justify-center gap-2 w-full sm:w-auto"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                >
+                  {t('confirmRevoke')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Delete All Revoked Licenses Confirmation Dialog */}
-        <AlertDialog open={isDeleteRevokedDialogOpen} onOpenChange={setIsDeleteRevokedDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10 max-w-[95vw] sm:max-w-lg">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
+        {/* Delete All Revoked Licenses Confirmation Modal */}
+        {isDeleteRevokedDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => !deletingRevoked && setIsDeleteRevokedDialogOpen(false)}>
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 w-full max-w-lg card-base p-6" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-5 h-5 text-red-400" />
-                {t('deleteRevokedTitle')}
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400 text-sm sm:text-base">
-                <div className="space-y-2">
-                  <p>{t('deleteRevokedDescription1', { count: licenses.filter(l => !l.isActive).length })}</p>
-                  <p className="text-yellow-400">{t('deleteRevokedDescription2')}</p>
-                  <p>{t('deleteRevokedDescription3')}</p>
-                </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <AlertDialogCancel
-                disabled={deletingRevoked}
-                className="text-white bg-gradient-to-r border backdrop-blur-sm from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 w-full sm:w-auto"
-              >
-                {t('cancel')}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAllRevoked}
-                disabled={deletingRevoked}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border backdrop-blur-sm hover:from-red-500 hover:to-red-400 border-white/10 w-full sm:w-auto"
-              >
-                {deletingRevoked ? (
-                  <>
-                    <RefreshCw className="mr-2 w-4 h-4 animate-spin" />
-                    {t('deleting')}
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 w-4 h-4" />
-                    {t('deleteForever')}
-                  </>
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <h2 className="text-lg sm:text-xl font-semibold text-white">{t('deleteRevokedTitle')}</h2>
+              </div>
+              <div className="text-[#888] text-sm sm:text-base mb-6 space-y-2">
+                <p>{t('deleteRevokedDescription1', { count: licenses.filter(l => !l.isActive).length })}</p>
+                <p className="text-amber-400">{t('deleteRevokedDescription2')}</p>
+                <p>{t('deleteRevokedDescription3')}</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                <button
+                  disabled={deletingRevoked}
+                  onClick={() => setIsDeleteRevokedDialogOpen(false)}
+                  className="btn-ghost flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={handleDeleteAllRevoked}
+                  disabled={deletingRevoked}
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                >
+                  {deletingRevoked ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      {t('deleting')}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      {t('deleteForever')}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )

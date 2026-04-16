@@ -5,13 +5,6 @@ import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { useScriptsStore, useCategoriesStore, Script, Category } from '@/lib/stores'
 import { safeAdminApi } from '@/lib/admin-api'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Plus, Edit, Trash2, Power, PowerOff, Code, ArrowLeft, RefreshCw, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
@@ -20,13 +13,13 @@ import { useTranslations } from 'next-intl'
 function AdminScripts() {
   const t = useTranslations('admin.scripts')
   // Use Zustand stores
-  const { 
-    items: scripts, 
-    loading, 
+  const {
+    items: scripts,
+    loading,
     error,
     getAll: getScripts,
     remove: removeScript,
-    patch: patchScript 
+    patch: patchScript
   } = useScriptsStore()
 
   const {
@@ -50,10 +43,10 @@ function AdminScripts() {
   const [upgradeFile, setUpgradeFile] = useState<File | null>(null)
   const [upgradeLoading, setUpgradeLoading] = useState(false)
 
-  
+
   // Get unique categories from scripts
   const categories = [...new Set(scripts.map(script => ((script.category as { name?: string } | undefined)?.name)).filter(Boolean))]
-  
+
   // Filter configuration
   const filterConfig: FilterConfig = {
     searchPlaceholder: t('searchPlaceholder'),
@@ -74,18 +67,16 @@ function AdminScripts() {
     priceRange: { min: 0, max: Math.max(...scripts.map(s => s.price || 0), 1000) }
   }
 
-  // Remove form states as they're now handled in separate pages
-
   // Load categories on component mount
   useEffect(() => {
     getCategories().catch(() => {})
   }, [getCategories])
 
   // Category options from database
-  const categoryOptions = (dbCategories && dbCategories.length > 0) 
+  const categoryOptions = (dbCategories && dbCategories.length > 0)
     ? dbCategories.map(cat => ({ value: cat.name, label: cat.name }))
     : []
-  
+
 
   // Expiration duration options
   const expirationOptions = [
@@ -117,7 +108,7 @@ function AdminScripts() {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
-      filtered = filtered.filter(script => 
+      filtered = filtered.filter(script =>
         script.name.toLowerCase().includes(searchLower) ||
         script.description?.toLowerCase().includes(searchLower) ||
         (((script.category as { name?: string } | undefined)?.name) || '').toLowerCase().includes(searchLower)
@@ -250,317 +241,286 @@ function AdminScripts() {
     }
   }
 
-  // Navigation functions replace the old dialog handlers
-
-  const getStatusBadge = (script: Script) => {
-    if (script.isActive) {
-      return <Badge variant="default" className="bg-green-500">{t('badges.active')}</Badge>
-    }
-    return <Badge variant="secondary">{t('badges.inactive')}</Badge>
-  }
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-emerald-500/20 to-blue-500/20 border-white/10">
-                <Code className="w-8 h-8 text-emerald-400" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Code className="w-8 h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-1 text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-3xl font-bold text-white">{t('title')}</h1>
+                <p className="mt-1 text-[#888]">{t('subtitle')}</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
+              <button
                 onClick={() => router.push('/admin')}
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+                className="btn-ghost flex items-center gap-2"
               >
-                <ArrowLeft className="mr-2 w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" />
                 {t('backToDashboard')}
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleCreateScript}
-                className="text-white bg-gradient-to-r from-emerald-600 to-emerald-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-emerald-500 hover:to-emerald-400 border-white/10 hover:shadow-xl hover:scale-105"
+                className="btn-primary flex items-center gap-2"
               >
-                <Plus className="mr-2 w-4 h-4" />
+                <Plus className="w-4 h-4" />
                 {t('createScript')}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
-      {/* Filter Component */}
-      <AdminFilter
-        config={filterConfig}
-        onFilterChange={handleFilterChange}
-        onRefresh={() => getScripts()}
-        onExport={handleExport}
-        totalCount={scripts.length}
-        filteredCount={filteredScripts.length}
-        loading={loading}
-      />
+        {/* Filter Component */}
+        <AdminFilter
+          config={filterConfig}
+          onFilterChange={handleFilterChange}
+          onRefresh={() => getScripts()}
+          onExport={handleExport}
+          totalCount={scripts.length}
+          filteredCount={filteredScripts.length}
+          loading={loading}
+        />
 
         {/* Scripts Table */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+        <div className="card-base p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+            <h2 className="text-xl font-semibold text-white">
               {t('table.title', { count: filteredScripts.length, total: scripts.length })}
             </h2>
-            <p className="mt-1 text-gray-400">{t('table.description')}</p>
+            <p className="mt-1 text-[#888]">{t('table.description')}</p>
           </div>
 
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="font-semibold text-gray-300">{t('table.name')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.category')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.description')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.price')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Discount</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.status')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.createdDate')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300">{t('table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.name')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.category')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.description')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.price')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Discount</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.status')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.createdDate')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
                 {filteredScripts.map((script) => (
-                  <TableRow key={script.id} className="transition-colors border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white">{script.name}</TableCell>
-                    <TableCell>
-                      <Badge className="text-emerald-300 bg-gradient-to-r border from-emerald-600/20 to-blue-600/20 border-emerald-400/30">
+                  <tr key={script.id} className="border-b transition-colors hover:bg-[#161616]" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                    <td className="py-3 px-4 text-white font-medium">{script.name}</td>
+                    <td className="py-3 px-4">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(81,162,255,0.1)', color: '#51a2ff', border: '1px solid rgba(81,162,255,0.2)' }}>
                         {((script.category as { name?: string } | undefined)?.name) || t('table.general')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs text-gray-300 truncate">{script.description || t('table.noDescription')}</TableCell>
-                    <TableCell className="text-gray-300">${script.price || 0}</TableCell>
-                    <TableCell>
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-[#888] max-w-xs truncate">{script.description || t('table.noDescription')}</td>
+                    <td className="py-3 px-4 text-[#888]">${script.price || 0}</td>
+                    <td className="py-3 px-4">
                       {(script as any).discountPercentage > 0 ? (
-                        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                           -{(script as any).discountPercentage}%
                         </span>
                       ) : (
-                        <span className="text-gray-600 text-xs">—</span>
+                        <span className="text-[#555] text-xs">—</span>
                       )}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(script)}</TableCell>
-                    <TableCell className="text-gray-300">{formatDate(script.createdAt || '')}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => handleToggleActive(script)}
-                          size="sm"
-                          className={`${script.isActive
-                            ? 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white'
-                            : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white'
-                          } border border-white/10 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105`}
-                        >
-                          {script.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-                        </Button>
-                        <Button
+                    </td>
+                    <td className="py-3 px-4">
+                      {script.isActive ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                          {t('badges.active')}
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20">
+                          {t('badges.inactive')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-[#888]">{formatDate(script.createdAt || '')}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {script.isActive ? (
+                          <button
+                            onClick={() => handleToggleActive(script)}
+                            className="p-2 rounded-lg text-amber-400 hover:text-amber-300 transition-colors"
+                            style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)' }}
+                            title={t('statusOptions.inactive')}
+                          >
+                            <PowerOff className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleActive(script)}
+                            className="p-2 rounded-lg text-emerald-400 hover:text-emerald-300 transition-colors"
+                            style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}
+                            title={t('statusOptions.active')}
+                          >
+                            <Power className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
                           onClick={() => handleEditScript(script)}
-                          size="sm"
-                          className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                          title={t('table.actions')}
                         >
                           <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           onClick={() => handleOpenUpgrade(script)}
-                          size="sm"
-                          className="text-white bg-gradient-to-r from-purple-600 to-purple-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-purple-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                           title="Upgrade"
                         >
                           <RefreshCw className="w-4 h-4" />
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           onClick={() => {
                             setSelectedScript(script)
                             setIsDeleteDialogOpen(true)
                           }}
-                          size="sm"
-                          className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                          className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         </div>
-        
+
         {/* Pagination */}
-        <div className="p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-4">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[#888]">
               {t('pagination.showing', {
                 from: Math.min((currentPage - 1) * limit + 1, scripts.length),
                 to: Math.min(currentPage * limit, scripts.length),
                 total: scripts.length
               })}
             </p>
-            <div className="flex space-x-2">
-              <Button
+            <div className="flex gap-2">
+              <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="btn-ghost flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('pagination.previous')}
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="btn-ghost flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('pagination.next')}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Upgrade Dialog */}
-        <Dialog open={isUpgradeDialogOpen} onOpenChange={(open) => { if (!upgradeLoading) setIsUpgradeDialogOpen(open) }}>
-          <DialogContent className="bg-gradient-to-br border shadow-2xl backdrop-blur-xl from-slate-900/90 to-slate-800/90 border-white/10 sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex gap-2 items-center text-xl font-semibold text-white">
-                <RefreshCw className="w-5 h-5 text-purple-400" />
-                Upgrade Script
-              </DialogTitle>
+        {isUpgradeDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+            <div className="card-base p-6 w-full max-w-md space-y-5">
+              <div className="flex items-center gap-3">
+                <RefreshCw className="w-5 h-5 text-[#51a2ff]" />
+                <h3 className="text-white font-semibold text-lg">Upgrade Script</h3>
+              </div>
               {upgradeScript && (
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="text-sm text-[#888]">
                   {upgradeScript.name}
                   {(upgradeScript as any).version && (
-                    <span className="ml-2 text-purple-400">v{(upgradeScript as any).version}</span>
+                    <span className="ml-2 text-[#51a2ff]">v{(upgradeScript as any).version}</span>
                   )}
                 </p>
               )}
-            </DialogHeader>
-
-            <div className="flex flex-col gap-5 py-2">
-              {/* New version */}
-              <div className="flex flex-col gap-2">
-                <Label className="text-sm font-medium text-gray-300">New Version</Label>
-                <Input
-                  placeholder="e.g. 1.0.4"
-                  value={upgradeVersion}
-                  onChange={(e) => setUpgradeVersion(e.target.value)}
-                  disabled={upgradeLoading}
-                  className="text-white bg-white/5 border-white/10 placeholder:text-gray-500 focus:border-purple-400 focus:ring-purple-400/20"
-                />
+              {/* version input and file upload */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-[#ccc]">New Version</label>
+                  <input placeholder="e.g. 1.0.4" value={upgradeVersion} onChange={(e) => setUpgradeVersion(e.target.value)} className="input-base w-full" disabled={upgradeLoading} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-[#ccc]">Update File</label>
+                  <label className={`flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed cursor-pointer transition-all ${upgradeFile ? 'border-[#51a2ff]/50 bg-[#51a2ff]/5' : 'border-[rgba(255,255,255,0.1)] bg-[#1a1a1a] hover:border-[#51a2ff]/40'} ${upgradeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <input type="file" className="hidden" accept=".zip,.rar,.7z,.tar,.gz" disabled={upgradeLoading} onChange={(e) => setUpgradeFile(e.target.files?.[0] ?? null)} />
+                    {upgradeFile ? (
+                      <div className="flex flex-col items-center gap-1 px-4 text-center">
+                        <RefreshCw className="w-5 h-5 text-[#51a2ff]" />
+                        <span className="text-sm font-medium text-[#51a2ff] truncate max-w-[260px]">{upgradeFile.name}</span>
+                        <span className="text-xs text-[#555]">{(upgradeFile.size/1024/1024).toFixed(2)} MB</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-[#555]">
+                        <Upload className="w-6 h-6" />
+                        <span className="text-sm">Click to select file</span>
+                        <span className="text-xs">.zip · .rar · .7z</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
               </div>
-
-              {/* File upload */}
-              <div className="flex flex-col gap-2">
-                <Label className="text-sm font-medium text-gray-300">Update File</Label>
-                <label className={`flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200
-                  ${upgradeFile
-                    ? 'border-purple-500 bg-purple-500/10'
-                    : 'border-white/20 bg-white/5 hover:border-purple-400/60 hover:bg-purple-500/5'}
-                  ${upgradeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".zip,.rar,.7z,.tar,.gz"
-                    disabled={upgradeLoading}
-                    onChange={(e) => setUpgradeFile(e.target.files?.[0] ?? null)}
-                  />
-                  {upgradeFile ? (
-                    <div className="flex flex-col items-center gap-1 px-4 text-center">
-                      <RefreshCw className="w-5 h-5 text-purple-400" />
-                      <span className="text-sm font-medium text-purple-300 truncate max-w-[260px]">{upgradeFile.name}</span>
-                      <span className="text-xs text-gray-500">{(upgradeFile.size / 1024 / 1024).toFixed(2)} MB — click to change</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 text-gray-400">
-                      <Upload className="w-6 h-6" />
-                      <span className="text-sm">Click to select file</span>
-                      <span className="text-xs text-gray-500">.zip · .rar · .7z · .tar · .gz</span>
-                    </div>
-                  )}
-                </label>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setIsUpgradeDialogOpen(false)} disabled={upgradeLoading} className="btn-ghost flex-1">Cancel</button>
+                <button onClick={handleUpgrade} disabled={upgradeLoading || !upgradeFile || !upgradeVersion.trim()} className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50">
+                  {upgradeLoading ? <><RefreshCw className="w-4 h-4 animate-spin" />Upgrading...</> : <><RefreshCw className="w-4 h-4" />Upgrade</>}
+                </button>
               </div>
             </div>
-
-            <DialogFooter className="flex gap-2 pt-2 sm:justify-end">
-              <Button
-                onClick={() => setIsUpgradeDialogOpen(false)}
-                disabled={upgradeLoading}
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleUpgrade}
-                disabled={upgradeLoading || !upgradeFile || !upgradeVersion.trim()}
-                className="text-white bg-gradient-to-r from-purple-600 to-purple-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-purple-400 border-white/10 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {upgradeLoading ? (
-                  <span className="flex gap-2 items-center">
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Upgrading...
-                  </span>
-                ) : (
-                  <span className="flex gap-2 items-center">
-                    <RefreshCw className="w-4 h-4" />
-                    Upgrade
-                  </span>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent className="bg-gradient-to-br border shadow-2xl backdrop-blur-xl from-slate-900/90 to-slate-800/90 border-white/10">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-semibold text-white">{t('deleteDialog.title')}</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
-                {t('deleteDialog.description', { name: selectedScript?.name || '' })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105">
-                {t('deleteDialog.cancel')}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteScript}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
-              >
-                {t('deleteDialog.confirm')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {isDeleteDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+            <div className="card-base p-6 w-full max-w-sm space-y-5">
+              <div>
+                <h3 className="text-white font-semibold text-lg">{t('deleteDialog.title')}</h3>
+                <p className="mt-2 text-sm text-[#888]">
+                  {t('deleteDialog.description', { name: selectedScript?.name || '' })}
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  className="btn-ghost flex-1"
+                >
+                  {t('deleteDialog.cancel')}
+                </button>
+                <button
+                  onClick={handleDeleteScript}
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                  className="flex-1 px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 transition-colors"
+                >
+                  {t('deleteDialog.confirm')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
 }
 
 export default withAdminAuth(AdminScripts)
-

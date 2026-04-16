@@ -4,10 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
 import { ArrowLeft, Activity, RefreshCw, Search, X, Filter, Server, Clock, Eye, Copy, Check, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import LicenseProfileModal from '@/components/admin/license-profile-modal'
@@ -36,16 +32,16 @@ interface PaginatedResponse {
 }
 
 const EVENT_COLORS: Record<string, string> = {
-  LicenseValid: 'bg-green-500/20 text-green-400 border-green-500/30',
-  LicenseInvalid: 'bg-red-500/20 text-red-400 border-red-500/30',
-  startup: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  shutdown: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  error: 'bg-red-500/20 text-red-400 border-red-500/30',
+  LicenseValid: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  LicenseInvalid: 'bg-red-500/10 text-red-400 border-red-500/20',
+  startup: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  shutdown: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  error: 'bg-red-500/10 text-red-400 border-red-500/20',
 }
 
 function getEventBadge(event: string) {
-  const cls = EVENT_COLORS[event] ?? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-  return <Badge className={`border text-xs ${cls}`}>{event}</Badge>
+  const cls = EVENT_COLORS[event] ?? 'bg-[rgba(255,255,255,0.05)] text-[#888] border-[rgba(255,255,255,0.1)]'
+  return <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${cls}`}>{event}</span>
 }
 
 function CopyCell({ value, className = '' }: { value: string; className?: string }) {
@@ -68,8 +64,8 @@ function CopyCell({ value, className = '' }: { value: string; className?: string
       <span className="truncate max-w-[160px]">{value || '—'}</span>
       {value && value !== '—' && (
         copied
-          ? <Check className="w-3 h-3 text-green-400 flex-shrink-0 opacity-80" />
-          : <Copy className="w-3 h-3 text-gray-500 flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
+          ? <Check className="w-3 h-3 text-emerald-400 flex-shrink-0 opacity-80" />
+          : <Copy className="w-3 h-3 text-[#555] flex-shrink-0 opacity-0 group-hover:opacity-80 transition-opacity" />
       )}
     </span>
   )
@@ -94,25 +90,26 @@ function DetailModal({ log, onClose, onViewProfile }: { log: EventLog; onClose: 
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60" />
       <div
-        className="relative z-10 w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        className="relative z-10 w-full max-w-lg card-base overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-white/10">
-              <Activity className="w-5 h-5 text-cyan-400" />
+            <div className="p-2 rounded-lg" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <Activity className="w-5 h-5 text-[#51a2ff]" />
             </div>
             <div>
               <h2 className="text-base font-bold text-white">Event Log Details</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{log.id}</p>
+              <p className="text-xs text-[#888] mt-0.5">{log.id}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -127,16 +124,16 @@ function DetailModal({ log, onClose, onViewProfile }: { log: EventLog; onClose: 
         <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
           {fields.map(f => (
             <div key={f.label} className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-24 flex-shrink-0 pt-0.5">{f.label}</span>
+              <span className="text-xs text-[#555] w-24 flex-shrink-0 pt-0.5">{f.label}</span>
               <span className="flex items-center gap-1.5 flex-1 group">
-                <span className="text-xs text-gray-200 font-mono break-all">{f.value}</span>
+                <span className="text-xs text-[#ccc] font-mono break-all">{f.value}</span>
                 {f.value !== '—' && (
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(f.value)
                       toast.success('Copied!')
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-gray-500 hover:text-cyan-400"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 rounded text-[#555] hover:text-[#51a2ff]"
                   >
                     <Copy className="w-3 h-3" />
                   </button>
@@ -147,7 +144,7 @@ function DetailModal({ log, onClose, onViewProfile }: { log: EventLog; onClose: 
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-2 border-t border-white/10 flex gap-2">
+        <div className="px-5 pb-5 pt-2 flex gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {onViewProfile && (
             <button
               onClick={() => { onClose(); onViewProfile(); }}
@@ -159,7 +156,8 @@ function DetailModal({ log, onClose, onViewProfile }: { log: EventLog; onClose: 
           )}
           <button
             onClick={onClose}
-            className="flex-1 py-2 rounded-xl text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
+            className="flex-1 py-2 rounded-xl text-sm text-[#888] hover:text-white transition-all"
+            style={{ border: '1px solid rgba(255,255,255,0.07)' }}
           >
             Close
           </button>
@@ -255,19 +253,14 @@ function AdminLicenseEventLogs() {
 
   if (loading && logs.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900">
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
-      </div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 blur-3xl" />
-
+    <main className="min-h-screen bg-[#0a0a0a]">
       {selectedLog && typeof document !== 'undefined' && createPortal(
         <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} onViewProfile={selectedLog.licenseKey ? () => setProfileKey(selectedLog.licenseKey!) : undefined} />,
         document.body
@@ -277,74 +270,77 @@ function AdminLicenseEventLogs() {
         document.body
       )}
 
-      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
+      <div className="p-4 sm:p-6 mx-auto space-y-4 max-w-7xl">
         {/* Header */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-white/10">
-                <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
+              <div className="p-2 sm:p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                   License Event Logs
                 </h1>
-                <p className="mt-1 text-xs sm:text-sm text-gray-400">
+                <p className="mt-1 text-xs sm:text-sm text-[#888]">
                   All events reported by Lua clients — {total} total records
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              <Button
+              <button
                 onClick={() => fetchLogs()}
                 disabled={loading}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-cyan-600 to-blue-600 border border-white/10 shadow-lg backdrop-blur-sm hover:from-cyan-500 hover:to-blue-500 hover:scale-105 transition-all duration-300"
+                className="btn-primary flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete(7)}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-orange-700 to-orange-600 border border-white/10 shadow-lg hover:from-orange-600 hover:to-orange-500 hover:scale-105 transition-all duration-300"
                 title="Delete logs older than 7 days"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 &gt;7d
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete(14)}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-red-700 to-red-600 border border-white/10 shadow-lg hover:from-red-600 hover:to-red-500 hover:scale-105 transition-all duration-300"
                 title="Delete logs older than 14 days"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 &gt;14d
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => handleDelete()}
                 disabled={deleting}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-rose-800 to-rose-700 border border-white/10 shadow-lg hover:from-rose-700 hover:to-rose-600 hover:scale-105 transition-all duration-300"
                 title="Delete all event logs"
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4" />
                 Delete All
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={() => router.push('/admin/licenses')}
-                className="flex-1 sm:flex-none text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 shadow-lg backdrop-blur-sm hover:from-slate-600 hover:to-slate-500 hover:scale-105 transition-all duration-300"
+                className="btn-ghost flex items-center gap-2 flex-1 sm:flex-none"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4" />
                 Back
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 text-cyan-400" />
+            <Filter className="w-4 h-4 text-[#51a2ff]" />
             <span className="text-sm font-semibold text-white">Filters</span>
             {hasActiveFilters && (
               <button
@@ -358,122 +354,127 @@ function AdminLicenseEventLogs() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 placeholder="Event type..."
                 value={event}
                 onChange={e => { setEvent(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50"
+                className="w-full pl-8 h-9 text-sm text-white placeholder:text-[#555] rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 placeholder="License key..."
                 value={licenseKey}
                 onChange={e => { setLicenseKey(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50"
+                className="w-full pl-8 h-9 text-sm text-white placeholder:text-[#555] rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
             <div className="relative">
-              <Server className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Server className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 placeholder="Hostname..."
                 value={hostname}
                 onChange={e => { setHostname(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500/50"
+                className="w-full pl-8 h-9 text-sm text-white placeholder:text-[#555] rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 type="datetime-local"
                 value={dateFrom}
                 onChange={e => { setDateFrom(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white focus:border-cyan-500/50 [color-scheme:dark]"
+                className="w-full pl-8 h-9 text-sm text-white rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3 [color-scheme:dark]"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
-              <Input
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#555]" />
+              <input
                 type="datetime-local"
                 value={dateTo}
                 onChange={e => { setDateTo(e.target.value); setPage(1) }}
-                className="pl-8 h-9 text-sm bg-white/5 border-white/10 text-white focus:border-cyan-500/50 [color-scheme:dark]"
+                className="w-full pl-8 h-9 text-sm text-white rounded-lg bg-[#111] outline-none focus:ring-1 focus:ring-[#51a2ff]/40 px-3 [color-scheme:dark]"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-[#555]">
             Showing {logs.length} of {total} records
-            {hasActiveFilters && <span className="ml-1 text-cyan-400">(filtered)</span>}
-            <span className="ml-2 text-gray-600">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
+            {hasActiveFilters && <span className="ml-1 text-[#51a2ff]">(filtered)</span>}
+            <span className="ml-2 text-[#444]">· Click any cell to copy · Click <Eye className="inline w-3 h-3" /> for full details</span>
           </p>
         </div>
 
         {/* Table */}
-        <div className="p-4 sm:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300">
+        <div className="card-base p-6">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Event</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Details</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Hostname</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">License Key</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden md:table-cell">Resource</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden lg:table-cell">Server</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden lg:table-cell">IP</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap hidden xl:table-cell">Timestamp</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap">Created At</TableHead>
-                  <TableHead className="text-gray-300 text-xs font-semibold whitespace-nowrap text-right">Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Event</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Details</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Hostname</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">License Key</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Resource</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Server</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">IP</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Timestamp</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Created At</th>
+                  <th className="text-right text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider whitespace-nowrap">Details</th>
+                </tr>
+              </thead>
+              <tbody>
                 {logs.length === 0 ? (
-                  <TableRow>
-                    <td colSpan={10} className="py-16 text-center text-gray-400">
+                  <tr>
+                    <td colSpan={10} className="py-16 text-center text-[#555]">
                       <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
                       <p className="text-sm">No event logs found</p>
                       {hasActiveFilters && (
-                        <button onClick={clearFilters} className="mt-2 text-xs text-cyan-400 hover:underline">
+                        <button onClick={clearFilters} className="mt-2 text-xs text-[#51a2ff] hover:underline">
                           Clear filters
                         </button>
                       )}
                     </td>
-                  </TableRow>
+                  </tr>
                 ) : (
                   logs.map(log => (
-                    <TableRow key={log.id} className="border-white/10 hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => setSelectedLog(log)}>
-                      <TableCell className="whitespace-nowrap">{getEventBadge(log.event)}</TableCell>
-                      <TableCell className="text-xs text-gray-300">
+                    <tr key={log.id} className="border-b transition-colors hover:bg-[#161616] cursor-pointer" style={{ borderColor: 'rgba(255,255,255,0.04)' }} onClick={() => setSelectedLog(log)}>
+                      <td className="py-3 px-4 whitespace-nowrap">{getEventBadge(log.event)}</td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs">
                         <CopyCell value={log.details || ''} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-300">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs">
                         <CopyCell value={log.hostname || ''} />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400">
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[#ccc] text-xs">
                         <CopyCell value={log.licenseKey || ''} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-300 hidden md:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs hidden md:table-cell">
                         <CopyCell value={log.resourceName || ''} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-300 hidden lg:table-cell">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs hidden lg:table-cell">
                         <CopyCell value={log.serverName || ''} />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-400 hidden lg:table-cell">
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[#ccc] text-xs hidden lg:table-cell">
                         <CopyCell value={log.ip || ''} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 hidden xl:table-cell whitespace-nowrap">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs whitespace-nowrap hidden xl:table-cell">
                         <CopyCell value={formatTs(log.timestamp)} />
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-400 whitespace-nowrap">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc] text-xs whitespace-nowrap">
                         <CopyCell value={formatDate(log.createdAt)} />
-                      </TableCell>
-                      <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+                      </td>
+                      <td className="py-3 px-4 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => setSelectedLog(log)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-[#555] hover:text-[#51a2ff] hover:bg-[rgba(81,162,255,0.1)] transition-colors"
                             title="View log details"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -481,46 +482,44 @@ function AdminLicenseEventLogs() {
                           {log.licenseKey && (
                             <button
                               onClick={() => setProfileKey(log.licenseKey!)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-[#555] hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
                               title="View user profile by license key"
                             >
                               <Activity className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))
                 )}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Pagination */}
-        <div className="p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+            <p className="text-xs sm:text-sm text-[#888] text-center sm:text-left">
               Page {page} of {totalPages} — {Math.min((page - 1) * limit + 1, total)}–{Math.min(page * limit, total)} of {total}
             </p>
             <div className="flex gap-2 items-center">
-              <Button
+              <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                size="sm"
-                className="text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-all"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm text-gray-400 px-2">{page} / {totalPages}</span>
-              <Button
+              </button>
+              <span className="text-sm text-[#888] px-2">{page} / {totalPages}</span>
+              <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages || totalPages === 0}
-                size="sm"
-                className="text-white bg-gradient-to-r from-slate-700 to-slate-600 border border-white/10 hover:from-slate-600 hover:to-slate-500 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-all"
+                className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4 rotate-180" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

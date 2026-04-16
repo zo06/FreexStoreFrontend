@@ -41,7 +41,7 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
     } else {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 30); // Default 30 days
-      
+
       setFormData({
         userId: userId || '',
         scriptId: scriptId || '',
@@ -105,7 +105,7 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
 
   const handleToggleActive = async () => {
     if (!isEditing || !license) return;
-    
+
     setLoading(true);
     try {
       const updateData = { isActive: !license.isActive };
@@ -145,35 +145,36 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
   };
 
   const isExpired = license && license.expiresAt && new Date(license.expiresAt) <= new Date();
-  const daysUntilExpiry = license && license.expiresAt 
+  const daysUntilExpiry = license && license.expiresAt
     ? Math.ceil((new Date(license.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   if (!isOpen) return null;
 
   return (
-    <div className="flex fixed inset-0 z-50 justify-center items-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+      <div className="rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-white/10">
+        <div className="flex justify-between items-center p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex gap-3 items-center">
-            <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-r rounded-xl from-blue-500/20 to-cyan-500/20">
-              <Key className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <Key className="w-5 h-5 text-[#51a2ff]" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-white">
                 {isEditing ? 'License Details' : 'Create New License'}
               </h2>
               {license && (
-                <p className="text-sm text-gray-400">ID: {license.id}</p>
+                <p className="text-sm text-[#888]">ID: {license.id}</p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex justify-center items-center w-8 h-8 rounded-lg transition-colors bg-white/5 hover:bg-white/10"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#555] hover:text-white transition-colors"
+            style={{ background: '#1a1a1a' }}
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -188,12 +189,18 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
           {/* License Status */}
           {isViewing && (
             <div className={`p-4 rounded-lg border ${
-              formData.isActive 
-                ? isExpired 
-                  ? 'bg-yellow-500/10 border-yellow-500/20' 
-                  : 'bg-green-500/10 border-green-500/20'
-                : 'bg-red-500/10 border-red-500/20'
-            }`}>
+              formData.isActive
+                ? isExpired
+                  ? 'border-yellow-500/20'
+                  : 'border-green-500/20'
+                : 'border-red-500/20'
+            }`} style={{
+              background: formData.isActive
+                ? isExpired
+                  ? 'rgba(234,179,8,0.08)'
+                  : 'rgba(34,197,94,0.08)'
+                : 'rgba(239,68,68,0.08)'
+            }}>
               <div className="flex gap-3 items-center">
                 {formData.isActive ? (
                   isExpired ? (
@@ -206,24 +213,24 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
                 )}
                 <div>
                   <p className={`font-medium ${
-                    formData.isActive 
-                      ? isExpired 
-                        ? 'text-yellow-400' 
+                    formData.isActive
+                      ? isExpired
+                        ? 'text-yellow-400'
                         : 'text-green-400'
                       : 'text-red-400'
                   }`}>
-                    {formData.isActive 
-                      ? isExpired 
-                        ? 'Expired' 
+                    {formData.isActive
+                      ? isExpired
+                        ? 'Expired'
                         : 'Active'
                       : 'Inactive'
                     }
                   </p>
-                  <p className="text-sm text-gray-400">
-                    {formData.isActive 
-                      ? isExpired 
-                        ? 'License has expired' 
-                        : daysUntilExpiry !== null 
+                  <p className="text-sm text-[#888]">
+                    {formData.isActive
+                      ? isExpired
+                        ? 'License has expired'
+                        : daysUntilExpiry !== null
                           ? `Expires in ${daysUntilExpiry} days`
                           : 'License is active'
                       : 'License is disabled'
@@ -237,16 +244,16 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
           {/* User and Script IDs */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-300">
+              <label className="block mb-2 text-sm font-medium text-[#ccc]">
                 User ID
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
+                <User className="absolute left-3 top-1/2 w-4 h-4 text-[#888] transform -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.userId}
                   onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
-                  className="py-3 pr-4 pl-10 w-full placeholder-gray-400 text-white rounded-lg border bg-white/5 border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                  className="input-base w-full pl-10"
                   placeholder="Enter user ID"
                   disabled={isEditing}
                   required
@@ -255,14 +262,14 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-300">
+              <label className="block mb-2 text-sm font-medium text-[#ccc]">
                 Script ID
               </label>
               <input
                 type="text"
                 value={formData.scriptId}
                 onChange={(e) => setFormData(prev => ({ ...prev, scriptId: e.target.value }))}
-                className="px-4 py-3 w-full placeholder-gray-400 text-white rounded-lg border bg-white/5 border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                className="input-base w-full"
                 placeholder="Enter script ID"
                 disabled={isEditing}
                 required
@@ -272,21 +279,21 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
 
           {/* Expiration Date */}
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-300">
+            <label className="block mb-2 text-sm font-medium text-[#ccc]">
               Expiration Date
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
+              <Calendar className="absolute left-3 top-1/2 w-4 h-4 text-[#888] transform -translate-y-1/2" />
               <input
                 type="date"
                 value={formData.expiresAt}
                 onChange={(e) => setFormData(prev => ({ ...prev, expiresAt: e.target.value }))}
-                className="py-3 pr-4 pl-10 w-full text-white rounded-lg border bg-white/5 border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+                className="input-base w-full pl-10"
                 required
               />
             </div>
             {formData.expiresAt && (
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-[#888]">
                 Expires: {formatDate(formData.expiresAt + 'T23:59:59')}
               </p>
             )}
@@ -296,14 +303,15 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
           {isViewing && privateKey && (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-300">
+                <label className="block text-sm font-medium text-[#ccc]">
                   Private Key
                 </label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => copyToClipboard(privateKey)}
-                    className="flex gap-1 items-center px-2 py-1 text-xs text-gray-300 rounded transition-colors bg-white/5 hover:bg-white/10"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-[#888] rounded transition-colors"
+                    style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                   >
                     <Copy className="w-3 h-3" />
                     {copied ? 'Copied!' : 'Copy'}
@@ -312,33 +320,34 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
                     type="button"
                     onClick={handleRegenerateKey}
                     disabled={loading}
-                    className="flex gap-1 items-center px-2 py-1 text-xs text-blue-400 rounded transition-colors bg-blue-500/20 hover:bg-blue-500/30 disabled:opacity-50"
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-[#51a2ff] rounded transition-colors"
+                    style={{ background: 'rgba(81,162,255,0.08)' }}
                   >
                     <RefreshCw className="w-3 h-3" />
                     Regenerate
                   </button>
                 </div>
               </div>
-              <div className="p-3 rounded-lg border bg-black/20 border-white/10">
+              <div className="p-3 rounded-lg" style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <code className="font-mono text-sm text-green-400 break-all">
                   {privateKey}
                 </code>
               </div>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-[#888]">
                 This key is used for license validation
               </p>
             </div>
           )}
 
           {/* Active Status */}
-          <div className="flex justify-between items-center p-4 rounded-lg border bg-white/5 border-white/10">
+          <div className="flex justify-between items-center p-4 rounded-xl" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div>
               <p className="font-medium text-white">
                 {formData.isActive ? 'Active' : 'Inactive'}
               </p>
-              <p className="text-sm text-gray-400">
-                {formData.isActive 
-                  ? 'License can be used for validation' 
+              <p className="text-sm text-[#888]">
+                {formData.isActive
+                  ? 'License can be used for validation'
                   : 'License is disabled and cannot be used'
                 }
               </p>
@@ -349,7 +358,8 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
                   type="button"
                   onClick={handleToggleActive}
                   disabled={loading}
-                  className="px-3 py-1 text-sm btn-secondary"
+                  className="px-3 py-1 text-xs rounded-lg font-medium text-[#51a2ff] transition-colors"
+                  style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.2)' }}
                 >
                   Toggle
                 </button>
@@ -358,22 +368,23 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
                 type="checkbox"
                 checked={formData.isActive}
                 onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                className="w-4 h-4 text-blue-500 rounded border bg-white/5 border-white/10 focus:ring-blue-500/50"
+                className="w-4 h-4 rounded border accent-[#51a2ff]"
+                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
               />
             </div>
           </div>
 
           {/* License Info (if editing) */}
           {isEditing && license && (
-            <div className="p-4 rounded-lg border bg-white/5 border-white/10">
+            <div className="p-4 rounded-xl" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
               <h4 className="mb-3 font-medium text-white">License Information</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-400">Created</p>
+                  <p className="text-[#888]">Created</p>
                   <p className="text-white">{formatDate(license.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400">Last Updated</p>
+                  <p className="text-[#888]">Last Updated</p>
                   <p className="text-white">{formatDate(license.updatedAt)}</p>
                 </div>
               </div>
@@ -385,7 +396,7 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 font-medium text-gray-300 rounded-lg border transition-colors bg-white/5 hover:bg-white/10 border-white/10"
+              className="btn-ghost flex-1"
             >
               {isViewing ? 'Close' : 'Cancel'}
             </button>
@@ -393,7 +404,7 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
               <button
                 type="submit"
                 disabled={loading}
-                className="flex flex-1 gap-2 justify-center items-center px-4 py-3 font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg transition-all duration-300 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -407,7 +418,7 @@ export default function LicenseModal({ isOpen, onClose, license, onSave, userId,
               <button
                 type="submit"
                 disabled={loading}
-                className="flex flex-1 gap-2 justify-center items-center px-4 py-3 font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 rounded-lg transition-all duration-300 hover:from-green-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

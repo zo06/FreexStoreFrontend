@@ -28,12 +28,12 @@ interface Invoice {
   creator?: { id: string; username: string } | null;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  open:           'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  paid:           'bg-green-500/15 text-green-400 border-green-500/30',
-  void:           'bg-gray-500/15 text-gray-400 border-gray-600',
-  draft:          'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  uncollectible:  'bg-red-500/15 text-red-400 border-red-500/30',
+const STATUS_STYLES: Record<string, { badge: string }> = {
+  open:          { badge: 'bg-blue-500/10 text-blue-400 border border-blue-500/25' },
+  paid:          { badge: 'bg-green-500/10 text-green-400 border border-green-500/25' },
+  void:          { badge: 'bg-[#333] text-[#888] border border-[rgba(255,255,255,0.07)]' },
+  draft:         { badge: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/25' },
+  uncollectible: { badge: 'bg-red-500/10 text-red-400 border border-red-500/25' },
 };
 
 function fmt(amount: number, currency: string) {
@@ -167,75 +167,90 @@ function InvoicesContent() {
   }
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 text-white">
+    <div className="p-4 sm:p-6 min-h-screen bg-[#0a0a0a] text-white">
       <div className="mx-auto max-w-6xl space-y-6">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600/20 border border-blue-500/30 rounded-xl">
-              <FileText className="w-6 h-6 text-blue-400" />
+        <div className="card-base p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="p-2.5 rounded-xl"
+                style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}
+              >
+                <FileText className="w-6 h-6 text-[#51a2ff]" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Invoices</h1>
+                <p className="text-[#555] text-sm">{total} invoice{total !== 1 ? 's' : ''} total</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Invoices</h1>
-              <p className="text-gray-400 text-sm">{total} invoice{total !== 1 ? 's' : ''} total</p>
-            </div>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create Invoice
+            </button>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium text-sm transition"
-          >
-            <Plus className="w-4 h-4" />
-            Create Invoice
-          </button>
         </div>
 
         {/* Create Invoice Modal */}
         {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div
+              className="w-full max-w-lg rounded-2xl overflow-hidden"
+              style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div
+                className="flex items-center justify-between px-6 py-4"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+              >
                 <h2 className="text-lg font-semibold text-white">Create Invoice</h2>
-                <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-white transition">
-                  <XCircle className="w-5 h-5" />
+                <button
+                  onClick={() => setShowCreate(false)}
+                  className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                  style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <XCircle className="w-4 h-4" />
                 </button>
               </div>
               <form onSubmit={handleCreate} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-gray-300 mb-1.5">Customer Email *</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Customer Email *</label>
                     <input
                       type="email"
                       required
                       value={form.customerEmail}
                       onChange={e => setForm(p => ({ ...p, customerEmail: e.target.value }))}
                       placeholder="customer@example.com"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-gray-300 mb-1.5">Customer Name</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Customer Name</label>
                     <input
                       type="text"
                       value={form.customerName}
                       onChange={e => setForm(p => ({ ...p, customerName: e.target.value }))}
                       placeholder="Optional"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm text-gray-300 mb-1.5">Description *</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Description *</label>
                     <input
                       type="text"
                       required
                       value={form.description}
                       onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                       placeholder="e.g. Script license - FiveM Premium"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1.5">Amount *</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Amount *</label>
                     <input
                       type="number"
                       required
@@ -244,15 +259,15 @@ function InvoicesContent() {
                       value={form.amount}
                       onChange={e => setForm(p => ({ ...p, amount: e.target.value }))}
                       placeholder="0.00"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1.5">Currency</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Currency</label>
                     <select
                       value={form.currency}
                       onChange={e => setForm(p => ({ ...p, currency: e.target.value }))}
-                      className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     >
                       <option value="usd">USD</option>
                       <option value="eur">EUR</option>
@@ -262,24 +277,24 @@ function InvoicesContent() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1.5">Due in (days)</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Due in (days)</label>
                     <input
                       type="number"
                       min="1"
                       max="365"
                       value={form.daysUntilDue}
                       onChange={e => setForm(p => ({ ...p, daysUntilDue: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1.5">Internal Notes</label>
+                    <label className="block text-sm text-[#888] mb-1.5">Internal Notes</label>
                     <input
                       type="text"
                       value={form.notes}
                       onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
                       placeholder="Optional"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+                      className="input-base w-full"
                     />
                   </div>
                 </div>
@@ -288,7 +303,7 @@ function InvoicesContent() {
                   <button
                     type="submit"
                     disabled={creating}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-xl font-medium text-sm transition"
+                    className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     {creating ? 'Creating...' : 'Create & Get Link'}
@@ -296,7 +311,7 @@ function InvoicesContent() {
                   <button
                     type="button"
                     onClick={() => setShowCreate(false)}
-                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm transition"
+                    className="btn-ghost flex items-center gap-2"
                   >
                     Cancel
                   </button>
@@ -307,66 +322,70 @@ function InvoicesContent() {
         )}
 
         {/* Invoice List */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
+        <div className="card-base overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+              <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
             </div>
           ) : invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <FileText className="w-12 h-12 text-gray-700" />
-              <p className="text-gray-500">No invoices yet. Create one to get started.</p>
+              <FileText className="w-12 h-12 text-[#333]" />
+              <p className="text-[#555]">No invoices yet. Create one to get started.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-white/[0.07]">
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                     {['Customer', 'Description', 'Amount', 'Status', 'Due Date', 'Created By', 'Actions'].map((h, i) => (
                       <th
                         key={h}
-                        className={`py-3.5 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider ${i >= 5 ? 'text-right' : 'text-left'}`}
+                        className={`py-3.5 px-4 text-xs font-semibold text-[#555] uppercase tracking-wider ${i >= 5 ? 'text-right' : 'text-left'}`}
                       >
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody>
                   {invoices.map(inv => (
-                    <tr key={inv.id} className="hover:bg-white/[0.02] transition group">
+                    <tr
+                      key={inv.id}
+                      className="hover:bg-white/[0.02] transition group"
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                    >
                       <td className="px-4 py-4">
                         <div className="font-medium text-white">{inv.customerName || inv.customerEmail}</div>
-                        {inv.customerName && <div className="text-xs text-gray-500 mt-0.5">{inv.customerEmail}</div>}
+                        {inv.customerName && <div className="text-xs text-[#555] mt-0.5">{inv.customerEmail}</div>}
                         {inv.user && (
-                          <div className="text-xs text-blue-400 mt-0.5">@{inv.user.username}</div>
+                          <div className="text-xs text-[#51a2ff] mt-0.5">@{inv.user.username}</div>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-gray-300 max-w-[200px]">
+                      <td className="px-4 py-4 text-[#888] max-w-[200px]">
                         <div className="truncate">{inv.description}</div>
-                        {inv.notes && <div className="text-xs text-gray-500 mt-0.5 truncate">{inv.notes}</div>}
+                        {inv.notes && <div className="text-xs text-[#555] mt-0.5 truncate">{inv.notes}</div>}
                       </td>
                       <td className="px-4 py-4 font-semibold text-white">
                         {fmt(inv.amount, inv.currency)}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[inv.status] || STATUS_STYLES.open}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(STATUS_STYLES[inv.status] || STATUS_STYLES.open).badge}`}>
                           {inv.status === 'paid' && <CheckCircle className="w-3 h-3 mr-1" />}
                           {inv.status === 'void' && <XCircle className="w-3 h-3 mr-1" />}
                           {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                         </span>
                         {inv.paidAt && (
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-[#555] mt-1">
                             Paid {new Date(inv.paidAt).toLocaleDateString()}
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-gray-400">
+                      <td className="px-4 py-4 text-[#888]">
                         {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-400 text-xs">
+                      <td className="px-4 py-4 text-right text-[#888] text-xs">
                         {inv.creator?.username || '—'}
-                        <div className="text-gray-600">{new Date(inv.createdAt).toLocaleDateString()}</div>
+                        <div className="text-[#444]">{new Date(inv.createdAt).toLocaleDateString()}</div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-1.5">
@@ -375,7 +394,12 @@ function InvoicesContent() {
                             <button
                               onClick={() => handleCopy(inv.paymentUrl!, inv.id)}
                               title="Copy payment link"
-                              className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-600/15 border border-blue-500/30 text-blue-400 hover:bg-blue-600/25 rounded-lg text-xs transition"
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
+                              style={{
+                                background: 'rgba(81,162,255,0.08)',
+                                border: '1px solid rgba(81,162,255,0.2)',
+                                color: '#51a2ff',
+                              }}
                             >
                               {copiedId === inv.id ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                               {copiedId === inv.id ? 'Copied' : 'Copy Link'}
@@ -389,7 +413,8 @@ function InvoicesContent() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title="Open payment page"
-                              className="flex items-center justify-center w-7 h-7 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-gray-400 hover:text-white rounded-lg transition"
+                              className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                              style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
@@ -401,7 +426,8 @@ function InvoicesContent() {
                               onClick={() => handleSend(inv.id)}
                               disabled={sendingId === inv.id}
                               title="Send to customer email"
-                              className="flex items-center justify-center w-7 h-7 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-gray-400 hover:text-green-400 rounded-lg transition disabled:opacity-50"
+                              className="p-2 rounded-lg text-[#888] hover:text-white transition-colors disabled:opacity-50"
+                              style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                             >
                               {sendingId === inv.id
                                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -414,7 +440,8 @@ function InvoicesContent() {
                             onClick={() => handleSync(inv.id)}
                             disabled={syncingId === inv.id}
                             title="Sync status from Stripe"
-                            className="flex items-center justify-center w-7 h-7 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-gray-400 hover:text-blue-400 rounded-lg transition disabled:opacity-50"
+                            className="p-2 rounded-lg text-[#888] hover:text-white transition-colors disabled:opacity-50"
+                            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                           >
                             {syncingId === inv.id
                               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -427,7 +454,8 @@ function InvoicesContent() {
                               onClick={() => handleVoid(inv.id)}
                               disabled={voidingId === inv.id}
                               title="Void invoice"
-                              className="flex items-center justify-center w-7 h-7 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-400 rounded-lg transition disabled:opacity-50"
+                              className="p-2 rounded-lg text-red-400 transition-colors disabled:opacity-50"
+                              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                             >
                               {voidingId === inv.id
                                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -447,14 +475,14 @@ function InvoicesContent() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-1">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#555]">
               Page {page} of {totalPages} · {total} invoices
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 px-3 py-1.5 bg-white/[0.04] border border-white/10 rounded-lg text-sm text-gray-400 hover:text-white disabled:opacity-40 transition"
+                className="btn-ghost flex items-center gap-1 disabled:opacity-40"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Prev
@@ -462,7 +490,7 @@ function InvoicesContent() {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 px-3 py-1.5 bg-white/[0.04] border border-white/10 rounded-lg text-sm text-gray-400 hover:text-white disabled:opacity-40 transition"
+                className="btn-ghost flex items-center gap-1 disabled:opacity-40"
               >
                 Next
                 <ChevronRight className="w-4 h-4" />
@@ -478,8 +506,8 @@ function InvoicesContent() {
 function InvoicesPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     }>
       <InvoicesContent />

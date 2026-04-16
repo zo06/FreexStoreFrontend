@@ -1,33 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  EnvelopeSimple, 
-  User, 
-  ChatCircle, 
-  PaperPlaneTilt,
-  CheckCircle,
-  DiscordLogo,
-  MapPin,
-  Clock
-} from 'phosphor-react'
+import { CheckCircle, Mail, Clock, MessageCircle, Send, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
+const DiscordIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+  </svg>
+)
+
 export default function ContactPage() {
   const t = useTranslations('contact');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  })
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -38,262 +26,196 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error(t('fillAllFields'))
-      return
+      toast.error(t('fillAllFields')); return
     }
-
     if (formData.message.length < 10) {
-      toast.error(t('messageTooShort'))
-      return
+      toast.error(t('messageTooShort')); return
     }
-
     try {
       setIsSubmitting(true)
       const response = await apiClient.submitContactForm(formData)
-      
       if (response.success) {
         setIsSubmitted(true)
         toast.success('Message sent successfully!')
         setFormData({ name: '', email: '', subject: '', message: '' })
       }
     } catch (error: any) {
-      console.error('Failed to submit contact form:', error)
       toast.error(error?.message || 'Failed to send message. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    } finally { setIsSubmitting(false) }
   }
 
+  /* ── Success state ─────────────────────────────────────────── */
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#030712] relative overflow-hidden">
-        {/* Enhanced Background Elements */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]"></div>
-          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(16,185,129,0.1),transparent)]"></div>
-        </div>
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="container relative z-10 px-4 py-16 mx-auto max-w-4xl">
-          <Card className="text-center border-0 shadow-2xl bg-white/5 backdrop-blur-sm">
-            <CardContent className="py-16">
-              <div className="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-green-500/20 rounded-full">
-                <CheckCircle size={48} className="text-green-400" weight="fill" />
-              </div>
-              <h2 className="mb-4 text-3xl font-bold text-white">Message Sent!</h2>
-              <p className="mb-8 text-lg text-gray-400">
-                Thank you for reaching out. We&apos;ll get back to you as soon as possible.
-              </p>
-              <div className="flex flex-col gap-4 justify-center sm:flex-row">
-                <Button 
-                  onClick={() => setIsSubmitted(false)}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
-                >
-                  Send Another Message
-                </Button>
-                <Link href="/">
-                  <Button variant="outline">
-                    Back to Home
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4 pt-20">
+        <div className="card-base p-12 text-center max-w-md w-full">
+          <div className="w-16 h-16 rounded-full bg-[rgba(81,162,255,0.1)] border border-[rgba(81,162,255,0.2)] flex items-center justify-center mx-auto mb-5">
+            <CheckCircle className="w-8 h-8 text-[#51a2ff]" />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-3">Message Sent!</h2>
+          <p className="text-[#888] mb-8 leading-relaxed">
+            Thank you for reaching out. We'll get back to you as soon as possible.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button onClick={() => setIsSubmitted(false)} className="btn-primary">
+              Send Another Message
+            </button>
+            <Link href="/">
+              <button className="btn-ghost">Back to Home</button>
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#030712] relative overflow-hidden">
-      {/* Enhanced Background Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]"></div>
-        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(16,185,129,0.1),transparent)]"></div>
-      </div>
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
-      <div className="container relative z-10 px-4 py-16 mx-auto max-w-6xl">
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="hero-glow" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-28">
+
         {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 md:text-5xl">
-            Get in Touch
+        <div className="text-center mb-12">
+          <div className="badge-blue inline-flex mb-4">
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Contact Us</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
+            Get in <span className="text-[#51a2ff]">Touch</span>
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-gray-400">
-            Have a question, suggestion, or need help? We&apos;d love to hear from you. 
-            Fill out the form below and we&apos;ll get back to you as soon as possible.
+          <p className="text-[#888] max-w-xl mx-auto leading-relaxed">
+            Have a question, suggestion, or need help? Fill out the form below and we'll get back to you as soon as possible.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Contact Info Cards */}
-          <div className="space-y-6 lg:col-span-1">
-            <Card className="border-0 shadow-xl transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white/10">
-              <CardContent className="flex gap-4 items-start p-6">
-                <div className="flex justify-center items-center w-12 h-12 bg-cyan-500/20 rounded-lg">
-                  <EnvelopeSimple size={24} className="text-cyan-400" />
+        <div className="grid lg:grid-cols-3 gap-6">
+
+          {/* Info cards */}
+          <div className="space-y-4 lg:col-span-1">
+            {[
+              { icon: <Mail className="w-5 h-5 text-[#51a2ff]" />, title: 'Email Us', body: 'freexstores@gmail.com', link: null },
+              { icon: <DiscordIcon />, title: 'Discord', body: 'Join our community server', link: { href: 'https://discord.gg/aTEmKr4K7k', label: 'discord.gg/aTEmKr4K7k' } },
+              { icon: <Clock className="w-5 h-5 text-[#51a2ff]" />, title: 'Response Time', body: 'Usually within 24 hours', link: null },
+            ].map((item) => (
+              <div key={item.title} className="card-base p-5 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-[rgba(81,162,255,0.1)] border border-[rgba(81,162,255,0.2)] flex items-center justify-center flex-shrink-0 text-[#51a2ff]">
+                  {item.icon}
                 </div>
                 <div>
-                  <h3 className="mb-1 font-semibold text-white">Email Us</h3>
-                  <p className="text-sm text-gray-400">freexstores@gmail.com</p>
+                  <h3 className="text-white font-semibold text-sm mb-0.5">{item.title}</h3>
+                  <p className="text-[#888] text-sm">{item.body}</p>
+                  {item.link && (
+                    <a href={item.link.href} target="_blank" rel="noopener noreferrer" className="text-[#51a2ff] text-sm hover:underline">
+                      {item.link.label}
+                    </a>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
 
-            <Card className="border-0 shadow-xl transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white/10">
-              <CardContent className="flex gap-4 items-start p-6">
-                <div className="flex justify-center items-center w-12 h-12 bg-blue-500/20 rounded-lg">
-                  <DiscordLogo size={24} className="text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold text-white">Discord</h3>
-                  <p className="text-sm text-gray-400">Join our community server</p>
-                  <a 
-                    href="https://discord.gg/aTEmKr4K7k" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-cyan-400 hover:text-cyan-300"
-                  >
-                    discord.gg/aTEmKr4K7k
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-xl transition-all duration-300 bg-white/5 backdrop-blur-sm hover:bg-white/10">
-              <CardContent className="flex gap-4 items-start p-6">
-                <div className="flex justify-center items-center w-12 h-12 bg-green-500/20 rounded-lg">
-                  <Clock size={24} className="text-green-400" />
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold text-white">Response Time</h3>
-                  <p className="text-sm text-gray-400">Usually within 24 hours</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* FAQ Link */}
-            <Card className="border-0 shadow-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <h3 className="mb-2 font-semibold text-white">Need Quick Answers?</h3>
-                <p className="mb-4 text-sm text-gray-400">
-                  Check out our FAQ section for answers to common questions.
-                </p>
-                <Link href="/faq">
-                  <Button variant="outline" size="sm" className="w-full">
-                    View FAQ
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            {/* FAQ link */}
+            <div className="card-featured p-5">
+              <h3 className="text-white font-semibold text-sm mb-1.5">Need Quick Answers?</h3>
+              <p className="text-[#888] text-sm mb-4 leading-relaxed">
+                Check our FAQ section for answers to common questions.
+              </p>
+              <Link href="/faq">
+                <button className="btn-ghost btn-sm w-full justify-center">View FAQ</button>
+              </Link>
+            </div>
           </div>
 
-          {/* Contact Form */}
-          <Card className="border-0 shadow-2xl lg:col-span-2 bg-white/5 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex gap-2 items-center text-2xl text-white">
-                <ChatCircle size={28} className="text-cyan-400" />
-                Send us a Message
-              </CardTitle>
-              <CardDescription className="text-gray-400">
-                Fill out the form below and we&apos;ll respond as soon as possible.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">
-                      Your Name
-                    </label>
-                    <div className="relative">
-                      <User size={18} className="absolute left-3 top-1/2 text-gray-500 -translate-y-1/2" />
-                      <Input
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="John Doe"
-                        className="pl-10 border-white/10 bg-white/5 focus:border-cyan-500"
-                        required
-                      />
-                    </div>
-                  </div>
+          {/* Form */}
+          <div className="card-base p-6 sm:p-8 lg:col-span-2">
+            <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+              <Send className="w-5 h-5 text-[#51a2ff]" />
+              Send us a Message
+            </h2>
+            <p className="text-[#888] text-sm mb-6">Fill out the form and we'll respond as soon as possible.</p>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <EnvelopeSimple size={18} className="absolute left-3 top-1/2 text-gray-500 -translate-y-1/2" />
-                      <Input
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="john@example.com"
-                        className="pl-10 border-white/10 bg-white/5 focus:border-cyan-500"
-                        required
-                      />
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-[#ccc] mb-1.5">Your Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555]" />
+                    <input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="John Doe"
+                      required
+                      className="input-base pl-10"
+                    />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Subject
-                  </label>
-                  <Input
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    placeholder="What is this about?"
-                    className="border-white/10 bg-white/5 focus:border-cyan-500"
-                    required
-                  />
+                <div>
+                  <label className="block text-sm font-medium text-[#ccc] mb-1.5">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555]" />
+                    <input
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="john@example.com"
+                      required
+                      className="input-base pl-10"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Message
-                  </label>
-                  <Textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="Tell us more about your inquiry..."
-                    className="min-h-[150px] border-white/10 bg-white/5 focus:border-cyan-500 resize-none"
-                    required
-                  />
-                  <p className="text-xs text-gray-500">
-                    Minimum 10 characters required
-                  </p>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-[#ccc] mb-1.5">Subject</label>
+                <input
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
+                  placeholder="What is this about?"
+                  required
+                  className="input-base"
+                />
+              </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
-                >
-                  {isSubmitting ? (
-                    <span className="flex gap-2 items-center">
-                      <div className="w-4 h-4 rounded-full border-2 border-white/30 animate-spin border-t-white"></div>
-                      Sending...
-                    </span>
-                  ) : (
-                    <span className="flex gap-2 items-center">
-                      <PaperPlaneTilt size={20} />
-                      Send Message
-                    </span>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              <div>
+                <label className="block text-sm font-medium text-[#ccc] mb-1.5">Message</label>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  placeholder="Tell us more about your inquiry..."
+                  required
+                  rows={6}
+                  className="input-base resize-none"
+                />
+                <p className="text-[#444] text-xs mt-1.5">Minimum 10 characters required</p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary w-full justify-center disabled:opacity-60"
+                style={{ borderRadius: '12px' }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Send Message
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   )
 }
-

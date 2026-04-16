@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  ArrowLeft,
+  Clock,
+  CheckCircle,
+  XCircle,
   Eye,
   Trash,
   MagnifyingGlass,
@@ -71,9 +70,9 @@ export default function AdminCustomRequestsPage() {
   const fetchRequests = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getAdminCustomRequests({ 
+      const response = await apiClient.getAdminCustomRequests({
         status: statusFilter || undefined,
-        limit: 50 
+        limit: 50
       })
       setRequests(response.data || [])
     } catch (error) {
@@ -96,13 +95,13 @@ export default function AdminCustomRequestsPage() {
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
       setUpdating(true)
-      await apiClient.updateCustomRequest(id, { 
-        status: newStatus, 
+      await apiClient.updateCustomRequest(id, {
+        status: newStatus,
         adminNotes: adminNotes.trim() || undefined
       })
-      
+
       toast.success(`Request status updated to ${newStatus}`)
-      
+
       fetchRequests()
       fetchStats()
       setShowModal(false)
@@ -117,7 +116,7 @@ export default function AdminCustomRequestsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this request?')) return
-    
+
     try {
       await apiClient.deleteCustomRequest(id)
       toast.success('Request deleted successfully')
@@ -135,13 +134,15 @@ export default function AdminCustomRequestsPage() {
     setShowModal(true)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-      case 'in_progress': return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-      case 'completed': return 'bg-green-500/20 text-green-400 border-green-500/30'
-      case 'rejected': return 'bg-red-500/20 text-red-400 border-red-500/30'
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      case 'pending': return { background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.25)', color: '#facc15' }
+      case 'in_progress': return { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.25)', color: '#51a2ff' }
+      case 'reviewing': return { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.25)', color: '#51a2ff' }
+      case 'completed': return { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80' }
+      case 'accepted': return { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80' }
+      case 'rejected': return { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }
+      default: return { background: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.25)', color: '#9ca3af' }
     }
   }
 
@@ -168,67 +169,72 @@ export default function AdminCustomRequestsPage() {
 
   if (!user?.isAdmin) {
     return (
-      <main className="pt-24 min-h-screen flex items-center justify-center">
+      <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Access Denied</h1>
-          <p className="text-muted">You don't have permission to view this page.</p>
+          <p className="text-[#888]">You don't have permission to view this page.</p>
         </div>
       </main>
     )
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto space-y-6 max-w-7xl">
+
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-purple-500/20 to-pink-500/20 border-white/10">
-                <Envelope className="w-8 h-8 text-purple-400" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Envelope className="w-8 h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Custom Script Requests</h1>
-                <p className="mt-1 text-gray-400">Manage and respond to custom script requests from users</p>
+                <h1 className="text-3xl font-bold text-white">Custom Script Requests</h1>
+                <p className="mt-1 text-[#888]">Manage and respond to custom script requests from users</p>
               </div>
             </div>
             <Link href="/admin">
-              <Button className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105">
-                <ArrowLeft size={16} className="mr-2" />
+              <button className="btn-ghost flex items-center gap-2">
+                <ArrowLeft size={16} />
                 Back
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
-              <p className="text-xs text-gray-400 mb-2">Total</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="card-base p-4">
+              <p className="text-xs text-[#888] mb-2">Total</p>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
             </div>
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-yellow-900/40 to-yellow-800/20 border-yellow-500/20 hover:bg-yellow-900/50">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(234,179,8,0.07)', border: '1px solid rgba(234,179,8,0.2)' }}>
               <p className="text-xs text-yellow-400 mb-2">Pending</p>
               <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
             </div>
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-blue-900/40 to-blue-800/20 border-blue-500/20 hover:bg-blue-900/50">
-              <p className="text-xs text-blue-400 mb-2">Reviewing</p>
-              <p className="text-2xl font-bold text-blue-400">{stats.reviewing}</p>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(81,162,255,0.07)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <p className="text-xs text-[#51a2ff] mb-2">Reviewing</p>
+              <p className="text-2xl font-bold text-[#51a2ff]">{stats.reviewing}</p>
             </div>
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/20 hover:bg-green-900/50">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)' }}>
               <p className="text-xs text-green-400 mb-2">Accepted</p>
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
             </div>
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-red-900/40 to-red-800/20 border-red-500/20 hover:bg-red-900/50">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
               <p className="text-xs text-red-400 mb-2">Rejected</p>
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
             </div>
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/20 hover:bg-purple-900/50">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)' }}>
               <p className="text-xs text-purple-400 mb-2">Completed</p>
               <p className="text-2xl font-bold text-purple-400">{stats.completed}</p>
             </div>
@@ -236,92 +242,93 @@ export default function AdminCustomRequestsPage() {
         )}
 
         {/* Filter */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex gap-4 items-center">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 text-white rounded-xl border transition-all duration-300 bg-slate-800/50 border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="input-base px-4 py-2"
             >
-              <option value="" className="bg-gray-900">All Status</option>
-              <option value="pending" className="bg-gray-900">Pending</option>
-              <option value="reviewing" className="bg-gray-900">Reviewing</option>
-              <option value="accepted" className="bg-gray-900">Accepted</option>
-              <option value="rejected" className="bg-gray-900">Rejected</option>
-              <option value="completed" className="bg-gray-900">Completed</option>
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+              <option value="completed">Completed</option>
             </select>
-            <span className="text-sm text-gray-400">{requests.length} requests</span>
+            <span className="text-sm text-[#888]">{requests.length} requests</span>
           </div>
         </div>
 
         {/* Requests List */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="w-12 h-12 rounded-full border-4 animate-spin border-purple-500/30 border-t-purple-500"></div>
-            </div>
-          ) : requests.length > 0 ? (
-            <div className="space-y-4">
-            {requests.map((msg) => (
-              <div key={msg.id} className="p-4 lg:p-6 rounded-xl border border-white/10 bg-slate-800/30 hover:bg-slate-800/50 transition-all duration-300">
-                <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">{msg.title}</h3>
-                        <p className="text-xs text-muted mt-1">Budget: {msg.budget} • Timeline: {msg.timeline}</p>
-                        <p className="text-xs text-muted">Submitted: {formatDate(msg.createdAt)}</p>
-                      </div>
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(msg.status)}`}>
-                        {getStatusIcon(msg.status)}
-                        {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-slate-300 mb-4 line-clamp-2">{msg.description}</p>
-                    
-                    <div className="flex flex-wrap gap-4 text-xs text-muted">
-                      <span className="flex items-center gap-1">
-                        <Envelope size={14} className="text-cyan-400" />
-                        {msg.contactEmail}
-                      </span>
-                      {msg.contactDiscord && (
-                        <span className="flex items-center gap-1">
-                          <DiscordLogo size={14} className="text-purple-400" />
-                          {msg.contactDiscord}
+        <div className="card-base p-6">
+          {requests.length > 0 ? (
+            <div className="space-y-3">
+              {requests.map((msg) => (
+                <div
+                  key={msg.id}
+                  className="rounded-xl p-4 lg:p-5 transition-colors hover:bg-[#161616]"
+                  style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{msg.title}</h3>
+                          <p className="text-xs text-[#888] mt-1">Budget: {msg.budget} • Timeline: {msg.timeline}</p>
+                          <p className="text-xs text-[#555]">Submitted: {formatDate(msg.createdAt)}</p>
+                        </div>
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full"
+                          style={getStatusStyle(msg.status)}
+                        >
+                          {getStatusIcon(msg.status)}
+                          {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
                         </span>
-                      )}
+                      </div>
+
+                      <p className="text-sm text-[#ccc] mb-4 line-clamp-2">{msg.description}</p>
+
+                      <div className="flex flex-wrap gap-4 text-xs text-[#888]">
+                        <span className="flex items-center gap-1">
+                          <Envelope size={14} className="text-[#51a2ff]" />
+                          {msg.contactEmail}
+                        </span>
+                        {msg.contactDiscord && (
+                          <span className="flex items-center gap-1">
+                            <DiscordLogo size={14} className="text-purple-400" />
+                            {msg.contactDiscord}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openModal(msg)}
-                      className="cursor-pointer"
-                    >
-                      <Eye size={16} className="mr-1" />
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(msg.id)}
-                      className="cursor-pointer text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-500/50"
-                    >
-                      <Trash size={16} />
-                    </Button>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openModal(msg)}
+                        className="p-2 rounded-lg text-[#888] hover:text-white transition-colors flex items-center gap-1 px-3 text-sm"
+                        style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                      >
+                        <Eye size={16} className="mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleDelete(msg.id)}
+                        className="p-2 rounded-lg text-red-400 hover:text-red-300 transition-colors"
+                        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
             </div>
           ) : (
-            <div className="py-12 text-center text-gray-400">
-              <MagnifyingGlass size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No requests found</p>
-              <p className="text-sm mt-2">Custom script requests from users will appear here</p>
+            <div className="py-12 text-center">
+              <MagnifyingGlass size={48} className="mx-auto mb-4 text-[#333]" />
+              <p className="text-lg text-[#888]">No requests found</p>
+              <p className="text-sm mt-2 text-[#555]">Custom script requests from users will appear here</p>
             </div>
           )}
         </div>
@@ -329,77 +336,83 @@ export default function AdminCustomRequestsPage() {
 
       {/* Detail Modal */}
       {showModal && selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-slate-900/95 border-white/10">
-            <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="card-base p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-4">
+            <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-xl font-bold text-white">{selectedRequest.title}</h2>
-                <p className="text-sm text-muted mt-1">Budget: {selectedRequest.budget} • Timeline: {selectedRequest.timeline}</p>
-                <p className="text-sm text-muted">Submitted: {formatDate(selectedRequest.createdAt)}</p>
+                <p className="text-sm text-[#888] mt-1">Budget: {selectedRequest.budget} • Timeline: {selectedRequest.timeline}</p>
+                <p className="text-sm text-[#555]">Submitted: {formatDate(selectedRequest.createdAt)}</p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <XCircle size={24} />
+                <XCircle size={20} />
               </button>
             </div>
-            
-            <div className="space-y-4 mb-6">
+
+            <div className="space-y-4">
               {/* Request Description */}
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <label className="text-xs text-muted uppercase tracking-wider">Request Description</label>
-                <p className="text-sm text-white mt-2 whitespace-pre-wrap">{selectedRequest.description}</p>
+              <div className="p-4 rounded-xl" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <label className="text-xs text-[#555] uppercase tracking-wider">Request Description</label>
+                <p className="text-sm text-[#ccc] mt-2 whitespace-pre-wrap">{selectedRequest.description}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted">Contact Email</label>
+                  <label className="text-xs text-[#555]">Contact Email</label>
                   <p className="text-sm text-white mt-1">{selectedRequest.contactEmail}</p>
                 </div>
                 <div>
-                  <label className="text-xs text-muted">Discord</label>
+                  <label className="text-xs text-[#555]">Discord</label>
                   <p className="text-sm text-white mt-1">{selectedRequest.contactDiscord || 'Not provided'}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted">Budget</label>
+                  <label className="text-xs text-[#555]">Budget</label>
                   <p className="text-sm text-white mt-1">{selectedRequest.budget}</p>
                 </div>
                 <div>
-                  <label className="text-xs text-muted">Timeline</label>
+                  <label className="text-xs text-[#555]">Timeline</label>
                   <p className="text-sm text-white mt-1">{selectedRequest.timeline}</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-muted">Current Status</label>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 mt-1 text-xs font-medium rounded-full border ${getStatusColor(selectedRequest.status)}`}>
-                  {getStatusIcon(selectedRequest.status)}
-                  {selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)}
-                </span>
+                <label className="text-xs text-[#555]">Current Status</label>
+                <div className="mt-1">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full"
+                    style={getStatusStyle(selectedRequest.status)}
+                  >
+                    {getStatusIcon(selectedRequest.status)}
+                    {selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)}
+                  </span>
+                </div>
               </div>
 
-              {/* Previous Admin Notes (if exists) */}
+              {/* Previous Admin Notes */}
               {selectedRequest.adminNotes && (
-                <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                  <label className="text-xs text-blue-400 uppercase tracking-wider">Previous Admin Notes</label>
+                <div className="p-4 rounded-xl" style={{ background: 'rgba(81,162,255,0.07)', border: '1px solid rgba(81,162,255,0.15)' }}>
+                  <label className="text-xs text-[#51a2ff] uppercase tracking-wider">Previous Admin Notes</label>
                   <p className="text-sm text-white mt-2 whitespace-pre-wrap">{selectedRequest.adminNotes}</p>
                 </div>
               )}
             </div>
 
             {/* Update Status Section */}
-            <div className="space-y-4 p-4 rounded-xl bg-white/5 border border-white/10">
+            <div className="space-y-4 p-4 rounded-xl" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div>
-                <label className="text-xs text-muted">Update Status</label>
+                <label className="text-xs text-[#555] uppercase tracking-wider block mb-2">Update Status</label>
                 <select
                   value={selectedRequest.status}
                   onChange={(e) => handleStatusChange(selectedRequest.id, e.target.value)}
                   disabled={updating}
-                  className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm focus:border-purple-500"
+                  className="input-base w-full px-3 py-2 text-sm"
                 >
                   <option value="pending">Pending</option>
                   <option value="reviewing">Reviewing</option>
@@ -408,25 +421,25 @@ export default function AdminCustomRequestsPage() {
                   <option value="completed">Completed</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="text-xs text-muted">Admin Notes</label>
+                <label className="text-xs text-[#555] uppercase tracking-wider block mb-2">Admin Notes</label>
                 <textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Add notes about this request..."
-                  className="w-full mt-1 px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white text-sm min-h-[100px] focus:border-purple-500"
+                  className="input-base w-full px-3 py-2 text-sm min-h-[100px]"
                 />
               </div>
-              
+
               <div className="flex gap-2">
-                <Button
+                <button
                   onClick={() => handleStatusChange(selectedRequest.id, selectedRequest.status)}
                   disabled={updating}
-                  className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50"
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50"
                 >
                   {updating ? 'Saving...' : 'Save Notes'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -435,4 +448,3 @@ export default function AdminCustomRequestsPage() {
     </main>
   )
 }
-

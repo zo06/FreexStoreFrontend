@@ -2,13 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { withAdminAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { AnimatedSelect } from '@/components/ui/animated-select';
 import { HelpCircle, Plus, Edit, Trash2, Save, X, Search, Loader2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
@@ -69,7 +63,7 @@ function FAQManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.question.trim() || !formData.answer.trim()) {
       toast.error('Question and answer are required');
       return;
@@ -103,7 +97,7 @@ function FAQManagement() {
         await apiClient.post('/admin/faqs', formData);
         toast.success('FAQ created successfully');
       }
-      
+
       resetForm();
       fetchFAQs();
     } catch (error: any) {
@@ -162,200 +156,228 @@ function FAQManagement() {
     faq.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto max-w-7xl">
+
         {/* Header */}
-        <div className="p-6 mb-8 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6 mb-8">
           <div className="flex gap-4 items-center">
-            <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-purple-500/20 to-pink-500/20 border-white/10">
-              <HelpCircle className="w-8 h-8 text-purple-400" />
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+              <HelpCircle className="w-8 h-8 text-[#51a2ff]" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">FAQ Management</h1>
-              <p className="mt-1 text-gray-400">Manage frequently asked questions for your users</p>
+              <h1 className="text-3xl font-bold text-white">FAQ Management</h1>
+              <p className="mt-1 text-[#888]">Manage frequently asked questions for your users</p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
           {/* Form */}
           <div className="lg:col-span-1">
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10 sticky top-6">
+            <div className="card-base p-6 sticky top-6">
               <div className="mb-6">
                 <h2 className="flex gap-2 items-center text-xl font-bold text-white">
-                  {isEditing ? <Edit className="w-5 h-5 text-cyan-400" /> : <Plus className="w-5 h-5 text-cyan-400" />}
+                  {isEditing
+                    ? <Edit className="w-5 h-5 text-[#51a2ff]" />
+                    : <Plus className="w-5 h-5 text-[#51a2ff]" />
+                  }
                   {isEditing ? 'Edit FAQ' : 'Create FAQ'}
                 </h2>
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="mt-1 text-sm text-[#888]">
                   {isEditing ? 'Update FAQ details' : 'Add a new FAQ'}
                 </p>
               </div>
-              <div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="question" className="text-white font-medium">Question</Label>
-                      <span className={`text-xs ${formData.question.length < 5 ? 'text-red-400' : formData.question.length > 500 ? 'text-red-400' : 'text-gray-500'}`}>
-                        {formData.question.length}/500 {formData.question.length < 5 && '(min 5)'}
-                      </span>
-                    </div>
-                    <Input
-                      id="question"
-                      value={formData.question}
-                      onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                      placeholder="Enter question (min 5 characters)"
-                      required
-                      maxLength={500}
-                    />
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="answer" className="text-white font-medium">Answer</Label>
-                      <span className={`text-xs ${formData.answer.length < 10 ? 'text-red-400' : 'text-gray-500'}`}>
-                        {formData.answer.length} chars {formData.answer.length < 10 && '(min 10)'}
-                      </span>
-                    </div>
-                    <Textarea
-                      id="answer"
-                      value={formData.answer}
-                      onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                      placeholder="Enter answer (min 10 characters)"
-                      required
-                    />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="question" className="text-white text-sm font-medium">Question</label>
+                    <span className={`text-xs ${formData.question.length < 5 ? 'text-red-400' : formData.question.length > 500 ? 'text-red-400' : 'text-[#555]'}`}>
+                      {formData.question.length}/500 {formData.question.length < 5 && '(min 5)'}
+                    </span>
                   </div>
+                  <input
+                    id="question"
+                    value={formData.question}
+                    onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                    className="input-base w-full px-4 py-2"
+                    placeholder="Enter question (min 5 characters)"
+                    required
+                    maxLength={500}
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="category" className="text-white font-medium">Category</Label>
-                    <AnimatedSelect
-                      options={categories}
-                      value={formData.category}
-                      onChange={(value) => setFormData({ ...formData, category: value })}
-                      placeholder="Select category"
-                    />
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label htmlFor="answer" className="text-white text-sm font-medium">Answer</label>
+                    <span className={`text-xs ${formData.answer.length < 10 ? 'text-red-400' : 'text-[#555]'}`}>
+                      {formData.answer.length} chars {formData.answer.length < 10 && '(min 10)'}
+                    </span>
                   </div>
+                  <textarea
+                    id="answer"
+                    value={formData.answer}
+                    onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                    className="input-base w-full px-4 py-2 min-h-[120px]"
+                    placeholder="Enter answer (min 10 characters)"
+                    required
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="order" className="text-white font-medium">Display Order</Label>
-                    <Input
-                      id="order"
-                      type="number"
-                      value={formData.order}
-                      onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                      className="bg-white/10 border-white/20 text-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label htmlFor="category" className="text-white text-sm font-medium block">Category</label>
+                  <AnimatedSelect
+                    options={categories}
+                    value={formData.category}
+                    onChange={(value) => setFormData({ ...formData, category: value })}
+                    placeholder="Select category"
+                  />
+                </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
-                    <Label htmlFor="isActive" className="text-white font-medium">Active Status</Label>
-                    <Switch
-                      id="isActive"
-                      checked={formData.isActive}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label htmlFor="order" className="text-white text-sm font-medium block">Display Order</label>
+                  <input
+                    id="order"
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                    className="input-base w-full px-4 py-2"
+                  />
+                </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" className="flex-1 text-white bg-gradient-to-r from-purple-600 to-pink-600 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-purple-500 hover:to-pink-500 border-white/10 hover:shadow-xl hover:scale-105">
-                      <Save className="w-4 h-4 mr-2" />
-                      {isEditing ? 'Update FAQ' : 'Create FAQ'}
-                    </Button>
-                    {isEditing && (
-                      <Button type="button" onClick={resetForm} className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </div>
+                <div
+                  className="flex items-center justify-between p-3 rounded-lg"
+                  style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <label htmlFor="isActive" className="text-white text-sm font-medium">Active Status</label>
+                  <Switch
+                    id="isActive"
+                    checked={formData.isActive}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
+                    <Save className="w-4 h-4" />
+                    {isEditing ? 'Update FAQ' : 'Create FAQ'}
+                  </button>
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="btn-ghost flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </form>
             </div>
           </div>
 
           {/* List */}
           <div className="lg:col-span-2">
-            <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+            <div className="card-base p-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">All FAQs</h2>
-                  <p className="text-sm text-gray-400 mt-1">{faqs.length} total questions</p>
+                  <p className="text-sm text-[#888] mt-1">{faqs.length} total questions</p>
                 </div>
                 <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                  <Input
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#51a2ff]" />
+                  <input
                     type="text"
                     placeholder="Search FAQs..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+                    className="input-base w-full pl-10 pr-4 py-2"
                   />
                 </div>
               </div>
-              <div>
-                {loading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="w-12 h-12 rounded-full border-4 animate-spin border-purple-500/30 border-t-purple-500"></div>
+
+              {filteredFaqs.length === 0 ? (
+                <div className="text-center py-12">
+                  <div
+                    className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
+                    style={{ background: 'rgba(81,162,255,0.07)', border: '1px solid rgba(81,162,255,0.15)' }}
+                  >
+                    <HelpCircle className="w-10 h-10 text-[#51a2ff]" />
                   </div>
-                ) : filteredFaqs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="p-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                      <HelpCircle className="w-10 h-10 text-purple-400" />
-                    </div>
-                    <p className="text-lg text-gray-300 font-medium">No FAQs found</p>
-                    <p className="text-sm text-gray-500 mt-2">Try adjusting your search or create a new FAQ</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {filteredFaqs.map((faq, index) => (
-                      <div
-                        key={faq.id}
-                        className="p-4 lg:p-6 rounded-xl border border-white/10 bg-slate-800/30 hover:bg-slate-800/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
-                          <div className="flex-1 w-full">
-                            <div className="flex flex-wrap items-center gap-2 mb-3">
-                              <Badge className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border-cyan-500/30 text-xs font-medium">
-                                {faq.category}
-                              </Badge>
-                              <Badge className={`text-xs font-medium ${faq.isActive ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
-                                {faq.isActive ? '● Active' : '○ Inactive'}
-                              </Badge>
-                              <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded">Order: {faq.order}</span>
-                            </div>
-                            <h3 className="text-white font-semibold text-lg mb-2">{faq.question}</h3>
-                            <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">{faq.answer}</p>
-                          </div>
-                          <div className="flex gap-2 lg:flex-col">
-                            <Button
-                              size="sm"
-                              onClick={() => handleEdit(faq)}
-                              className="text-white bg-gradient-to-r from-blue-600 to-cyan-600 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-cyan-500 border-white/10 hover:shadow-xl hover:scale-105"
+                  <p className="text-lg text-[#888] font-medium">No FAQs found</p>
+                  <p className="text-sm text-[#555] mt-2">Try adjusting your search or create a new FAQ</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredFaqs.map((faq, index) => (
+                    <div
+                      key={faq.id}
+                      className="rounded-xl p-4 lg:p-5 transition-colors hover:bg-[#161616]"
+                      style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.06)', animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
+                        <div className="flex-1 w-full">
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
+                            <span
+                              className="px-2 py-0.5 text-xs font-medium rounded-full"
+                              style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.25)', color: '#51a2ff' }}
                             >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleDelete(faq.id)}
-                              className="text-white bg-gradient-to-r from-red-600 to-pink-600 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-pink-500 border-white/10 hover:shadow-xl hover:scale-105"
+                              {faq.category}
+                            </span>
+                            <span
+                              className="px-2 py-0.5 text-xs font-medium rounded-full"
+                              style={faq.isActive
+                                ? { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80' }
+                                : { background: 'rgba(107,114,128,0.1)', border: '1px solid rgba(107,114,128,0.25)', color: '#9ca3af' }
+                              }
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                              {faq.isActive ? '● Active' : '○ Inactive'}
+                            </span>
+                            <span
+                              className="text-xs text-[#555] px-2 py-0.5 rounded"
+                              style={{ background: 'rgba(255,255,255,0.04)' }}
+                            >
+                              Order: {faq.order}
+                            </span>
                           </div>
+                          <h3 className="text-white font-semibold text-base mb-2">{faq.question}</h3>
+                          <p className="text-[#888] text-sm line-clamp-2 leading-relaxed">{faq.answer}</p>
+                        </div>
+                        <div className="flex gap-2 lg:flex-col">
+                          <button
+                            onClick={() => handleEdit(faq)}
+                            className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(faq.id)}
+                            className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400"
+                            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
         </div>
       </div>
     </main>

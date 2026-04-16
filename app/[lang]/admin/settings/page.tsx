@@ -2,13 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { withAdminAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Save, Settings, Shield, Globe, Mail, Database, Key, Server } from 'lucide-react'
+import { ArrowLeft, Save, Settings, Shield, Globe, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
@@ -16,7 +10,7 @@ import { apiClient } from '@/lib/api'
 function AdminSettings() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  
+
   // System settings state
   const [systemSettings, setSystemSettings] = useState({
     siteName: 'FreeX',
@@ -25,7 +19,7 @@ function AdminSettings() {
     registrationEnabled: true,
     emailVerificationRequired: true
   })
-  
+
   // Email settings state
   const [emailSettings, setEmailSettings] = useState({
     smtpHost: '',
@@ -35,7 +29,7 @@ function AdminSettings() {
     fromEmail: '',
     fromName: 'FreeX'
   })
-  
+
   // Security settings state
   const [securitySettings, setSecuritySettings] = useState({
     sessionTimeout: '24',
@@ -44,10 +38,6 @@ function AdminSettings() {
     requireStrongPasswords: true,
     enableTwoFactor: false
   })
-
-
-
-
 
   const handleSaveSystemSettings = async () => {
     setLoading(true)
@@ -88,288 +78,371 @@ function AdminSettings() {
     }
   }
 
-
-
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5QzkyQUMiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+    <div className="min-h-screen bg-[#0a0a0a] p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r from-cyan-600 to-blue-500 rounded-xl shadow-lg">
-                <Settings className="w-8 h-8 text-white" />
+            <div className="flex items-center gap-4">
+              <div
+                className="p-3 rounded-xl"
+                style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}
+              >
+                <Settings className="w-8 h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">System Settings</h1>
-                <p className="mt-1 text-gray-400">Configure system-wide settings and preferences</p>
+                <h1 className="text-3xl font-bold text-white">System Settings</h1>
+                <p className="mt-1 text-[#555]">Configure system-wide settings and preferences</p>
               </div>
             </div>
-            <Button 
-              onClick={() => router.push('/admin')} 
-              className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+            <button
+              onClick={() => router.push('/admin')}
+              className="btn-ghost flex items-center gap-2"
             >
-              <ArrowLeft className="mr-2 w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" />
               Back
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* System Settings */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Globe className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-white">System Configuration</h2>
-                <p className="text-sm text-gray-400">General system settings and site configuration</p>
-              </div>
+        {/* System Configuration */}
+        <div className="card-base p-6 space-y-6">
+          {/* Section Header */}
+          <div className="flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.15)' }}
+            >
+              <Globe className="w-5 h-5 text-[#51a2ff]" />
+            </div>
+            <div>
+              <h2 className="text-white font-semibold">System Configuration</h2>
+              <p className="text-[#555] text-sm">General system settings and site configuration</p>
             </div>
           </div>
-          <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="siteName" className="text-white">Site Name</Label>
-                  <Input
-                    id="siteName"
-                    value={systemSettings.siteName}
-                    onChange={(e) => setSystemSettings(prev => ({ ...prev, siteName: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="siteDescription" className="text-white">Site Description</Label>
-                  <Input
-                    id="siteDescription"
-                    value={systemSettings.siteDescription}
-                    onChange={(e) => setSystemSettings(prev => ({ ...prev, siteDescription: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="pt-6 space-y-6">
+            {/* Site Name & Description */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="siteName" className="text-white font-semibold text-sm block">Site Name</label>
+                <input
+                  id="siteName"
+                  type="text"
+                  value={systemSettings.siteName}
+                  onChange={(e) => setSystemSettings(prev => ({ ...prev, siteName: e.target.value }))}
+                  className="input-base w-full"
+                />
               </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-white">Maintenance Mode</Label>
-                    <p className="text-sm text-gray-400">Enable to temporarily disable site access</p>
-                  </div>
-                  <Switch
-                    checked={systemSettings.maintenanceMode}
-                    onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, maintenanceMode: checked }))}
-                  /> 
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-white">User Registration</Label>
-                    <p className="text-sm text-gray-400">Allow new users to register accounts</p>
-                  </div>
-                  <Switch
-                    checked={systemSettings.registrationEnabled}
-                    onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, registrationEnabled: checked }))}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-white">Email Verification Required</Label>
-                    <p className="text-sm text-gray-400">Require email verification for new accounts</p>
-                  </div>
-                  <Switch
-                    checked={systemSettings.emailVerificationRequired}
-                    onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, emailVerificationRequired: checked }))}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label htmlFor="siteDescription" className="text-white font-semibold text-sm block">Site Description</label>
+                <input
+                  id="siteDescription"
+                  type="text"
+                  value={systemSettings.siteDescription}
+                  onChange={(e) => setSystemSettings(prev => ({ ...prev, siteDescription: e.target.value }))}
+                  className="input-base w-full"
+                />
               </div>
-              
-            <Button 
+            </div>
+
+            {/* Toggles */}
+            <div className="space-y-4">
+              {/* Maintenance Mode */}
+              <div className="flex items-center justify-between py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p className="text-white font-semibold text-sm">Maintenance Mode</p>
+                  <p className="text-[#555] text-sm">Enable to temporarily disable site access</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSystemSettings(prev => ({ ...prev, maintenanceMode: !prev.maintenanceMode }))}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                  style={{
+                    background: systemSettings.maintenanceMode ? '#51a2ff' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-checked={systemSettings.maintenanceMode}
+                  role="switch"
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: systemSettings.maintenanceMode ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+
+              {/* User Registration */}
+              <div className="flex items-center justify-between py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p className="text-white font-semibold text-sm">User Registration</p>
+                  <p className="text-[#555] text-sm">Allow new users to register accounts</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSystemSettings(prev => ({ ...prev, registrationEnabled: !prev.registrationEnabled }))}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                  style={{
+                    background: systemSettings.registrationEnabled ? '#51a2ff' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-checked={systemSettings.registrationEnabled}
+                  role="switch"
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: systemSettings.registrationEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+
+              {/* Email Verification */}
+              <div className="flex items-center justify-between py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p className="text-white font-semibold text-sm">Email Verification Required</p>
+                  <p className="text-[#555] text-sm">Require email verification for new accounts</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSystemSettings(prev => ({ ...prev, emailVerificationRequired: !prev.emailVerificationRequired }))}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                  style={{
+                    background: systemSettings.emailVerificationRequired ? '#51a2ff' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-checked={systemSettings.emailVerificationRequired}
+                  role="switch"
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: systemSettings.emailVerificationRequired ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <button
               onClick={handleSaveSystemSettings}
               disabled={loading}
-              className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
             >
-              <Save className="mr-2 w-4 h-4" />
+              <Save className="w-4 h-4" />
               Save System Settings
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* Email Settings */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <Mail className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-white">Email Configuration</h2>
-                <p className="text-sm text-gray-400">SMTP settings for sending system emails</p>
-              </div>
+        {/* Email Configuration */}
+        <div className="card-base p-6 space-y-6">
+          {/* Section Header */}
+          <div className="flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' }}
+            >
+              <Mail className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h2 className="text-white font-semibold">Email Configuration</h2>
+              <p className="text-[#555] text-sm">SMTP settings for sending system emails</p>
             </div>
           </div>
-          <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="smtpHost" className="text-white">SMTP Host</Label>
-                  <Input
-                    id="smtpHost"
-                    value={emailSettings.smtpHost}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpHost: e.target.value }))}
-                    placeholder="smtp.gmail.com"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="smtpPort" className="text-white">SMTP Port</Label>
-                  <Input
-                    id="smtpPort"
-                    value={emailSettings.smtpPort}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpPort: e.target.value }))}
-                    placeholder="587"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="smtpUser" className="text-white">SMTP Username</Label>
-                  <Input
-                    id="smtpUser"
-                    value={emailSettings.smtpUser}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpUser: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="smtpPassword" className="text-white">SMTP Password</Label>
-                  <Input
-                    id="smtpPassword"
-                    type="password"
-                    value={emailSettings.smtpPassword}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpPassword: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fromEmail" className="text-white">From Email</Label>
-                  <Input
-                    id="fromEmail"
-                    type="email"
-                    value={emailSettings.fromEmail}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, fromEmail: e.target.value }))}
-                    placeholder="noreply@freex.com"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fromName" className="text-white">From Name</Label>
-                  <Input
-                    id="fromName"
-                    value={emailSettings.fromName}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, fromName: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="pt-6 space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="smtpHost" className="text-white font-semibold text-sm block">SMTP Host</label>
+                <input
+                  id="smtpHost"
+                  type="text"
+                  value={emailSettings.smtpHost}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpHost: e.target.value }))}
+                  placeholder="smtp.gmail.com"
+                  className="input-base w-full"
+                />
               </div>
-              
-            <Button 
+              <div className="space-y-1.5">
+                <label htmlFor="smtpPort" className="text-white font-semibold text-sm block">SMTP Port</label>
+                <input
+                  id="smtpPort"
+                  type="text"
+                  value={emailSettings.smtpPort}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpPort: e.target.value }))}
+                  placeholder="587"
+                  className="input-base w-full"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="smtpUser" className="text-white font-semibold text-sm block">SMTP Username</label>
+                <input
+                  id="smtpUser"
+                  type="text"
+                  value={emailSettings.smtpUser}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpUser: e.target.value }))}
+                  className="input-base w-full"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="smtpPassword" className="text-white font-semibold text-sm block">SMTP Password</label>
+                <input
+                  id="smtpPassword"
+                  type="password"
+                  value={emailSettings.smtpPassword}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, smtpPassword: e.target.value }))}
+                  className="input-base w-full"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="fromEmail" className="text-white font-semibold text-sm block">From Email</label>
+                <input
+                  id="fromEmail"
+                  type="email"
+                  value={emailSettings.fromEmail}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, fromEmail: e.target.value }))}
+                  placeholder="noreply@freex.com"
+                  className="input-base w-full"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="fromName" className="text-white font-semibold text-sm block">From Name</label>
+                <input
+                  id="fromName"
+                  type="text"
+                  value={emailSettings.fromName}
+                  onChange={(e) => setEmailSettings(prev => ({ ...prev, fromName: e.target.value }))}
+                  className="input-base w-full"
+                />
+              </div>
+            </div>
+
+            <button
               onClick={handleSaveEmailSettings}
               disabled={loading}
-              className="text-white bg-gradient-to-r from-green-600 to-green-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-green-500 hover:to-green-400 border-white/10 hover:shadow-xl hover:scale-105"
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
             >
-              <Save className="mr-2 w-4 h-4" />
+              <Save className="w-4 h-4" />
               Save Email Settings
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* Security Settings */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-cyan-500/20 rounded-lg">
-                <Shield className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-white">Security Configuration</h2>
-                <p className="text-sm text-gray-400">Security policies and authentication settings</p>
-              </div>
+        {/* Security Configuration */}
+        <div className="card-base p-6 space-y-6">
+          {/* Section Header */}
+          <div className="flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.15)' }}
+            >
+              <Shield className="w-5 h-5 text-[#51a2ff]" />
+            </div>
+            <div>
+              <h2 className="text-white font-semibold">Security Configuration</h2>
+              <p className="text-[#555] text-sm">Security policies and authentication settings</p>
             </div>
           </div>
-          <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="sessionTimeout" className="text-white">Session Timeout (hours)</Label>
-                  <Input
-                    id="sessionTimeout"
-                    type="number"
-                    value={securitySettings.sessionTimeout}
-                    onChange={(e) => setSecuritySettings(prev => ({ ...prev, sessionTimeout: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxLoginAttempts" className="text-white">Max Login Attempts</Label>
-                  <Input
-                    id="maxLoginAttempts"
-                    type="number"
-                    value={securitySettings.maxLoginAttempts}
-                    onChange={(e) => setSecuritySettings(prev => ({ ...prev, maxLoginAttempts: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="passwordMinLength" className="text-white">Min Password Length</Label>
-                  <Input
-                    id="passwordMinLength"
-                    type="number"
-                    value={securitySettings.passwordMinLength}
-                    onChange={(e) => setSecuritySettings(prev => ({ ...prev, passwordMinLength: e.target.value }))}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="pt-6 space-y-6">
+            {/* Numeric inputs */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-1.5">
+                <label htmlFor="sessionTimeout" className="text-white font-semibold text-sm block">Session Timeout (hours)</label>
+                <input
+                  id="sessionTimeout"
+                  type="number"
+                  value={securitySettings.sessionTimeout}
+                  onChange={(e) => setSecuritySettings(prev => ({ ...prev, sessionTimeout: e.target.value }))}
+                  className="input-base w-full"
+                />
               </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-white">Require Strong Passwords</Label>
-                    <p className="text-sm text-gray-400">Enforce uppercase, lowercase, numbers, and symbols</p>
-                  </div>
-                  <Switch
-                    checked={securitySettings.requireStrongPasswords}
-                    onCheckedChange={(checked) => setSecuritySettings(prev => ({ ...prev, requireStrongPasswords: checked }))}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-white">Enable Two-Factor Authentication</Label>
-                    <p className="text-sm text-gray-400">Require 2FA for admin accounts</p>
-                  </div>
-                  <Switch
-                    checked={securitySettings.enableTwoFactor}
-                    onCheckedChange={(checked) => setSecuritySettings(prev => ({ ...prev, enableTwoFactor: checked }))}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label htmlFor="maxLoginAttempts" className="text-white font-semibold text-sm block">Max Login Attempts</label>
+                <input
+                  id="maxLoginAttempts"
+                  type="number"
+                  value={securitySettings.maxLoginAttempts}
+                  onChange={(e) => setSecuritySettings(prev => ({ ...prev, maxLoginAttempts: e.target.value }))}
+                  className="input-base w-full"
+                />
               </div>
-              
-            <Button 
+              <div className="space-y-1.5">
+                <label htmlFor="passwordMinLength" className="text-white font-semibold text-sm block">Min Password Length</label>
+                <input
+                  id="passwordMinLength"
+                  type="number"
+                  value={securitySettings.passwordMinLength}
+                  onChange={(e) => setSecuritySettings(prev => ({ ...prev, passwordMinLength: e.target.value }))}
+                  className="input-base w-full"
+                />
+              </div>
+            </div>
+
+            {/* Security Toggles */}
+            <div className="space-y-0">
+              {/* Require Strong Passwords */}
+              <div className="flex items-center justify-between py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p className="text-white font-semibold text-sm">Require Strong Passwords</p>
+                  <p className="text-[#555] text-sm">Enforce uppercase, lowercase, numbers, and symbols</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSecuritySettings(prev => ({ ...prev, requireStrongPasswords: !prev.requireStrongPasswords }))}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                  style={{
+                    background: securitySettings.requireStrongPasswords ? '#51a2ff' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-checked={securitySettings.requireStrongPasswords}
+                  role="switch"
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: securitySettings.requireStrongPasswords ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+
+              {/* Two-Factor Auth */}
+              <div className="flex items-center justify-between py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p className="text-white font-semibold text-sm">Enable Two-Factor Authentication</p>
+                  <p className="text-[#555] text-sm">Require 2FA for admin accounts</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSecuritySettings(prev => ({ ...prev, enableTwoFactor: !prev.enableTwoFactor }))}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                  style={{
+                    background: securitySettings.enableTwoFactor ? '#51a2ff' : 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-checked={securitySettings.enableTwoFactor}
+                  role="switch"
+                >
+                  <span
+                    className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    style={{ transform: securitySettings.enableTwoFactor ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <button
               onClick={handleSaveSecuritySettings}
               disabled={loading}
-              className="text-white bg-gradient-to-r from-cyan-600 to-cyan-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-cyan-500 hover:to-cyan-400 border-white/10 hover:shadow-xl hover:scale-105"
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
             >
-              <Save className="mr-2 w-4 h-4" />
+              <Save className="w-4 h-4" />
               Save Security Settings
-            </Button>
+            </button>
           </div>
         </div>
+
       </div>
-    </main>
+    </div>
   )
 }
 

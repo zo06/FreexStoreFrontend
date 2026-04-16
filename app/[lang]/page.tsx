@@ -1,29 +1,48 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Zap, BarChart3, Star, Rocket, Globe, Users, Flame, Search, Gift, Infinity as InfinityIcon, Quote } from 'lucide-react';
+import { Zap, Star, Rocket, Globe, Users, Flame, Search, Gift, Infinity as InfinityIcon, Shield, Check, ChevronRight, ArrowRight, Package, Download, Clock, BarChart3 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTranslations } from 'next-intl';
 
-gsap.registerPlugin(ScrollTrigger);
-
+/* ─── Section header helper ─────────────────────────────────── */
+function SectionHeader({
+  badge,
+  badgeIcon: BadgeIcon,
+  title,
+  highlight,
+  subtitle,
+  align = 'center',
+}: {
+  badge: string;
+  badgeIcon?: React.ElementType;
+  title: string;
+  highlight?: string;
+  subtitle?: string;
+  align?: 'center' | 'left';
+}) {
+  return (
+    <div className={`mb-14 ${align === 'center' ? 'text-center' : ''}`}>
+      <div className={`inline-flex items-center gap-2 badge-blue mb-4 ${align === 'center' ? '' : ''}`}>
+        {BadgeIcon && <BadgeIcon className="w-3.5 h-3.5" />}
+        <span>{badge}</span>
+      </div>
+      <h2 className="text-[2rem] sm:text-[2.5rem] font-black text-white leading-[1.2] mb-3">
+        {title}{highlight && <> <span className="text-[#51a2ff]">{highlight}</span></>}
+      </h2>
+      {subtitle && <p className="text-[#777] text-base max-w-xl leading-relaxed mx-auto">{subtitle}</p>}
+    </div>
+  );
+}
 
 export default function Home() {
   const t = useTranslations('home');
   const pathname = usePathname();
   const locale = pathname?.split('/')[1] || 'en';
-  const heroRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated } = useAuth();
   const [showTrialCTA, setShowTrialCTA] = useState(true);
   const [isStartingTrial, setIsStartingTrial] = useState(false);
@@ -31,346 +50,440 @@ export default function Home() {
   const [isLoadingScripts, setIsLoadingScripts] = useState(true);
   const router = useRouter();
 
-  // Fetch popular/new scripts
   useEffect(() => {
-    const fetchFeaturedScripts = async () => {
+    const fetchScripts = async () => {
       try {
         const response: any = await apiClient.get('/scripts/active');
         const scripts = response.data?.data || response.data || [];
-        // Filter for popular or new scripts, limit to 4
         const featured = scripts.filter((s: any) => s.popular || s.new).slice(0, 4);
-        // If not enough featured, fill with any active scripts
         if (featured.length < 4) {
-          const remaining = scripts.filter((s: any) => !featured.includes(s)).slice(0, 4 - featured.length);
-          featured.push(...remaining);
+          const rest = scripts.filter((s: any) => !featured.includes(s)).slice(0, 4 - featured.length);
+          featured.push(...rest);
         }
         setFeaturedScripts(featured.slice(0, 4));
-      } catch (error) {
-        console.error('Failed to fetch scripts:', error);
-      } finally {
-        setIsLoadingScripts(false);
-      }
+      } catch { /* silent */ }
+      finally { setIsLoadingScripts(false); }
     };
-    fetchFeaturedScripts();
+    fetchScripts();
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated || !user) { setShowTrialCTA(true); return; }
+    setShowTrialCTA(!user.trialStartAt);
+  }, [isAuthenticated, user]);
+
   const handleStartTrial = () => {
-    if (!isAuthenticated) {
-      router.push('/auth/register');
-      return;
-    }
-    
-    // Check if user already has active trial
-    if (user?.trialStartAt && user?.trialEndAt) {
-      const trialEnd = new Date(user.trialEndAt);
-      const now = new Date();
-      
-      if (trialEnd > now) {
+    if (!isAuthenticated) { router.push('/auth/register'); return; }
+    if (user?.trialStartAt) {
+      const end = new Date(user.trialEndAt as string);
+      if (end > new Date()) {
         toast.error('You already have an active trial!');
         router.push('/dashboard');
-        return;
       } else {
         toast.error('Your trial period has ended. Please purchase a license.');
-        return;
       }
+      return;
     }
-    
-    // Redirect to scripts page where user can choose a script to trial
     router.push('/scripts');
     toast.success('Browse scripts and click "Start Free Trial" on any script!');
   };
 
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setShowTrialCTA(true);
-      return;
-    }
-    
-    // Hide CTA if user has started a trial (active or ended)
-    if (user.trialStartAt) {
-      setShowTrialCTA(false);
-    } else {
-      setShowTrialCTA(true);
-    }
-  }, [isAuthenticated, user]);
+  const testimonials = [
+    { quote: t('testimonials.quote1'), author: t('testimonials.author1'), role: t('testimonials.role1') },
+    { quote: t('testimonials.quote2'), author: t('testimonials.author2'), role: t('testimonials.role2') },
+    { quote: t('testimonials.quote3'), author: t('testimonials.author3'), role: t('testimonials.role3') },
+  ];
 
-  useEffect(() => {
-    // Hero section animations
-    const heroElements = heroRef.current?.querySelectorAll('.animate-element');
-    if (heroElements) {
-      gsap.fromTo(heroElements, 
-        { opacity: 0, y: 50 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 1, 
-          stagger: 0.2, 
-          ease: "power2.out" 
-        }
-      );
-    }
-
-    // Features section scroll animation
-    const featureCards = featuresRef.current?.querySelectorAll('.feature-card');
-    if (featureCards) {
-      gsap.fromTo(featureCards,
-        { opacity: 0, y: 80, scale: 0.8 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: featuresRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-    }
-
-    // Stats section scroll animation
-    const statCards = statsRef.current?.querySelectorAll('.stat-card');
-    if (statCards) {
-      gsap.fromTo(statCards,
-        { opacity: 0, y: 60, rotationY: 45 },
-        {
-          opacity: 1,
-          y: 0,
-          rotationY: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: statsRef.current,
-            start: "top 75%",
-            end: "bottom 25%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-    }
-
-    // CTA section scroll animation
-    const ctaElement = ctaRef.current?.querySelector('.cta-content');
-    if (ctaElement) {
-      gsap.fromTo(ctaElement,
-        { opacity: 0, scale: 0.8, rotationX: 15 },
-        {
-          opacity: 1,
-          scale: 1,
-          rotationX: 0,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: ctaRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-    }
-
-    // Refresh ScrollTrigger to prevent infinite scroll issues
-    ScrollTrigger.refresh();
-
-    // Cleanup
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
-  }, []);
   return (
-    <main className="min-h-screen relative overflow-x-hidden bg-[#030712]">
-      {/* Enhanced Background Elements */}
-      <div className="rotating-gradient"></div>
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]"></div>
-        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(16,185,129,0.1),transparent)]"></div>
-      </div>
-      <div className="floating-orb w-32 h-32 top-20 left-10"></div>
-      <div className="floating-orb w-24 h-24 top-40 right-20 opacity-60" style={{animationDelay: '2s'}}></div>
-      <div className="floating-orb w-40 h-40 bottom-20 left-1/4 opacity-40" style={{animationDelay: '4s'}}></div>
-      
-      {/* Hero Section */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/50 via-transparent to-transparent"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-transparent rounded-full blur-3xl"></div>
-        </div>
-        
-        {/* Animated orbs */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-cyan-500/30 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
-        
-        {/* Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,black_40%,transparent_100%)]"></div>
-        
-        <div className="container relative z-10">
-          <div className="text-center max-w-6xl mx-auto padding-responsive">
-            {/* Floating badge */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-cyan-500/20 rounded-full px-5 sm:px-8 py-2.5 sm:py-3 mb-8 sm:mb-10 lg:mb-12 animate-element shadow-lg shadow-cyan-500/10">
-              <div className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-              </div>
-              <span className="text-xs sm:text-sm lg:text-base font-medium bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{t('hero.badge')}</span>
-            </div>
-            
-            <h1 className={`text-5xl sm:text-6xl md:text-7xl lg:text-6xl font-black mb-6 sm:mb-8 lg:mb-10 xl:mb-12 animate-element leading-[0.9] tracking-tight ${locale === 'ar' ? 'leading-[1.4]' : ''}`}>
-              <span className="block bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-transparent drop-shadow-2xl">{t('hero.title1')}</span>
-              <span className="block mt-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">{t('hero.title2')}</span>
-            </h1>
-            
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-400 mb-10 sm:mb-12 lg:mb-16 max-w-3xl mx-auto leading-relaxed animate-element px-4 sm:px-0">
-              {t('hero.description')}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center mb-16 sm:mb-20 lg:mb-24 animate-element px-4 sm:px-0">
-              <Link href={`/${locale}/scripts`} className="w-full sm:w-auto group">
-                <Button size="lg" className="w-full relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0 shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-400/40 transition-all duration-500 hover:scale-[1.02] text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 h-auto font-semibold rounded-xl">
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
-                  <Rocket className={`w-5 h-5 ${locale === 'ar' ? 'ml-2.5' : 'mr-2.5'}`} />
-                  {t('hero.exploreScripts')}
-                </Button>
+    <main className="min-h-screen bg-[#0a0a0a] overflow-x-hidden">
+
+      {/* ══════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        <div className="hero-glow" />
+        <div className="absolute inset-0 section-dots opacity-50 pointer-events-none" />
+
+        <div className="page-container relative z-10 text-center py-24">
+          {/* Live badge */}
+          <div className="inline-flex items-center gap-2 badge-blue mb-7">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#51a2ff] animate-pulse" />
+            <span>{t('hero.badge')}</span>
+          </div>
+
+          {/* Heading — 48-56px, line-height 1.3 */}
+          <h1
+            className={`font-black text-white mb-5 ${locale === 'ar' ? 'leading-[1.4]' : ''}`}
+            style={{ fontSize: 'clamp(2.75rem, 5vw, 3.5rem)', lineHeight: 1.3, letterSpacing: '-0.02em' }}
+          >
+            {t('hero.title1')}{' '}
+            <span className="text-[#51a2ff]">{t('hero.title2')}</span>
+          </h1>
+
+          {/* Subtitle with 32px gap before buttons */}
+          <p className="text-[#777] text-lg max-w-xl mx-auto leading-relaxed" style={{ marginBottom: '2rem' }}>
+            {t('hero.description')}
+          </p>
+
+          {/* CTA row */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center" style={{ marginBottom: '5rem' }}>
+            <Link href={`/${locale}/scripts`}>
+              <button className="btn-primary text-[0.9375rem] px-7 py-3">
+                <Rocket className="w-4 h-4" />
+                {t('hero.exploreScripts')}
+              </button>
+            </Link>
+            {!user && (
+              <Link href={`/${locale}/auth/register`}>
+                {/* Ghost: white border + white text */}
+                <button
+                  className="inline-flex items-center justify-center gap-2 font-bold text-[0.9375rem] px-7 py-3 rounded-full bg-transparent text-white border border-white/25 hover:border-white/50 hover:bg-white/5 transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                  {t('hero.getStartedFree')}
+                </button>
               </Link>
-              {!user && (
-                <Link href={`/${locale}/auth/register`} className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full border-gray-700 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white hover:border-gray-600 transition-all duration-300 backdrop-blur-xl text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 h-auto font-medium rounded-xl">
-                    <Globe className={`w-5 h-5 ${locale === 'ar' ? 'ml-2.5' : 'mr-2.5'}`} />
-                    {t('hero.getStartedFree')}
-                  </Button>
-                </Link>
-              )}
-            </div>
-            
-            {/* Hero Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 animate-element max-w-4xl mx-auto">
-              <div className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-500/30 transition-all duration-500 hover:shadow-lg hover:shadow-cyan-500/10">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                <div className="relative">
-                  <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">500+</div>
-                  <p className="text-base text-gray-300 font-medium">{t('hero.premiumScripts')}</p>
-                </div>
-              </div>
-
-              <div className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-all duration-500 hover:shadow-lg hover:shadow-blue-500/10">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                <div className="relative">
-                  <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent mb-2">10K+</div>
-                  <p className="text-base text-gray-300 font-medium">{t('hero.happyCustomers')}</p>
-                </div>
-              </div>
-
-              <div className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-emerald-500/30 transition-all duration-500 hover:shadow-lg hover:shadow-emerald-500/10">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-                <div className="relative">
-                  <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">24/7</div>
-                  <p className="text-base text-gray-300 font-medium">{t('hero.expertSupport')}</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 sm:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/15 to-transparent pointer-events-none"></div>
-        <div className="container relative z-10 mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 mb-6">
-              <Rocket className="w-4 h-4 text-violet-400" />
-              <span className="text-sm font-medium text-violet-400">{t('howItWorks.badge')}</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight">
-              <span className="text-white">{t('howItWorks.title')}</span>{' '}
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent">{t('howItWorks.highlight')}</span>
-            </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">{t('howItWorks.subtitle')}</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative">
-            {/* Connector line (desktop only) */}
-            <div className="hidden md:block absolute top-14 left-[calc(33.33%+0.75rem)] right-[calc(33.33%+0.75rem)] h-px bg-gradient-to-r from-cyan-500/40 via-blue-500/40 to-violet-500/40"></div>
-
-            {/* Step 1 */}
-            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-cyan-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-cyan-500/30">1</div>
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <Search className="w-8 h-8 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step1Title')}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step1Desc')}</p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-blue-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/30">2</div>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Gift className="w-8 h-8 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step2Title')}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step2Desc')}</p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative group p-8 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-violet-500/40 transition-all duration-500 hover:-translate-y-1 text-center">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-violet-500/30">3</div>
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                <InfinityIcon className="w-8 h-8 text-violet-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{t('howItWorks.step3Title')}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">{t('howItWorks.step3Desc')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 sm:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/10 to-transparent pointer-events-none"></div>
-        <div className="container relative z-10 mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
-              <Star className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm font-medium text-emerald-400">{t('testimonials.badge')}</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 leading-tight">{t('testimonials.title')}</h2>
-            <p className="text-gray-400 text-lg">{t('testimonials.subtitle')}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Hero stats — no boxes, just numbers */}
+          <div
+            className="flex flex-wrap justify-center items-center"
+            style={{ gap: '4rem' }}
+          >
             {[
-              { quote: t('testimonials.quote1'), author: t('testimonials.author1'), role: t('testimonials.role1'), color: 'cyan', rating: 5 },
-              { quote: t('testimonials.quote2'), author: t('testimonials.author2'), role: t('testimonials.role2'), color: 'blue', rating: 5 },
-              { quote: t('testimonials.quote3'), author: t('testimonials.author3'), role: t('testimonials.role3'), color: 'emerald', rating: 5 },
-            ].map((item, i) => (
-              <div key={i} className="relative p-7 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl hover:border-white/20 transition-all duration-500">
-                <Quote className="w-8 h-8 text-white/10 mb-4" />
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
-                  {[...Array(item.rating)].map((_, s) => (
-                    <Star key={s} className="w-4 h-4 text-amber-400 fill-amber-400" />
+              { value: '500+', label: t('hero.premiumScripts') },
+              { value: '10K+', label: t('hero.happyCustomers') },
+              { value: '24/7',  label: t('hero.expertSupport') },
+            ].map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="font-black text-[#51a2ff]" style={{ fontSize: '2.75rem', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                  {s.value}
+                </div>
+                <p className="text-[#666] text-sm mt-1.5 font-medium">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          HOW IT WORKS
+      ══════════════════════════════════════════ */}
+      <section className="page-section bg-[#131313]">
+        <div className="page-container">
+          <SectionHeader
+            badge={t('howItWorks.badge')}
+            badgeIcon={Rocket}
+            title={t('howItWorks.title')}
+            highlight={t('howItWorks.highlight')}
+            subtitle={t('howItWorks.subtitle')}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto relative">
+            <div className="hidden sm:block absolute top-[3.25rem] left-[calc(33.33%+1rem)] right-[calc(33.33%+1rem)] h-px bg-[rgba(81,162,255,0.18)]" />
+            {[
+              { step: '1', icon: Search,      title: t('howItWorks.step1Title'), desc: t('howItWorks.step1Desc') },
+              { step: '2', icon: Gift,        title: t('howItWorks.step2Title'), desc: t('howItWorks.step2Desc') },
+              { step: '3', icon: InfinityIcon, title: t('howItWorks.step3Title'), desc: t('howItWorks.step3Desc') },
+            ].map(({ step, icon: Icon, title, desc }) => (
+              <div key={step} className="card-base p-7 text-center relative">
+                <div className="absolute -top-[1.125rem] left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-[#51a2ff] flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-[rgba(81,162,255,0.25)]">
+                  {step}
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-[rgba(81,162,255,0.08)] border border-[rgba(81,162,255,0.15)] flex items-center justify-center mx-auto mb-4 mt-3">
+                  <Icon className="w-6 h-6 text-[#51a2ff]" />
+                </div>
+                <h3 className="text-white font-bold text-base mb-2">{title}</h3>
+                <p className="text-[#777] text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          FEATURED SCRIPTS
+      ══════════════════════════════════════════ */}
+      <section className="page-section bg-[#0a0a0a]">
+        <div className="page-container">
+          {/* Header row */}
+          <div className="flex items-end justify-between mb-12 flex-wrap gap-5">
+            <div>
+              <div className="inline-flex items-center gap-2 badge-blue mb-3">
+                <Star className="w-3.5 h-3.5" />
+                <span>{t('featuredScripts.badge')}</span>
+              </div>
+              <h2 className="text-[2rem] sm:text-[2.5rem] font-black text-white leading-[1.2] mb-1">
+                {t('featuredScripts.title')}
+              </h2>
+              <p className="text-[#777] text-sm">{t('featuredScripts.description')}</p>
+            </div>
+            <Link href={`/${locale}/scripts`}>
+              <button className="btn-ghost btn-sm flex items-center gap-1.5 flex-shrink-0">
+                {t('featuredScripts.viewAll')} <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </Link>
+          </div>
+
+          {/* Grid */}
+          {isLoadingScripts ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[1,2,3,4].map((i) => (
+                <div key={i} className="card-base overflow-hidden">
+                  <div className="w-full bg-[#1a1a1a] animate-shimmer" style={{ aspectRatio: '16/9' }} />
+                  <div className="p-5 space-y-3">
+                    <div className="h-3 bg-[#1e1e1e] rounded-full w-1/3 animate-shimmer" />
+                    <div className="h-4 bg-[#1e1e1e] rounded-full w-3/4 animate-shimmer" />
+                    <div className="h-3 bg-[#1e1e1e] rounded-full w-full animate-shimmer" />
+                    <div className="h-8 bg-[#1e1e1e] rounded-full w-1/2 mx-auto animate-shimmer mt-1" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : featuredScripts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {featuredScripts.map((script) => (
+                <Link href={`/${locale}/script/${script.slug || script.id}`} key={script.id}>
+                  <div
+                    className="script-card group cursor-pointer h-full flex flex-col"
+                    style={{
+                      background: '#151515',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 40px rgba(81,162,255,0.08)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                    }}
+                  >
+                    {/* Thumbnail — forced 16:9 */}
+                    <div className="relative w-full bg-[#1a1a1a] overflow-hidden flex-shrink-0" style={{ aspectRatio: '16/9' }}>
+                      {script.imageUrl ? (
+                        <img
+                          src={script.imageUrl.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${script.imageUrl}` : script.imageUrl}
+                          alt={script.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          style={{ position: 'absolute', inset: 0 }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Zap className="w-8 h-8 text-[#2a2a2a]" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                      {/* Status badge top-left */}
+                      {(script.popular || script.new) && (
+                        <span className={`absolute top-2.5 ${locale === 'ar' ? 'right-2.5' : 'left-2.5'} inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#51a2ff] rounded-full px-2.5 py-1`}>
+                          {script.popular ? <><Flame className="w-2.5 h-2.5" /> {t('featuredScripts.popular')}</> : t('featuredScripts.new')}
+                        </span>
+                      )}
+
+                      {/* Price pill top-right */}
+                      <span className={`absolute top-2.5 ${locale === 'ar' ? 'left-2.5' : 'right-2.5'} text-xs font-black text-white bg-[#51a2ff] rounded-full px-2.5 py-1 leading-none`}>
+                        ${script.price || script.foreverPrice || '0'}
+                      </span>
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-5 flex flex-col flex-1">
+                      <span className="badge-blue text-[11px] mb-3 self-start">{script.category?.name || 'Script'}</span>
+                      <h3 className="text-white font-bold text-sm mb-2 line-clamp-1 group-hover:text-[#51a2ff] transition-colors leading-snug">
+                        {script.name}
+                      </h3>
+                      <p className="text-[#777] text-xs line-clamp-2 flex-1 leading-relaxed mb-4">
+                        {script.description}
+                      </p>
+                      {/* Ghost button, centered, not full-width */}
+                      <div className="flex justify-center">
+                        <button className="btn-ghost btn-sm">
+                          {t('featuredScripts.viewDetails')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[#666] py-10 text-sm">{t('featuredScripts.noScripts')}</p>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          FEATURE — Scripts built for serious servers
+          (text left, code snippet right)
+      ══════════════════════════════════════════ */}
+      <section className="page-section bg-[#131313] section-dots">
+        <div className="page-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            {/* Text — max 480px */}
+            <div style={{ maxWidth: '480px' }}>
+              <div className="badge-blue mb-5 inline-flex"><Shield className="w-3.5 h-3.5" /><span>Premium Quality</span></div>
+              <h2 className="text-[2rem] sm:text-[2.5rem] font-black text-white mb-4 leading-[1.2]">
+                Scripts built for<br />
+                <span className="text-[#51a2ff]">serious servers</span>
+              </h2>
+              <p className="text-[#777] mb-7 leading-relaxed text-sm">
+                Every script is tested, optimised, and ready for production. No bloat, no issues — just clean, performant code that works on any FiveM framework.
+              </p>
+              <ul className="space-y-3 mb-8">
+                {['Zero performance impact', 'ESX & QBCore compatible', 'Regular updates included', 'Full source code access'].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[#ccc] text-sm">
+                    <span className="w-5 h-5 rounded-full bg-[rgba(81,162,255,0.12)] border border-[rgba(81,162,255,0.2)] flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-[#51a2ff]" />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href={`/${locale}/scripts`}>
+                <button className="btn-primary">Browse Scripts <ChevronRight className="w-4 h-4" /></button>
+              </Link>
+            </div>
+
+            {/* Code snippet mockup */}
+            <div className="relative">
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: '#111',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  transform: 'perspective(900px) rotateY(-4deg) rotateX(2deg)',
+                  boxShadow: '20px 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(81,162,255,0.05)',
+                }}
+              >
+                {/* Window chrome */}
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]" style={{ background: '#0d0d0d' }}>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#28ca41]" />
+                  <span className="ml-3 text-[#444] text-xs font-mono">freex_hud / config.lua</span>
+                </div>
+                {/* Code lines */}
+                <div className="p-5 font-mono text-xs leading-6">
+                  {[
+                    { color: '#666',    text: '-- FreexStore HUD Config' },
+                    { color: '#888',    text: '' },
+                    { color: '#51a2ff', text: 'Config', extra: { color: '#ccc', text: ' = {}' } },
+                    { color: '#888',    text: '' },
+                    { color: '#51a2ff', text: 'Config.Enabled', extra: { color: '#ccc', text: ' = true' } },
+                    { color: '#51a2ff', text: 'Config.Framework', extra: { color: '#aaa', text: " = 'esx'" } },
+                    { color: '#51a2ff', text: 'Config.ShowMinimap', extra: { color: '#ccc', text: ' = true' } },
+                    { color: '#51a2ff', text: 'Config.HudStyle', extra: { color: '#aaa', text: " = 'modern'" } },
+                    { color: '#888',    text: '' },
+                    { color: '#666',    text: '-- Performance optimised' },
+                    { color: '#666',    text: '-- 0.01ms idle usage' },
+                  ].map((line, i) => (
+                    <div key={i} style={{ color: line.color }}>
+                      {line.text}
+                      {line.extra && <span style={{ color: line.extra.color }}>{line.extra.text}</span>}
+                    </div>
                   ))}
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6">"{item.quote}"</p>
+              </div>
+              {/* Subtle glow below card */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-64 h-16 bg-[rgba(81,162,255,0.07)] blur-2xl rounded-full pointer-events-none" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          FEATURE — Download in seconds
+          (image-style left, stats right)
+      ══════════════════════════════════════════ */}
+      <section className="page-section bg-[#0a0a0a]">
+        <div className="page-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            {/* Stats grid — icon + number + label cards with #141414 bg + blue top border */}
+            <div className="order-2 lg:order-1 grid grid-cols-2 gap-4">
+              {[
+                { icon: Download, value: '< 1s',  label: 'Delivery time' },
+                { icon: BarChart3, value: '99.9%', label: 'Uptime SLA' },
+                { icon: Package,   value: '500+',  label: 'Scripts available' },
+                { icon: Clock,     value: '24/7',  label: 'Support coverage' },
+              ].map(({ icon: Icon, value, label }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-start p-5 rounded-xl"
+                  style={{
+                    background: '#141414',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderTop: '2px solid rgba(81,162,255,0.2)',
+                  }}
+                >
+                  <Icon className="w-5 h-5 text-[#51a2ff] mb-3 opacity-80" />
+                  <div className="font-black text-white text-2xl leading-none mb-1">{value}</div>
+                  <div className="text-[#666] text-xs">{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Text */}
+            <div className="order-1 lg:order-2" style={{ maxWidth: '480px' }}>
+              <div className="badge-blue mb-5 inline-flex"><Zap className="w-3.5 h-3.5" /><span>Instant Access</span></div>
+              <h2 className="text-[2rem] sm:text-[2.5rem] font-black text-white mb-4 leading-[1.2]">
+                Download in seconds,<br />
+                <span className="text-[#51a2ff]">deploy in minutes</span>
+              </h2>
+              <p className="text-[#777] leading-relaxed text-sm mb-7">
+                After purchase you get instant access to your scripts through your personal dashboard. No waiting, no approval needed — it's yours the moment you pay.
+              </p>
+              <Link href={`/${locale}/auth/register`}>
+                <button className="btn-primary">Get Started Free <ChevronRight className="w-4 h-4" /></button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          TESTIMONIALS
+      ══════════════════════════════════════════ */}
+      <section className="page-section bg-[#131313]">
+        <div className="page-container">
+          <SectionHeader
+            badge={t('testimonials.badge')}
+            badgeIcon={Star}
+            title={t('testimonials.title')}
+            subtitle={t('testimonials.subtitle')}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {testimonials.map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  background: '#151515',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderLeft: '3px solid #51a2ff',
+                  borderRadius: '14px',
+                  padding: '1.5rem',
+                }}
+              >
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, s) => (
+                    <Star key={s} className="w-3.5 h-3.5 text-[#51a2ff] fill-[#51a2ff]" />
+                  ))}
+                </div>
+                <p className="text-[#bbb] text-sm leading-relaxed mb-5">"{item.quote}"</p>
+                {/* Avatar + name */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-500/30 border border-white/10 flex items-center justify-center text-sm font-bold text-white">
+                  <div className="w-8 h-8 rounded-full bg-[rgba(81,162,255,0.12)] border border-[rgba(81,162,255,0.18)] flex items-center justify-center text-xs font-bold text-[#51a2ff] flex-shrink-0">
                     {item.author.charAt(0)}
                   </div>
                   <div>
-                    <div className="text-white text-sm font-semibold">{item.author}</div>
-                    <div className="text-gray-500 text-xs">{item.role}</div>
+                    <div className="text-white text-xs font-semibold">{item.author}</div>
+                    <div className="text-[#555] text-[11px]">{item.role}</div>
                   </div>
                 </div>
               </div>
@@ -379,277 +492,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Scripts Section */}
-      <section ref={featuresRef} id="features" className="py-20 sm:py-28 lg:py-36 relative">
-        {/* Section background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/20 to-transparent"></div>
-        
-        <div className="container relative z-10 mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16 sm:mb-20">
-            <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-4 py-1.5 mb-6">
-              <Star className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-medium text-cyan-400">{t('featuredScripts.badge')}</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-tight">
-              <span className="text-white">{t('featuredScripts.title')}</span>
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">{t('featuredScripts.subtitle')}</span>
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto">
-              {t('featuredScripts.description')}
-            </p>
-          </div>
-
-          {isLoadingScripts ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="animate-pulse rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl overflow-hidden">
-                  <div className="h-48 bg-gradient-to-br from-cyan-600/20 to-blue-600/20"></div>
-                  <div className="p-5">
-                    <div className="h-4 bg-white/10 rounded w-1/3 mb-3"></div>
-                    <div className="h-6 bg-white/10 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-white/10 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-white/10 rounded w-2/3 mb-4"></div>
-                    <div className="h-10 bg-white/10 rounded-xl"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : featuredScripts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-              {featuredScripts.map((script, index) => (
-                <Link href={`/script/${script.slug || script.id}`} key={script.id}>
-                  <div 
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-cyan-900/20 to-slate-900/80 backdrop-blur-xl transition-all duration-500 hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2 cursor-pointer"
-                    style={{animationDelay: `${index * 0.1}s`}}
-                  >
-                    {/* Image/Preview Area */}
-                    <div className="relative h-48 overflow-hidden bg-gradient-to-br from-cyan-600/20 to-blue-600/20">
-                      {script.imageUrl ? (
-                        <img 
-                          src={script.imageUrl.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${script.imageUrl}` : script.imageUrl}
-                          alt={`${script.name} - Premium FiveM Script | ${script.description?.substring(0, 100) || 'High Quality Resource'} | FreexStore`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                            <Zap className="w-10 h-10 text-cyan-400" />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Overlay gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
-                      
-                      {/* Badge */}
-                      {script.popular && script.new ? (
-                        <div className={`absolute top-3 ${locale === 'ar' ? 'left-3' : 'right-3'} px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full shadow-lg animate-pulse inline-flex items-center gap-1`}>
-                          <Star className="w-3.5 h-3.5" />{t('featuredScripts.special')}
-                        </div>
-                      ) : script.popular ? (
-                        <div className={`absolute top-3 ${locale === 'ar' ? 'left-3' : 'right-3'} px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 rounded-full shadow-lg inline-flex items-center gap-1`}>
-                          <Flame className="w-3.5 h-3.5" />{t('featuredScripts.popular')}
-                        </div>
-                      ) : script.new ? (
-                        <div className={`absolute top-3 ${locale === 'ar' ? 'left-3' : 'right-3'} px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg inline-flex items-center gap-1`}>
-                          <Star className="w-3.5 h-3.5" />{t('featuredScripts.new')}
-                        </div>
-                      ) : null}
-                      {/* Free Trial badge */}
-                      {script.trialAvailable && (
-                        <div className={`absolute top-3 ${locale === 'ar' ? 'right-3' : 'left-3'} px-2.5 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 rounded-full backdrop-blur-sm inline-flex items-center gap-1`}>
-                          <Gift className="w-3 h-3" />{t('featuredScripts.freeTrial')}
-                        </div>
-                      )}
-                      
-                      {/* Price tag */}
-                      <div className="absolute bottom-3 right-3 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10">
-                        <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                          ${script.price || script.foreverPrice || '0.00'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="p-5 sm:p-6">
-                      {/* Category */}
-                      <div className="mb-3 flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                          <Zap className="w-3 h-3" />
-                          <span>{script.category?.name || 'Script'}</span>
-                        </span>
-                      </div>
-                      
-                      {/* Title */}
-                      <h3 className="mb-2 text-lg sm:text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300 line-clamp-1">
-                        {script.name}
-                      </h3>
-                      
-                      {/* Description */}
-                      <p className="mb-4 text-sm text-slate-400 line-clamp-2 leading-relaxed">
-                        {script.description}
-                      </p>
-                      
-                      {/* View Button */}
-                      <div className="flex gap-2">
-                        <span className="flex-1 py-2.5 text-sm font-semibold text-center text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25">
-                          {t('featuredScripts.viewDetails')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-400">{t('featuredScripts.noScripts')}</p>
-            </div>
-          )}
-          
-          {/* View All Button */}
-          <div className="text-center mt-12">
-            <Link href={`/${locale}/scripts`}>
-              <Button size="lg" variant="outline" className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400/50 px-8 py-4 h-auto font-semibold rounded-xl">
-                {t('featuredScripts.viewAll')}
-                <Rocket className={`w-5 h-5 ${locale === 'ar' ? 'mr-2' : 'ml-2'}`} />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section ref={statsRef} className="py-24 sm:py-32 relative overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/30 to-transparent"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-emerald-500/10 rounded-full blur-3xl"></div>
-        
-        <div className="container relative z-10 mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-6">
-              <BarChart3 className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-blue-400">{t('stats.badge')}</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 leading-tight">
-              {t('stats.title')} <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">FiveM</span>
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">{t('stats.description')}</p>
-          </div>
-          
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
-            <div className="stat-card group relative text-center p-8 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-xl border border-white/10 rounded-3xl hover:border-cyan-500/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-              <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">10K+</div>
-                <div className="text-sm text-gray-400 font-medium">{t('stats.activeUsers')}</div>
-              </div>
-            </div>
-            
-            <div className="stat-card group relative text-center p-8 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-xl border border-white/10 rounded-3xl hover:border-blue-500/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-              <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">{t('stats.fast')}</div>
-                <div className="text-sm text-gray-400 font-medium">{t('stats.instantDelivery')}</div>
-              </div>
-            </div>
-            
-            <div className="stat-card group relative text-center p-8 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-xl border border-white/10 rounded-3xl hover:border-emerald-500/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-              <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <BarChart3 className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">99.9%</div>
-                <div className="text-sm text-gray-400 font-medium">{t('stats.uptime')}</div>
-              </div>
-            </div>
-            
-            <div className="stat-card group relative text-center p-8 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-xl border border-white/10 rounded-3xl hover:border-violet-500/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-              <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-violet-400 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Star className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent mb-2">24/7</div>
-                <div className="text-sm text-gray-400 font-medium">{t('stats.support')}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
+      {/* ══════════════════════════════════════════
+          CTA BANNER
+      ══════════════════════════════════════════ */}
       {showTrialCTA && (
-        <section ref={ctaRef} className="py-24 sm:py-32 relative overflow-hidden">
-          {/* Background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/30 to-transparent"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:w-[600px] md:h-[600px] bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-emerald-500/20 rounded-full blur-[120px]"></div>
-        
-          <div className="container relative z-10 mx-auto px-4 sm:px-6">
-            <div className="cta-content relative overflow-hidden bg-gradient-to-b from-white/[0.1] to-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 sm:p-14 lg:p-20 text-center max-w-4xl mx-auto shadow-2xl">
-              {/* Glow effects */}
-              <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-80 h-80 bg-cyan-500/30 rounded-full blur-[100px]"></div>
-              <div className="absolute -bottom-20 left-1/4 w-60 h-60 bg-blue-500/20 rounded-full blur-[80px]"></div>
-              <div className="absolute -bottom-20 right-1/4 w-60 h-60 bg-emerald-500/20 rounded-full blur-[80px]"></div>
-              
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 backdrop-blur-xl border border-cyan-500/20 rounded-full px-5 py-2 mb-8">
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </div>
-                  <span className="text-sm font-medium text-cyan-300">{t('cta.badge')}</span>
-                </div>
-                
-                <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 leading-[1.1]">
-                  {t('cta.title')}
-                </h2>
-                
-                <p className="text-lg sm:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                  {t('cta.description')}
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-                  <Button 
-                    size="lg" 
-                    className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-0 shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-400/40 transition-all duration-500 hover:scale-[1.02] text-lg px-10 py-5 h-auto font-semibold rounded-xl"
-                    onClick={handleStartTrial}
-                    disabled={isStartingTrial}
+        <section
+          className="page-section"
+          style={{ background: 'linear-gradient(135deg, #0d1f3c 0%, #0a1628 50%, #0d1f3c 100%)' }}
+        >
+          {/* Subtle blue radial */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(81,162,255,0.08) 0%, transparent 70%)' }} />
+          <div className="page-container relative z-10 text-center">
+            <div className="max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-[#51a2ff] text-sm font-semibold" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#51a2ff] animate-pulse" />
+                {t('cta.badge')}
+              </div>
+              <h2
+                className="font-black text-white mb-4 leading-[1.2]"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+              >
+                {t('cta.title')}
+              </h2>
+              <p className="text-[#8db4d4] text-base mb-10 leading-relaxed">
+                {t('cta.description')}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {/* Primary: solid white, dark text */}
+                <button
+                  onClick={handleStartTrial}
+                  disabled={isStartingTrial}
+                  className="inline-flex items-center justify-center gap-2 font-bold text-[0.9375rem] px-7 py-3 rounded-full transition-colors disabled:opacity-60"
+                  style={{ background: '#fff', color: '#0d1f3c' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#e8f2ff')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+                >
+                  <Rocket className="w-4 h-4" />
+                  {isStartingTrial ? t('cta.starting') : t('cta.startTrial')}
+                </button>
+                {/* Secondary: ghost white outline */}
+                <Link href={`/${locale}/scripts`}>
+                  <button
+                    className="inline-flex items-center justify-center gap-2 font-bold text-[0.9375rem] px-7 py-3 rounded-full text-white transition-colors"
+                    style={{ border: '1.5px solid rgba(255,255,255,0.25)', background: 'transparent' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
-                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
-                    <Rocket className={`w-5 h-5 ${locale === 'ar' ? 'ml-2.5' : 'mr-2.5'}`} />
-                    {isStartingTrial ? t('cta.starting') : t('cta.startTrial')}
-                  </Button>
-                </div>
-                
-                <div className="flex flex-wrap items-center justify-center gap-6 text-gray-400 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                    <span>{t('cta.noCreditCard')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                    <span>{t('cta.trialDays')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-                    <span>{t('cta.cancelAnytime')}</span>
-                  </div>
-                </div>
+                    {t('hero.exploreScripts')}
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
-      </section>
-    )}
+        </section>
+      )}
+
     </main>
   );
 }
-

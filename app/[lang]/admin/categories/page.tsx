@@ -7,9 +7,9 @@ import IconPicker from '@/components/admin/IconPicker';
 
 export default function AdminCategoriesPage() {
   // Use Zustand store
-  const { 
-    items: categories, 
-    loading, 
+  const {
+    items: categories,
+    loading,
     error,
     submitting,
     getAll,
@@ -17,7 +17,7 @@ export default function AdminCategoriesPage() {
     update,
     remove,
     patch,
-    clearError 
+    clearError
   } = useCategoriesStore();
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -46,7 +46,7 @@ export default function AdminCategoriesPage() {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -77,7 +77,7 @@ export default function AdminCategoriesPage() {
       setErrorMessage('Failed to save category. Please try again.');
     }
   };
-  
+
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setFormData({
@@ -90,7 +90,7 @@ export default function AdminCategoriesPage() {
     setErrorMessage('');
     setShowCreateForm(true);
   };
-  
+
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
       setErrorMessage('');
@@ -108,7 +108,7 @@ export default function AdminCategoriesPage() {
   const isDataUrl = (str: string) => {
     return typeof str === 'string' && str.startsWith('data:');
   };
-  
+
   const handleToggleActive = async (id: string) => {
     try {
       await patch(id, {});
@@ -117,7 +117,7 @@ export default function AdminCategoriesPage() {
       console.error('Error toggling category status:', error);
     }
   };
-  
+
   const resetForm = () => {
     setFormData({ name: '', description: '', icon: '', isActive: true });
     setShowCreateForm(false);
@@ -128,31 +128,26 @@ export default function AdminCategoriesPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-<div className="absolute inset-0">
-  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-</div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto space-y-6 max-w-7xl">
+
         {/* Header */}
-        <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Folder className="w-8 h-8 text-blue-400" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Folder className="w-8 h-8 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">Category Management</h1>
-                <p className="mt-1 text-gray-400">Organize and manage script categories</p>
+                <h1 className="text-3xl font-bold text-white">Category Management</h1>
+                <p className="mt-1 text-[#888]">Organize and manage script categories</p>
               </div>
             </div>
             <button
@@ -161,7 +156,7 @@ export default function AdminCategoriesPage() {
                 setErrorMessage('');
                 setShowCreateForm(true);
               }}
-              className="flex items-center px-6 py-3 space-x-2 text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+              className="btn-primary flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
               <span>Add Category</span>
@@ -171,98 +166,91 @@ export default function AdminCategoriesPage() {
 
         {/* Success/Error Messages */}
         {successMessage && (
-          <div className="p-4 rounded-xl border bg-green-500/10 border-green-500/20">
-            <p className="text-green-400 text-sm font-medium">{successMessage}</p>
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)' }}>
+            <p className="text-emerald-400 text-sm font-medium">{successMessage}</p>
           </div>
         )}
-        
+
         {errorMessage && (
-          <div className="p-4 rounded-xl border bg-red-500/10 border-red-500/20">
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
             <p className="text-red-400 text-sm font-medium">{errorMessage}</p>
           </div>
         )}
 
-      {/* Create/Edit Form */}
+        {/* Create/Edit Form */}
         {showCreateForm && (
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="card-base p-6">
             <h2 className="mb-6 text-xl font-semibold text-white">
               {editingCategory ? 'Edit Category' : 'Create New Category'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">
+                <label className="block mb-2 text-sm font-medium text-[#aaa]">
                   Name *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="px-4 py-3 w-full placeholder-gray-400 text-white rounded-xl border transition-all duration-300 bg-slate-800/50 border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-base w-full"
                   required
                 />
               </div>
-              
+
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">
+                <label className="block mb-2 text-sm font-medium text-[#aaa]">
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="px-4 py-3 w-full h-24 placeholder-gray-400 text-white rounded-xl border transition-all duration-300 resize-none bg-slate-800/50 border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-base w-full h-24 resize-none"
                   rows={3}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="icon" className="block mb-2 text-sm font-medium text-gray-300">
+                <label htmlFor="icon" className="block mb-2 text-sm font-medium text-[#aaa]">
                   Icon
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowIconPicker(true)}
-                  className="px-4 py-3 w-full text-start placeholder-gray-400 text-white rounded-xl border transition-all duration-300 bg-slate-800/50 border-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-base w-full text-start hover:border-[rgba(255,255,255,0.15)] transition-colors"
                 >
                   {formData.icon ? (
                     <span className="flex items-center gap-2">
-                      <img 
-                        src={formData.icon.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${formData.icon}` : formData.icon} 
-                        alt="Custom icon" 
-                        className="w-6 h-6 object-contain" 
+                      <img
+                        src={formData.icon.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${formData.icon}` : formData.icon}
+                        alt="Custom icon"
+                        className="w-6 h-6 object-contain"
                       />
-                      <span className="text-gray-400">Click to change icon</span>
+                      <span className="text-[#888]">Click to change icon</span>
                     </span>
                   ) : (
-                    <span className="text-gray-400">Click to upload an icon</span>
+                    <span className="text-[#888]">Click to upload an icon</span>
                   )}
                 </button>
               </div>
-              
-              <div className="flex items-center">
+
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   id="isActive"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="mr-3 w-4 h-4 text-blue-600 rounded bg-slate-800 border-white/10 focus:ring-blue-500 focus:ring-2"
+                  className="w-4 h-4 rounded accent-[#51a2ff]"
                 />
-                <label htmlFor="isActive" className="text-sm text-gray-300">
+                <label htmlFor="isActive" className="text-sm text-[#aaa]">
                   Active
                 </label>
               </div>
-              
+
               <div className="flex gap-3">
-                <button 
-                  type="submit" 
-                  className="px-6 py-3 text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
-                >
+                <button type="submit" className="btn-primary flex items-center gap-2">
                   {editingCategory ? 'Update' : 'Create'}
                 </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-3 text-white bg-gradient-to-r rounded-xl border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
-                >
+                <button type="button" onClick={resetForm} className="btn-ghost flex items-center gap-2">
                   Cancel
                 </button>
               </div>
@@ -270,39 +258,45 @@ export default function AdminCategoriesPage() {
           </div>
         )}
 
-      {error && (
-          <div className="p-6 text-center rounded-2xl border shadow-2xl backdrop-blur-xl bg-red-500/10 border-red-500/20">
+        {error && (
+          <div className="card-base p-6 text-center" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>
             <div className="mb-4 text-red-400">Error loading categories: {error}</div>
-            <button 
-              onClick={() => getAll()} 
-              className="px-6 py-3 text-white bg-gradient-to-r from-red-600 to-red-500 rounded-xl border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
-            >
+            <button onClick={() => getAll()} className="btn-primary">
               Retry
             </button>
           </div>
         )}
 
         {categories && (
-          <div className="p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+          <div className="card-base p-6">
             <h2 className="mb-6 text-xl font-semibold text-white">Categories</h2>
             {categories.length === 0 ? (
               <div className="py-12 text-center">
-                <Folder className="mx-auto mb-4 w-16 h-16 text-gray-500" />
-                <div className="text-lg text-gray-400">No categories found</div>
-                <p className="mt-2 text-gray-500">Create your first category to get started</p>
+                <Folder className="mx-auto mb-4 w-16 h-16 text-[#333]" />
+                <div className="text-lg text-[#888]">No categories found</div>
+                <p className="mt-2 text-[#555]">Create your first category to get started</p>
               </div>
             ) : (
               <div className="grid gap-4">
                 {categories?.map((category: Category) => (
-                  <div key={category.id} className="p-4 rounded-xl border shadow-lg backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
+                  <div
+                    key={category.id}
+                    className="p-4 rounded-xl transition-colors"
+                    style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#161616')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#111')}
+                  >
                     <div className="flex justify-between items-center">
                       <div className="flex gap-4 items-center">
-                        <div className="p-3 bg-gradient-to-r rounded-xl border from-cyan-600/20 to-cyan-500/20 border-cyan-500/20">
+                        <div
+                          className="p-3 rounded-xl"
+                          style={{ background: 'rgba(81,162,255,0.08)', border: '1px solid rgba(81,162,255,0.15)' }}
+                        >
                           {category.icon ? (
-                            <img 
-                              src={category.icon.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${category.icon}` : category.icon} 
-                              alt="Category icon" 
-                              className="w-6 h-6 object-contain" 
+                            <img
+                              src={category.icon.startsWith('/') ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${category.icon}` : category.icon}
+                              alt="Category icon"
+                              className="w-6 h-6 object-contain"
                             />
                           ) : (
                             <span className="text-2xl">📁</span>
@@ -313,45 +307,47 @@ export default function AdminCategoriesPage() {
                             {category.name}
                           </h3>
                           {category.description && (
-                            <p className="mt-1 text-sm text-gray-400">
+                            <p className="mt-1 text-sm text-[#888]">
                               {category.description}
                             </p>
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2 items-center">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          category.isActive 
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                          category.isActive
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : 'bg-red-500/20 text-red-400 border border-red-500/30'
                         }`}>
                           {category.isActive ? 'Active' : 'Inactive'}
                         </span>
-                        
+
                         <button
                           onClick={() => handleEdit(category)}
-                          className="p-2 text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="p-2 rounded-lg text-[#888] hover:text-[#51a2ff] transition-colors"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                           title="Edit Category"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        
+
                         <button
                           onClick={() => handleToggleActive(category.id)}
-                          className={`border border-white/10 backdrop-blur-sm text-white p-2 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-                            category.isActive 
-                              ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400'
-                              : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400'
-                          }`}
+                          className="p-2 rounded-lg transition-colors"
+                          style={category.isActive
+                            ? { background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', color: '#fb923c' }
+                            : { background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }
+                          }
                           title={category.isActive ? 'Deactivate' : 'Activate'}
                         >
                           <Power className="w-4 h-4" />
                         </button>
-                        
+
                         <button
                           onClick={() => handleDelete(category.id)}
-                          className="p-2 text-white bg-gradient-to-r from-red-600 to-red-500 rounded-lg border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400"
+                          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                           title="Delete Category"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -362,9 +358,10 @@ export default function AdminCategoriesPage() {
                 ))}
               </div>
             )}
-          </div>)}
+          </div>
+        )}
       </div>
-      
+
       {showIconPicker && (
         <IconPicker
           selectedIcon={formData.icon}

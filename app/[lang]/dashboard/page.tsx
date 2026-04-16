@@ -12,10 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import ServerMembershipStatus from '@/components/server-membership-status'
 import { Download, Activity, DollarSign, FileText, TrendingUp, Clock, Globe, Server, User as UserIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { 
-  ShoppingCart, 
-  ArrowsClockwise, 
-  ChatCircle, 
+import {
+  ShoppingCart,
+  ArrowsClockwise,
+  ChatCircle,
   ClipboardText,
   ChartBar,
   Scroll,
@@ -50,7 +50,7 @@ export default function Dashboard() {
   const [showPopup, setShowPopup] = useState(false)
   const [selectedScript, setSelectedScript] = useState<any>(null)
   const [userLicenses, setUserLicenses] = useState<any[]>([])
-  const [userActivity, setUserActivity] = useState<any[]>([])  
+  const [userActivity, setUserActivity] = useState<any[]>([])
   const [showPrivateKeys, setShowPrivateKeys] = useState<Set<string>>(new Set())
   const [apiLoading, setApiLoading] = useState(true)
   const [licensesIpAddress, setLicensesIpAddress] = useState<string | null>(null)
@@ -87,15 +87,15 @@ export default function Dashboard() {
     const fetchUserData = async () => {
       try {
         setApiLoading(true);
-        
+
         // Fetch user licenses
         const licensesData = await apiClient.getUserLicenses();
         setUserLicenses(licensesData);
-        
+
         // Fetch user activity
         const activity = await apiClient.getUserActivity();
         setUserActivity(activity);
-        
+
         // Fetch user's licenses IP address
         try {
           const ipResponse = await apiClient.getLicensesIp();
@@ -103,7 +103,7 @@ export default function Dashboard() {
         } catch (error) {
           console.error('Failed to fetch licenses IP:', error);
         }
-        
+
         // Update user stats based on real data
         setUserStats({
           totalUsers: 1,
@@ -118,7 +118,7 @@ export default function Dashboard() {
           activeProjects: 0,
           userGrowth: []
         });
-        
+
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         // Keep mock data on error
@@ -126,7 +126,7 @@ export default function Dashboard() {
         setApiLoading(false);
       }
     };
-    
+
     fetchUserData();
   }, []);
 
@@ -191,7 +191,7 @@ export default function Dashboard() {
             const actions = ['Downloaded', 'Purchased', 'Updated', 'Viewed']
             const types = ['download', 'purchase', 'update', 'view']
             const times = ['2 hours ago', '1 day ago', '3 days ago', '1 week ago']
-            
+
             return {
               id: license.id || index + 1,
               type: types[index % types.length],
@@ -215,15 +215,15 @@ export default function Dashboard() {
     const fetchTransactions = async () => {
       try {
         const transactions = await apiClient.getMyTransactions();
-        
+
         if (transactions && transactions.length > 0) {
           const purchases = transactions.map((transaction: any) => {
             // Handle Prisma Decimal - convert {s, e, d} object to number
             const rawPrice = transaction.amount
-            const price = typeof rawPrice === 'object' && rawPrice !== null 
-              ? Number(rawPrice.d?.[0] || 0) 
+            const price = typeof rawPrice === 'object' && rawPrice !== null
+              ? Number(rawPrice.d?.[0] || 0)
               : (typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice) || 0)
-            
+
             return {
               id: transaction.id,
               scriptId: transaction.scriptId,
@@ -241,30 +241,30 @@ export default function Dashboard() {
         console.error('Failed to fetch transactions:', error)
       }
     }
-    
+
     fetchTransactions()
   }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'text-green-400 bg-green-500/20';
-      case 'Expired': return 'text-red-400 bg-red-500/20'; 
-      case 'Revoked': return 'text-yellow-400 bg-yellow-500/20';
-      default: return 'text-gray-400 bg-gray-500/20';
+      case 'Active': return 'badge-active';
+      case 'Expired': return 'badge-expired';
+      case 'Revoked': return 'badge-revoked';
+      default: return 'badge-default';
     }
   };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'download': return <Download size={20} />;
-      case 'purchase': return <ShoppingCart size={20} />;
-      case 'update': return <ArrowsClockwise size={20} />;
-      case 'support': return <ChatCircle size={20} />;
-      case 'login': return <Key size={20} />;
-      case 'admin_action': return <Gear size={20} />;
-      case 'script_access': return <Scroll size={20} />;
-      case 'license_update': return <Package size={20} />;
-      default: return <ClipboardText size={20} />;
+      case 'download': return <Download size={16} />;
+      case 'purchase': return <ShoppingCart size={16} />;
+      case 'update': return <ArrowsClockwise size={16} />;
+      case 'support': return <ChatCircle size={16} />;
+      case 'login': return <Key size={16} />;
+      case 'admin_action': return <Gear size={16} />;
+      case 'script_access': return <Scroll size={16} />;
+      case 'license_update': return <Package size={16} />;
+      default: return <ClipboardText size={16} />;
     }
   };
 
@@ -276,7 +276,7 @@ export default function Dashboard() {
         return `${tActivity('adminGrantedLicense')}: ${match[1]} ${tActivity('forScriptId')}: ${match[2]}`;
       }
     }
-    
+
     // Special handling for IP address changed with details
     if (/IP address changed from/i.test(description)) {
       const match = description.match(/IP address changed from (.+) to (.+)/i);
@@ -338,11 +338,11 @@ export default function Dashboard() {
 
   const getTabIcon = (tabId: string) => {
     switch (tabId) {
-      case 'overview': return <ChartBar size={18} />;
-      case 'scripts': return <Scroll size={18} />;
-      case 'activity': return <Lightning size={18} />;
-      case 'settings': return <Gear size={18} />;
-      default: return <ChartBar size={18} />;
+      case 'overview': return <ChartBar size={16} />;
+      case 'scripts': return <Scroll size={16} />;
+      case 'activity': return <Lightning size={16} />;
+      case 'settings': return <Gear size={16} />;
+      default: return <ChartBar size={16} />;
     }
   };
 
@@ -374,14 +374,14 @@ export default function Dashboard() {
         toast.error(t('enterValidIp'));
         return;
       }
-      
+
       await apiClient.updateLicenseIpAddress(licenseId, newIpAddress.trim());
       toast.success(t('ipUpdated'));
-      
+
       // Refresh user data
       const licenses = await apiClient.getUserLicenses();
       setUserLicenses(licenses);
-      
+
     } catch (error) {
       console.error('Failed to update IP address:', error);
       toast.error(t('ipUpdateFailed'));
@@ -390,37 +390,29 @@ export default function Dashboard() {
 
 
   return (
-    <main className="overflow-hidden relative pt-16 min-h-screen lg:pt-24 bg-[#030712]">
-      {/* Enhanced Background Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(53,189,242,0.15),transparent)]"></div>
-        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(16,185,129,0.1),transparent)]"></div>
-      </div>
-      <div className="rotating-gradient"></div>
-      <div className="absolute top-1/4 left-10 w-72 h-72 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse"></div>
-      <div className="absolute top-40 right-20 w-96 h-96 bg-blue-600/15 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1s'}}></div>
-      <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
-      
-      <div className="container px-4 py-4 mx-auto lg:px-6 lg:py-8">
-        {/* Header */}
-        <div className="mb-8 lg:mb-12 animate-fade-in">
-          <div className="flex flex-col gap-4 justify-between mb-4 lg:flex-row lg:items-center lg:mb-6">
-            <div>
-              <h1 className="mb-2 text-2xl font-bold lg:text-4xl xl:text-5xl text-gradient">{t('welcome')}, {user?.username || t('user')}</h1>
-              <p className="text-sm text-muted lg:text-lg">{t('subtitle')}</p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button variant="outline" onClick={() => window.location.href = '/scripts'} className="px-4 py-2 text-sm cursor-pointer lg:px-6 lg:py-3 lg:text-base">
-                {t('newOffers')}
-              </Button>
-            </div>
-          </div>
-          
+    <main className="min-h-screen pt-16 lg:pt-24" style={{ background: '#0a0a0a' }}>
+      <div className="max-w-6xl mx-auto px-4 py-8 lg:px-6 lg:py-10">
 
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white lg:text-3xl">
+                {t('welcome')}, <span className="text-[#51a2ff]">{user?.username || t('user')}</span>
+              </h1>
+              <p className="mt-1 text-sm" style={{ color: '#888' }}>{t('subtitle')}</p>
+            </div>
+            <button
+              onClick={() => window.location.href = '/scripts'}
+              className="btn-ghost text-sm px-4 py-2 cursor-pointer self-start sm:self-auto"
+            >
+              {t('newOffers')}
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6 lg:mb-8 animate-slide-up">
+        <div className="flex gap-1 mb-8 p-1 rounded-xl w-fit" style={{ background: '#111' }}>
           {[
             { id: 'overview', label: t('overview') },
             { id: 'scripts', label: t('myScripts') },
@@ -428,13 +420,14 @@ export default function Dashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 lg:px-6 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-sm lg:text-base touch-target cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-white border border-cyan-500/50'
-                  : 'text-muted hover:text-white hover:bg-white/5'
+                  ? 'bg-[rgba(81,162,255,0.1)] text-[#51a2ff]'
+                  : 'hover:text-white'
               }`}
+              style={{ color: activeTab === tab.id ? '#51a2ff' : '#888' }}
             >
-              <span className="text-sm lg:text-base">{getTabIcon(tab.id)}</span>
+              {getTabIcon(tab.id)}
               <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
@@ -442,46 +435,49 @@ export default function Dashboard() {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-6">
+
             {/* Server Membership Status */}
-            <div className="mb-8">
-              <ServerMembershipStatus />
-            </div>
-            
+            <ServerMembershipStatus />
+
             {/* Free Trial Section - Show only if user hasn't started trial */}
             {user && !user.trialStartAt && (
-              <div className="mb-8 p-6 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/40 via-slate-900/80 to-blue-900/40 backdrop-blur-xl animate-fade-in">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div
+                className="p-5 rounded-[14px] border"
+                style={{ background: '#151515', borderColor: 'rgba(81,162,255,0.15)' }}
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex items-center justify-center">
-                      <Rocket size={24} className="text-cyan-400" />
+                    <div
+                      className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(81,162,255,0.1)' }}
+                    >
+                      <Rocket size={20} className="text-[#51a2ff]" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white mb-1">{t('startFreeTrial')}</h3>
-                      <p className="text-sm text-slate-400">
+                      <h3 className="text-base font-semibold text-white mb-0.5">{t('startFreeTrial')}</h3>
+                      <p className="text-sm" style={{ color: '#888' }}>
                         {t('freeTrialDescription')}
                       </p>
                     </div>
                   </div>
-                  <div>
-                    <Button 
-                      onClick={handleStartFreeTrial}
-                      disabled={trialLoading}
-                      className="px-6 py-3 font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
-                    >
-                      {trialLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-                          {t('starting')}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Lightning size={18} />
-                          {t('startFreeTrial')}
-                        </div>
-                      )}
-                    </Button>
-                  </div>
+                  <button
+                    onClick={handleStartFreeTrial}
+                    disabled={trialLoading}
+                    className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 cursor-pointer self-start lg:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {trialLoading ? (
+                      <>
+                        <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        {t('starting')}
+                      </>
+                    ) : (
+                      <>
+                        <Lightning size={16} />
+                        {t('startFreeTrial')}
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
@@ -501,305 +497,373 @@ export default function Dashboard() {
 
               if (!isActive) return null;
               return (
-                <div className="mb-8 p-6 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-900/20 via-slate-900/80 to-orange-900/20 backdrop-blur-xl animate-fade-in">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/30 to-orange-500/30 flex items-center justify-center">
-                        <Clock size={24} className="text-amber-400" />
+                <div
+                  className="p-5 rounded-[14px] border"
+                  style={{ background: '#151515', borderColor: 'rgba(245,158,11,0.2)' }}
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      <div
+                        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ background: 'rgba(245,158,11,0.1)' }}
+                      >
+                        <Clock size={20} style={{ color: '#f59e0b' }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-bold text-white">Free Trial Active</h3>
-                          <span className="px-2 py-0.5 text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded-full">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-base font-semibold text-white">Free Trial Active</h3>
+                          <span
+                            className="px-2 py-0.5 text-xs font-semibold rounded-full"
+                            style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}
+                          >
                             {daysLeft > 0 ? `${daysLeft}d ${hoursRemainder}h left` : `${hoursLeft}h left`}
                           </span>
                         </div>
-                        <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                        <div className="w-full rounded-full h-1.5 mb-1.5" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <div
-                            className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
-                            style={{ width: `${pct}%` }}
+                            className="h-1.5 rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, background: '#f59e0b' }}
                           />
                         </div>
-                        <p className="text-xs text-slate-400">Trial ends {trialEnd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-xs" style={{ color: '#888' }}>
+                          Trial ends {trialEnd.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
-                      <Button
-                        onClick={() => router.push('/scripts')}
-                        className="px-6 py-3 font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Rocket size={18} />
-                          Upgrade to Full Access
-                        </div>
-                      </Button>
-                    </div>
+                    <button
+                      onClick={() => router.push('/scripts')}
+                      className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 cursor-pointer self-start lg:self-auto"
+                    >
+                      <Rocket size={16} />
+                      Upgrade to Full Access
+                    </button>
                   </div>
                 </div>
               );
             })()}
 
             {/* Recent Activity & Payment History */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
               {/* Recent Activity */}
-              <div className="p-4 card-modern lg:p-6">
-                <h3 className="mb-4 text-lg font-semibold text-white lg:text-xl lg:mb-6">{t('recentActivity')}</h3>
-                <div className="space-y-3 lg:space-y-4">
+              <div className="card-base p-5">
+                <h3 className="text-base font-semibold text-white mb-4">{t('recentActivity')}</h3>
+                <div className="space-y-2">
                   {activityLoading ? (
-                    <div className="flex justify-center items-center py-8">
-                      <div className="w-8 h-8 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+                    <div className="flex justify-center items-center py-10">
+                      <div className="w-6 h-6 rounded-full border-2 border-[#51a2ff]/30 border-t-[#51a2ff] animate-spin" />
                     </div>
                   ) : recentActivity.length > 0 ? (
                     recentActivity.slice(0, 4).map((activity) => (
-                      <div key={activity.id} className="flex gap-3 items-center p-3 rounded-lg transition-colors cursor-pointer lg:gap-4 lg:p-4 bg-white/5 hover:bg-white/10">
-                        <div className="flex flex-shrink-0 justify-center items-center w-8 h-8 bg-gradient-to-r rounded-lg lg:w-10 lg:h-10 from-cyan-500/20 to-blue-500/20">
-                          <div className="text-cyan-400">{getActivityIcon(activity.type)}</div>
+                      <div
+                        key={activity.id}
+                        className="flex gap-3 items-center p-3 rounded-xl transition-colors cursor-pointer"
+                        style={{ background: '#1a1a1a' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#1e1e1e')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '#1a1a1a')}
+                      >
+                        <div
+                          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{ background: 'rgba(81,162,255,0.08)' }}
+                        >
+                          <span className="text-[#51a2ff]">{getActivityIcon(activity.type)}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-white lg:text-sm">
+                          <p className="text-xs text-white leading-snug">
                             <span className="font-medium">{translateActivityDescription(activity.description || activity.action, activity.details)}</span>
-                            {activity.details && <span className="ml-1 text-muted">• {activity.details}</span>}
+                            {activity.details && <span className="ml-1" style={{ color: '#888' }}>• {activity.details}</span>}
                           </p>
-                          <p className="text-xs text-muted">{formatActivityTime(activity.createdAt || activity.time)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: '#888' }}>{formatActivityTime(activity.createdAt || activity.time)}</p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="py-8 text-center text-muted">
-                      <Activity size={32} className="mx-auto mb-2 opacity-50" />
-                      <p>{t('noRecentActivity')}</p>
+                    <div className="py-10 text-center">
+                      <Activity size={28} className="mx-auto mb-2 opacity-30 text-white" />
+                      <p className="text-sm" style={{ color: '#888' }}>{t('noRecentActivity')}</p>
                     </div>
                   )}
                 </div>
-                <Button variant="link" onClick={() => window.location.href = '/activity'} className="mt-3 w-full text-sm cursor-pointer lg:mt-4 lg:text-base">
+                <button
+                  onClick={() => window.location.href = '/activity'}
+                  className="mt-4 w-full text-sm text-[#51a2ff] hover:underline cursor-pointer text-center transition-colors"
+                >
                   {t('viewAllActivity')}
-                </Button>
+                </button>
               </div>
 
               {/* Recent Payments */}
-              <div className="p-4 card-modern lg:p-6">
-                <h3 className="mb-4 text-lg font-semibold text-white lg:text-xl lg:mb-6">{t('recentPayments')}</h3>
-                <div className="space-y-3 lg:space-y-4">
+              <div className="card-base p-5">
+                <h3 className="text-base font-semibold text-white mb-4">{t('recentPayments')}</h3>
+                <div className="space-y-2">
                   {dataLoading ? (
-                    <div className="flex justify-center items-center py-8">
-                      <div className="w-8 h-8 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+                    <div className="flex justify-center items-center py-10">
+                      <div className="w-6 h-6 rounded-full border-2 border-[#51a2ff]/30 border-t-[#51a2ff] animate-spin" />
                     </div>
                   ) : recentPurchases.length > 0 ? (
-                    recentPurchases.slice(0, 4).map((purchase) => {
-                      return (
-                      <div key={purchase.id} className="flex gap-3 items-center p-3 rounded-lg transition-colors cursor-pointer lg:gap-4 lg:p-4 bg-white/5 hover:bg-white/10">
-                        <div className="flex flex-shrink-0 justify-center items-center w-8 h-8 bg-gradient-to-r rounded-lg lg:w-10 lg:h-10 from-green-500/20 to-emerald-500/20">
-                          <CurrencyDollar size={20} className="text-green-400" />
+                    recentPurchases.slice(0, 4).map((purchase) => (
+                      <div
+                        key={purchase.id}
+                        className="flex gap-3 items-center p-3 rounded-xl transition-colors cursor-pointer"
+                        style={{ background: '#1a1a1a' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#1e1e1e')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '#1a1a1a')}
+                      >
+                        <div
+                          className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{ background: 'rgba(81,162,255,0.08)' }}
+                        >
+                          <CurrencyDollar size={16} className="text-[#51a2ff]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-white lg:text-sm font-medium truncate">{purchase.name}</p>
-                          <p className="text-xs text-muted">{purchase.date}</p>
+                          <p className="text-xs font-medium text-white truncate">{purchase.name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: '#888' }}>{purchase.date}</p>
                         </div>
-                        <div className="text-end">
-                          <p className="text-sm font-bold text-gradient">{purchase.price === 0 ? t('freeTrial') : `$${purchase.price}`}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${purchase.status === 'completed' ? 'bg-green-500/20 text-green-400' : purchase.status === 'refunded' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold text-[#51a2ff]">
+                            {purchase.price === 0 ? t('freeTrial') : `$${purchase.price}`}
+                          </p>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              purchase.status === 'completed'
+                                ? 'text-green-400 bg-green-500/10'
+                                : purchase.status === 'refunded'
+                                ? 'text-[#51a2ff] bg-[rgba(81,162,255,0.1)]'
+                                : 'text-yellow-400 bg-yellow-500/10'
+                            }`}
+                          >
                             {purchase.status === 'completed' ? t('completed') : purchase.status === 'refunded' ? t('refunded') : t('pending')}
                           </span>
                         </div>
                       </div>
-                    )})
+                    ))
                   ) : (
-                    <div className="py-8 text-center text-muted">
-                      <CurrencyDollar size={32} className="mx-auto mb-2 opacity-50" />
-                      <p>{t('noPayments')}</p>
+                    <div className="py-10 text-center">
+                      <CurrencyDollar size={28} className="mx-auto mb-2 opacity-30 text-white" />
+                      <p className="text-sm" style={{ color: '#888' }}>{t('noPayments')}</p>
                     </div>
                   )}
                 </div>
-                <Button variant="link" onClick={() => window.location.href = '/payment-history'} className="mt-3 w-full text-sm cursor-pointer lg:mt-4 lg:text-base">
+                <button
+                  onClick={() => window.location.href = '/payment-history'}
+                  className="mt-4 w-full text-sm text-[#51a2ff] hover:underline cursor-pointer text-center transition-colors"
+                >
                   {t('viewPaymentHistory')}
-                </Button>
+                </button>
               </div>
+
             </div>
           </div>
         )}
 
         {/* My Scripts Tab */}
         {activeTab === 'scripts' && (
-          <div className="animate-fade-in">
-            <div className="p-4 card-modern lg:p-6">
-              <div className="flex flex-col gap-3 justify-between mb-4 sm:flex-row sm:items-center lg:mb-6">
+          <div>
+            <div className="card-base p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
                 <div>
-                  <h3 className="text-lg font-semibold text-white lg:text-xl">{t('myScripts')}</h3>
-                  <p className="text-sm text-muted">{t('manageScripts')}</p>
+                  <h3 className="text-base font-semibold text-white">{t('myScripts')}</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#888' }}>{t('manageScripts')}</p>
                 </div>
-                <div className="flex gap-2 lg:gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="px-3 py-2 text-xs bg-gradient-to-r cursor-pointer lg:px-4 lg:text-sm from-cyan-500/20 to-blue-500/20 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30"
-                    onClick={() => setShowIpModal(true)}
-                  >
-                    <Gear size={14} className="mr-1" />
-                    {t('quickIpSettings')}
-                  </Button>
-
-                </div>
+                <button
+                  className="btn-ghost flex items-center gap-1.5 text-xs px-3 py-2 cursor-pointer self-start sm:self-auto"
+                  onClick={() => setShowIpModal(true)}
+                >
+                  <Gear size={13} />
+                  {t('quickIpSettings')}
+                </button>
               </div>
-              
-              <div className="space-y-3 lg:space-y-4">
+
+              <div className="space-y-3">
                 {licenses?.data?.map((license, index) => {
-                  // Use actual license data instead of mock data
-                  let licenseStatus = !license.isActive ? 'Revoked' :  (!license.isRevoked && !license.isActive) ? 'Expired' : 'Active'
+                  let licenseStatus = !license.isActive ? 'Revoked' : (!license.isRevoked && !license.isActive) ? 'Expired' : 'Active'
                   return (
-                    <div key={license.id} className="p-4 rounded-lg border transition-colors lg:p-6 bg-white/5 border-cyan-500/20 hover:bg-white/10 group">
-                      <div className="flex flex-col gap-4 justify-between lg:flex-row lg:items-start">
-                        <div className="flex-1">
-                          <div className="flex gap-3 items-center mb-3 lg:gap-4">
-                            <div className="flex flex-shrink-0 justify-center items-center w-10 h-10 bg-gradient-to-r rounded-lg lg:w-12 lg:h-12 from-cyan-500/20 to-blue-500/20">
-                              <Scroll size={20} className="text-cyan-400" />
+                    <div
+                      key={license.id}
+                      className="p-4 rounded-xl border transition-colors"
+                      style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.05)' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#1e1e1e')}
+                      onMouseLeave={e => (e.currentTarget.style.background = '#1a1a1a')}
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="flex-1 min-w-0">
+
+                          {/* Script title row */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div
+                              className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                              style={{ background: 'rgba(81,162,255,0.08)' }}
+                            >
+                              <Scroll size={16} className="text-[#51a2ff]" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-semibold text-white truncate transition-colors group-hover:text-gradient lg:text-base">{license.script?.title || license.script?.name || 'Unknown Script'}</h4>
-                              <div className="flex flex-wrap gap-2 items-center mt-1 lg:gap-4">
-                                <span className="text-xs text-muted lg:text-sm">{license.script?.category}</span>
-                                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(licenseStatus)}`}>
+                              <h4 className="text-sm font-semibold text-white truncate">
+                                {license.script?.title || license.script?.name || 'Unknown Script'}
+                              </h4>
+                              <div className="flex flex-wrap gap-2 items-center mt-1">
+                                <span className="text-xs" style={{ color: '#888' }}>{license.script?.category}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(licenseStatus)}`}>
                                   {licenseStatus}
                                 </span>
-                                <span className="text-xs text-muted lg:text-sm">v{license.script?.version}</span>
+                                <span className="text-xs" style={{ color: '#888' }}>v{license.script?.version}</span>
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* License Details */}
-                          <div className="grid grid-cols-1 gap-4 mb-4 lg:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-3 mb-3 sm:grid-cols-2">
+
+                            {/* Private Key */}
                             <div>
-                              <label className="block mb-1 text-xs font-medium text-muted">{t('privateKey')}</label>
-                              <div className="flex gap-2 items-center">
-                                <input 
-                                  type={showPrivateKeys.has(license.id) ? "text" : "password"} 
+                              <label className="block mb-1 text-xs font-medium" style={{ color: '#888' }}>{t('privateKey')}</label>
+                              <div className="flex gap-1.5 items-center">
+                                <input
+                                  type={showPrivateKeys.has(license.id) ? 'text' : 'password'}
                                   value={showPrivateKeys.has(license.id) ? (license.privateKey || t('noPrivateKey')) : '••••••••••••••••••••••••••••••••'}
                                   readOnly
-                                  className="flex-1 px-2 py-1 font-mono text-xs text-white rounded border transition-all duration-300 ease-in-out bg-white/10 border-white/20"
+                                  className="flex-1 px-2.5 py-1.5 font-mono text-xs text-white rounded-lg outline-none"
+                                  style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                                 />
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <button
                                   onClick={() => togglePrivateKey(license.id)}
-                                  className="px-2 py-1 text-xs transition-all duration-200 ease-in-out cursor-pointer hover:scale-105 active:scale-95"
+                                  className="flex-shrink-0 p-1.5 rounded-lg transition-colors cursor-pointer text-[#51a2ff] hover:bg-[rgba(81,162,255,0.08)]"
                                 >
-                                  <div className="transition-transform duration-300 ease-in-out">
-                                    {showPrivateKeys.has(license.id) ? <EyeSlash size={14} className="animate-pulse" /> : <Eye size={14} />}
-                                  </div>
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                  {showPrivateKeys.has(license.id) ? <EyeSlash size={14} /> : <Eye size={14} />}
+                                </button>
+                                <button
                                   onClick={() => copyToClipboard(license.privateKey || '')}
-                                  className="px-2 py-1 text-xs cursor-pointer"
+                                  className="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer text-[#51a2ff] hover:bg-[rgba(81,162,255,0.08)]"
+                                  style={{ border: '1px solid rgba(81,162,255,0.2)' }}
                                 >
                                   {t('copy')}
-                                </Button>
+                                </button>
                               </div>
                             </div>
-                            
+
+                            {/* Allowed IP */}
                             <div>
-                               <label className="block mb-1 text-xs font-medium text-muted">{t('allowedIp')}</label>
-                               <div className="flex gap-1 items-center px-2 py-1 text-xs rounded border bg-white/10 border-white/20">
-                                 <Server className="w-3 h-3" />
-                                 <span className="font-mono text-white">
-                                   {licensesIpAddress || t('noIpRestriction')}
-                                 </span>
-                               </div>
-                             </div>
-                          </div>
-                          
-                          {/* Additional Info */}
-                          <div className="flex flex-wrap gap-4 items-center text-xs text-muted">
-                            <span>{t('licenseType')}: <span className="font-medium text-white">
-                              {license.expiresAt ? t('timeBased') : t('lifetime')}
-                            </span></span>
-                            {license.expiresAt && (
-                              <span>{t('expires')}: <span className="font-medium text-white">
-                                {new Date(license.expiresAt).toLocaleDateString()}
-                              </span></span>
-                            )}
-                            <span>{t('lastIp')}: <span className="font-mono font-medium text-white">{license.lastUsedIp || t('neverUsed')}</span></span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col gap-2">
-                          <span className="text-sm font-bold text-accent lg:text-base">{license.isTrial ? t('freeTrial') : `$${license.script?.price || 0}`}</span>
-                          <div className="flex flex-col gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="px-3 py-2 text-xs cursor-pointer lg:px-4 lg:text-sm"
-                              onClick={() => handleScriptAction(license, 'download')}
-                              disabled={!license.isActive}
-                            >
-                              {t('download')}
-                            </Button>
+                              <label className="block mb-1 text-xs font-medium" style={{ color: '#888' }}>{t('allowedIp')}</label>
+                              <div
+                                className="flex gap-1.5 items-center px-2.5 py-1.5 text-xs rounded-lg"
+                                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
+                              >
+                                <Server className="w-3 h-3 flex-shrink-0" style={{ color: '#888' }} />
+                                <span className="font-mono text-white truncate">
+                                  {licensesIpAddress || t('noIpRestriction')}
+                                </span>
+                              </div>
+                            </div>
 
                           </div>
+
+                          {/* Additional Info */}
+                          <div className="flex flex-wrap gap-3 text-xs" style={{ color: '#888' }}>
+                            <span>
+                              {t('licenseType')}:{' '}
+                              <span className="font-medium text-white">
+                                {license.expiresAt ? t('timeBased') : t('lifetime')}
+                              </span>
+                            </span>
+                            {license.expiresAt && (
+                              <span>
+                                {t('expires')}:{' '}
+                                <span className="font-medium text-white">
+                                  {new Date(license.expiresAt).toLocaleDateString()}
+                                </span>
+                              </span>
+                            )}
+                            <span>
+                              {t('lastIp')}:{' '}
+                              <span className="font-mono font-medium text-white">{license.lastUsedIp || t('neverUsed')}</span>
+                            </span>
+                          </div>
+
                         </div>
+
+                        {/* Price + Download */}
+                        <div className="flex flex-col gap-2 lg:items-end lg:flex-shrink-0">
+                          <span className="text-sm font-bold text-[#51a2ff]">
+                            {license.isTrial ? t('freeTrial') : `$${license.script?.price || 0}`}
+                          </span>
+                          <button
+                            className="btn-primary text-xs px-4 py-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            onClick={() => handleScriptAction(license, 'download')}
+                            disabled={!license.isActive}
+                          >
+                            {t('download')}
+                          </button>
+                        </div>
+
                       </div>
                     </div>
                   );
                 })}
               </div>
-              
-              {!licenses?.data || licenses.data.length === 0 && (
-                <div className="py-8 text-center">
-                  <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-gradient-to-r rounded-full from-cyan-500/20 to-blue-500/20">
-                    <Scroll size={32} className="text-cyan-400" />
+
+              {(!licenses?.data || licenses.data.length === 0) && (
+                <div className="py-12 text-center">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                    style={{ background: 'rgba(81,162,255,0.08)' }}
+                  >
+                    <Scroll size={24} className="text-[#51a2ff]" />
                   </div>
-                  <h4 className="mb-2 font-semibold text-white">{t('noScriptsFound')}</h4>
-                  <p className="mb-4 text-sm text-muted">{t('noScriptsYet')}</p>
-                  <Button 
+                  <h4 className="font-semibold text-white mb-1">{t('noScriptsFound')}</h4>
+                  <p className="text-sm mb-5" style={{ color: '#888' }}>{t('noScriptsYet')}</p>
+                  <button
                     onClick={() => window.location.href = '/scripts'}
-                    className="px-6 py-2 cursor-pointer"
+                    className="btn-primary px-6 py-2.5 text-sm cursor-pointer"
                   >
                     {t('browseScripts')}
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Activity Tab */}
-
-
-        {/* Settings Tab - License Management */}
-
       </div>
-      
+
       {/* Popup Modal */}
       {showPopup && selectedScript && (
-        <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black/50">
-          <div className="p-6 mx-4 w-full max-w-md bg-gray-900 rounded-lg border border-cyan-500/30">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-white">{t('scriptAction')}</h3>
-              <button 
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div
+            className="w-full max-w-md rounded-[14px] border p-6"
+            style={{ background: '#151515', borderColor: 'rgba(255,255,255,0.07)' }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-semibold text-white">{t('scriptAction')}</h3>
+              <button
                 onClick={closePopup}
-                className="text-gray-400 transition-colors cursor-pointer hover:text-white"
+                className="transition-colors cursor-pointer hover:text-white"
+                style={{ color: '#888' }}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            
-            <div className="mb-6">
+
+            <div className="mb-5">
               <div className="flex gap-3 items-center mb-4">
-                <Scroll size={48} className="text-cyan-400" />
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(81,162,255,0.08)' }}
+                >
+                  <Scroll size={20} className="text-[#51a2ff]" />
+                </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-white">{selectedScript.name || selectedScript.title}</h4>
-                  <p className="text-sm text-gray-400">{selectedScript.category?.name}</p>
+                  <h4 className="text-sm font-semibold text-white">{selectedScript.name || selectedScript.title}</h4>
+                  <p className="text-xs" style={{ color: '#888' }}>{selectedScript.category?.name}</p>
                 </div>
               </div>
-              
-              <p className="mb-4 text-sm text-gray-300">
-                {t('action')}: <span className="font-semibold text-cyan-400">{selectedScript.action}</span>
+
+              <p className="text-sm mb-4" style={{ color: '#999' }}>
+                {t('action')}: <span className="font-semibold text-[#51a2ff]">{selectedScript.action}</span>
               </p>
-              
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-2xl font-bold text-gradient">${selectedScript.price}</span>
+
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xl font-black text-[#51a2ff]">${selectedScript.price}</span>
                 {selectedScript.status && (
                   <span className={`text-xs font-bold px-2 py-1 rounded-full ${getStatusColor(selectedScript.status)}`}>
                     {selectedScript.status}
@@ -807,19 +871,17 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-            
-            <div className="flex gap-3">
-              <button 
-                onClick={() => {
-                  closePopup();
-                }}
-                className="flex-1 py-3 font-semibold cursor-pointer btn-primary"
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => { closePopup(); }}
+                className="btn-primary flex-1 py-2.5 text-sm font-semibold cursor-pointer"
               >
                 {t('confirm')} {selectedScript.action}
               </button>
-              <button 
+              <button
                 onClick={closePopup}
-                className="px-4 py-3 cursor-pointer btn-secondary"
+                className="btn-ghost px-4 py-2.5 text-sm cursor-pointer"
               >
                 {t('cancel')}
               </button>
@@ -829,9 +891,9 @@ export default function Dashboard() {
       )}
 
       {/* Licenses IP Modal */}
-      <LicensesIpModal 
-        isOpen={showIpModal} 
-        onClose={() => setShowIpModal(false)} 
+      <LicensesIpModal
+        isOpen={showIpModal}
+        onClose={() => setShowIpModal(false)}
       />
 
       {/* User Info Modal */}

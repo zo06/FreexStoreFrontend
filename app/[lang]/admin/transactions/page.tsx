@@ -5,14 +5,7 @@ import { useRouter } from 'next/navigation'
 import { withAdminAuth } from '@/lib/auth-context'
 import { useTransactionsStore, Transaction } from '@/lib/stores'
 import { apiClient } from '@/lib/api'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
 import { AnimatedSelect } from '@/components/ui/animated-select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
 import {
   DollarSign,
   TrendingUp,
@@ -20,14 +13,12 @@ import {
   Download,
   ArrowLeft,
   RefreshCw,
-  Calendar,
   CreditCard,
   CheckCircle,
   XCircle,
   Clock,
   AlertCircle,
   Search,
-  Filter,
   Eye,
   EyeOff,
   RotateCcw,
@@ -47,13 +38,12 @@ import toast from 'react-hot-toast'
 
 function AdminTransactions() {
   const router = useRouter()
-  
-  // Use Zustand store
-  const { 
-    items: transactions, 
-    loading, 
+
+  const {
+    items: transactions,
+    loading,
     error,
-    getAll: getTransactions 
+    getAll: getTransactions
   } = useTransactionsStore()
 
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
@@ -66,14 +56,15 @@ function AdminTransactions() {
   const [grossRevenue, setGrossRevenue] = useState(0)
   const [monthlyRevenue, setMonthlyRevenue] = useState(0)
   const [totalRefunds, setTotalRefunds] = useState(0)
-  
+
   // Transaction details dialog state
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [userTransactionHistory, setUserTransactionHistory] = useState<Transaction[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
-  
+  const [activeTab, setActiveTab] = useState('transaction')
+
   // Refund dialog state
   const [isRefundOpen, setIsRefundOpen] = useState(false)
   const [refundAmount, setRefundAmount] = useState<number>(0)
@@ -107,42 +98,36 @@ function AdminTransactions() {
   const [dialogInvoice, setDialogInvoice] = useState<any>(null)
   const [dialogInvoiceLoading, setDialogInvoiceLoading] = useState(false)
 
-  // Load transactions on mount
   useEffect(() => {
     getTransactions().catch(() => {})
   }, [getTransactions])
 
-  // Update filtered and calculate revenue when transactions change
   useEffect(() => {
     setFilteredTransactions(transactions)
     setTotalPages(Math.ceil(transactions.length / 50))
-    
-    // Calculate gross revenue (completed + refunded transactions - because refunded were once paid)
-    const successfulPayments = transactions.filter((t: Transaction) => 
+
+    const successfulPayments = transactions.filter((t: Transaction) =>
       t.status === 'completed' || t.status === 'refunded'
     )
     const gross = successfulPayments.reduce((sum: number, t: Transaction) => sum + t.amount, 0)
     setGrossRevenue(gross)
-    
-    // Calculate refunds
+
     const refunded = transactions.filter((t: Transaction) => t.status === 'refunded')
     const refundTotal = refunded.reduce((sum: number, t: any) => sum + (t.refundedAmount || t.amount || 0), 0)
     setTotalRefunds(refundTotal)
-    
-    // Net Revenue = Gross Revenue - Refunds
+
     setTotalRevenue(gross - refundTotal)
-    
-    // Calculate monthly revenue (net)
+
     const now = new Date()
     const monthlyPayments = successfulPayments.filter((t: Transaction) => {
       const transactionDate = new Date(t.createdAt || '')
-      return transactionDate.getMonth() === now.getMonth() && 
+      return transactionDate.getMonth() === now.getMonth() &&
              transactionDate.getFullYear() === now.getFullYear()
     })
     const monthlyGross = monthlyPayments.reduce((sum: number, t: Transaction) => sum + t.amount, 0)
     const monthlyRefunds = refunded.filter((t: Transaction) => {
       const transactionDate = new Date(t.createdAt || '')
-      return transactionDate.getMonth() === now.getMonth() && 
+      return transactionDate.getMonth() === now.getMonth() &&
              transactionDate.getFullYear() === now.getFullYear()
     }).reduce((sum: number, t: any) => sum + (t.refundedAmount || t.amount || 0), 0)
     setMonthlyRevenue(monthlyGross - monthlyRefunds)
@@ -155,10 +140,9 @@ function AdminTransactions() {
   const filterTransactions = () => {
     let filtered = [...transactions]
 
-    // Search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
-      filtered = filtered.filter(transaction => 
+      filtered = filtered.filter(transaction =>
         transaction.orderId?.toLowerCase().includes(search) ||
         transaction.user?.username?.toLowerCase().includes(search) ||
         transaction.user?.email?.toLowerCase().includes(search) ||
@@ -167,12 +151,10 @@ function AdminTransactions() {
       )
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(transaction => transaction.status === statusFilter)
     }
 
-    // Date filter
     if (dateFilter !== 'all') {
       const now = new Date()
       filtered = filtered.filter(transaction => {
@@ -184,7 +166,7 @@ function AdminTransactions() {
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
             return transactionDate >= weekAgo
           case 'month':
-            return transactionDate.getMonth() === now.getMonth() && 
+            return transactionDate.getMonth() === now.getMonth() &&
                    transactionDate.getFullYear() === now.getFullYear()
           case 'quarter':
             const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1)
@@ -200,24 +182,26 @@ function AdminTransactions() {
     setFilteredTransactions(filtered)
   }
 
-  // Open transaction details dialog and fetch full details
   const handleViewDetails = async (transaction: Transaction) => {
-    setSelectedTransaction(transaction) // Show basic info immediately
+    setSelectedTransaction(transaction)
     setIsDetailsOpen(true)
     setDetailsLoading(true)
     setUserTransactionHistory([])
-    setShowLicenseKey(false) // Reset spoiler state
+    setShowLicenseKey(false)
     setUserCurrentCart(null)
     setDialogCartItems([])
     setDialogInvoice(null)
-    
+
+    const defaultTab = (transaction as any).metadata?.isCartPurchase ? 'cart'
+      : (transaction as any).metadata?.invoiceId ? 'invoice'
+      : 'transaction'
+    setActiveTab(defaultTab)
+
     try {
-      // Fetch full transaction details
       const response = await apiClient.get<{ data: any }>(`/admin/transactions/${transaction.id}`)
       const fullTransaction = (response as any).data || response
       setSelectedTransaction(fullTransaction)
-      
-      // Fetch user transaction history if user exists
+
       if (fullTransaction.userId || transaction.userId) {
         setHistoryLoading(true)
         try {
@@ -231,7 +215,7 @@ function AdminTransactions() {
           setHistoryLoading(false)
         }
       }
-      // Sideload cart items if it's a cart purchase
+
       if ((fullTransaction.metadata as any)?.isCartPurchase && fullTransaction.orderId) {
         setDialogCartLoading(true)
         apiClient.get<any[]>(`/transactions/carts/${fullTransaction.orderId}`)
@@ -240,7 +224,6 @@ function AdminTransactions() {
           .finally(() => setDialogCartLoading(false))
       }
 
-      // Sideload invoice details if it's an invoice transaction
       const meta = (fullTransaction.metadata || (transaction as any).metadata) as any
       if (meta?.invoiceId) {
         setDialogInvoiceLoading(true)
@@ -249,16 +232,13 @@ function AdminTransactions() {
           .catch(() => setDialogInvoice(null))
           .finally(() => setDialogInvoiceLoading(false))
       }
-
     } catch (error) {
       console.error('Failed to load transaction details:', error)
-      // Keep showing the basic info if fetch fails
     } finally {
       setDetailsLoading(false)
     }
   }
 
-  // Open refund dialog
   const handleOpenRefund = (transaction: Transaction) => {
     setSelectedTransaction(transaction)
     setRefundAmount(transaction.amount)
@@ -266,11 +246,9 @@ function AdminTransactions() {
     setIsRefundOpen(true)
   }
 
-  // Process refund with confirmation
   const handleRefund = async () => {
     if (!selectedTransaction) return
-    
-    // Show confirmation before processing
+
     if (!window.confirm(
       `⚠️ REFUND CONFIRMATION\n\n` +
       `You are about to refund $${refundAmount.toFixed(2)} for transaction:\n` +
@@ -284,7 +262,7 @@ function AdminTransactions() {
     )) {
       return
     }
-    
+
     setIsRefunding(true)
     try {
       const response = await apiClient.post<{
@@ -300,18 +278,17 @@ function AdminTransactions() {
       }>(`/admin/transactions/${selectedTransaction.id}/refund`, {
         amount: refundAmount,
         notes: refundNotes,
-        confirmRefund: true // Required security confirmation flag
+        confirmRefund: true
       })
-      
+
       const result = response as any
-      
       toast.success(
-        `✅ Refund processed successfully!\n` +
+        `Refund processed successfully!\n` +
         `Amount: $${result.refundDetails?.refundedAmount || refundAmount}\n` +
         `License Revoked: ${result.refundDetails?.licenseRevoked ? 'Yes' : 'No'}`
       )
       setIsRefundOpen(false)
-      getTransactions() // Refresh transactions
+      getTransactions()
     } catch (error: any) {
       console.error('Failed to refund transaction:', error)
       const errorMessage = error?.response?.data?.message || error?.message || 'Failed to refund transaction'
@@ -324,7 +301,6 @@ function AdminTransactions() {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      
       if (!token) {
         toast.error('Authentication required')
         return
@@ -334,18 +310,12 @@ function AdminTransactions() {
       if (statusFilter !== 'all') params.append('status', statusFilter)
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/export?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to export transactions')
-      }
+      if (!response.ok) throw new Error('Failed to export transactions')
 
       const data = await response.json()
-      
-      // Convert to CSV
       const csvContent = [
         ['Order ID', 'User', 'Script', 'Amount', 'Status', 'Date'].join(','),
         ...data.map((t: any) => [
@@ -363,7 +333,6 @@ function AdminTransactions() {
       link.href = URL.createObjectURL(blob)
       link.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`
       link.click()
-      
       toast.success('Transactions exported successfully')
     } catch (error) {
       console.error('Failed to export transactions:', error)
@@ -371,7 +340,6 @@ function AdminTransactions() {
     }
   }
 
-  // View cart details for a specific orderId
   const handleViewCart = async (orderId: string) => {
     setCartOrderId(orderId)
     setIsCartOpen(true)
@@ -387,7 +355,6 @@ function AdminTransactions() {
     }
   }
 
-  // Load cart history (grouped)
   const loadCartHistory = async (page = 1) => {
     setCartHistoryLoading(true)
     try {
@@ -424,35 +391,23 @@ function AdminTransactions() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-400" />
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-400" />
-      case 'failed':
-        return <XCircle className="h-4 w-4 text-red-400" />
-      case 'cancelled':
-        return <AlertCircle className="h-4 w-4 text-gray-400" />
-      case 'refunded':
-        return <TrendingDown className="h-4 w-4 text-orange-400" />
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />
+      case 'completed': return <CheckCircle className="h-4 w-4 text-emerald-400" />
+      case 'pending': return <Clock className="h-4 w-4 text-amber-400" />
+      case 'failed': return <XCircle className="h-4 w-4 text-red-400" />
+      case 'cancelled': return <AlertCircle className="h-4 w-4 text-[#888]" />
+      case 'refunded': return <TrendingDown className="h-4 w-4 text-orange-400" />
+      default: return <Clock className="h-4 w-4 text-[#888]" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-500/20 text-green-400 border-green-500/30'
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-      case 'failed':
-        return 'bg-red-500/20 text-red-400 border-red-500/30'
-      case 'cancelled':
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-      case 'refunded':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      case 'completed': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+      case 'pending': return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+      case 'failed': return 'bg-red-500/10 text-red-400 border-red-500/20'
+      case 'cancelled': return 'bg-[rgba(255,255,255,0.05)] text-[#888] border-[rgba(255,255,255,0.07)]'
+      case 'refunded': return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+      default: return 'bg-[rgba(255,255,255,0.05)] text-[#888] border-[rgba(255,255,255,0.07)]'
     }
   }
 
@@ -468,226 +423,189 @@ function AdminTransactions() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-32 h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
+  const detailTabs = [
+    { id: 'transaction', label: 'Transaction', icon: <FileText className="w-3 h-3" /> },
+    ...((selectedTransaction?.metadata as any)?.isCartPurchase ? [{ id: 'cart', label: 'Cart Items', icon: <ShoppingCart className="w-3 h-3" /> }] : []),
+    ...((selectedTransaction?.metadata as any)?.invoiceId ? [{ id: 'invoice', label: 'Invoice', icon: <Layers className="w-3 h-3" /> }] : []),
+    { id: 'user', label: 'User', icon: <User className="w-3 h-3" /> },
+    { id: 'script', label: 'Script', icon: <Package className="w-3 h-3" /> },
+    { id: 'license', label: 'License', icon: <Key className="w-3 h-3" /> },
+    { id: 'history', label: 'History', icon: <History className="w-3 h-3" /> },
+  ]
+
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-<div className="absolute inset-0">
-  <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-</div>
-  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-      
-      <div className="relative z-10 p-6 mx-auto space-y-8 max-w-7xl">
-        {/* Header Section */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Button 
-              onClick={() => router.push('/admin')} 
-              variant="ghost" 
-              size="sm"
-              className="mb-4 text-cyan-300 hover:text-white hover:bg-cyan-700/50"
-            >
-              <ArrowLeft className="mr-2 w-4 h-4" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-4xl font-bold text-gradient">Transaction History</h1>
-            <p className="mt-2 text-lg text-muted">Complete financial transaction records</p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button
-              onClick={handleToggleCartHistory}
-              variant="outline"
-              className={`border-purple-500/30 hover:bg-purple-700/50 ${showCartHistory ? 'text-purple-300 bg-purple-800/30' : 'text-white'}`}
-            >
-              <ShoppingCart className="mr-2 w-4 h-4" />
-              {showCartHistory ? 'All Transactions' : 'Cart History'}
-            </Button>
-            <Button
-              onClick={() => getTransactions()}
-              variant="outline"
-              className="text-white border-cyan-500/30 hover:bg-cyan-700/50"
-            >
-              <RefreshCw className="mr-2 w-4 h-4" />
-              Refresh
-            </Button>
-            <Button
-              onClick={handleExport}
-              className="text-white bg-gradient-to-r from-green-600 to-emerald-600"
-            >
-              <Download className="mr-2 w-4 h-4" />
-              Export CSV
-            </Button>
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto space-y-6 max-w-7xl">
+
+        {/* Header */}
+        <div className="card-base p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <CreditCard className="w-6 h-6 text-[#51a2ff]" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Transaction History</h1>
+                <p className="text-sm text-[#555] mt-0.5">Complete financial transaction records</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={handleToggleCartHistory} className="btn-ghost flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4" />
+                {showCartHistory ? 'All Transactions' : 'Cart History'}
+              </button>
+              <button onClick={() => getTransactions()} className="btn-ghost flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </button>
+              <button onClick={handleExport} className="btn-primary flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+              <button onClick={() => router.push('/admin')} className="btn-ghost flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-green-900/40 to-green-800/20 border-green-500/20">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="card-base p-5">
             <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
-                <DollarSign className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                <DollarSign className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Net Revenue</p>
-                <p className={`text-2xl font-bold ${totalRevenue >= 0 ? 'text-white' : 'text-red-400'}`}>${totalRevenue.toFixed(2)}</p>
+                <p className="text-xs text-[#555]">Net Revenue</p>
+                <p className={`text-xl font-bold ${totalRevenue >= 0 ? 'text-white' : 'text-red-400'}`}>${totalRevenue.toFixed(2)}</p>
               </div>
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-blue-900/40 to-blue-800/20 border-blue-500/20">
+          <div className="card-base p-5">
             <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <TrendingUp className="w-5 h-5 text-[#51a2ff]" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-white">${monthlyRevenue.toFixed(2)}</p>
+                <p className="text-xs text-[#555]">Monthly Revenue</p>
+                <p className="text-xl font-bold text-white">${monthlyRevenue.toFixed(2)}</p>
               </div>
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-orange-900/40 to-orange-800/20 border-orange-500/20">
+          <div className="card-base p-5">
             <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
-                <RotateCcw className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl" style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)' }}>
+                <RotateCcw className="w-5 h-5 text-orange-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Total Refunds</p>
-                <p className="text-2xl font-bold text-white">${totalRefunds.toFixed(2)}</p>
+                <p className="text-xs text-[#555]">Total Refunds</p>
+                <p className="text-xl font-bold text-white">${totalRefunds.toFixed(2)}</p>
               </div>
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-cyan-900/40 to-purple-800/20 border-cyan-500/20">
+          <div className="card-base p-5">
             <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl">
-                <CreditCard className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <CreditCard className="w-5 h-5 text-[#51a2ff]" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Transactions</p>
-                <p className="text-2xl font-bold text-white">{transactions.length}</p>
+                <p className="text-xs text-[#555]">Transactions</p>
+                <p className="text-xl font-bold text-white">{transactions.length}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Revenue vs Refunds Chart */}
-        <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-slate-900/60 to-slate-800/30 border-slate-500/20">
+        {/* Revenue Overview */}
+        <div className="card-base p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white">Revenue Overview</h3>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-emerald-400"></div>
-                <span className="text-gray-400">Income</span>
+            <h3 className="text-base font-semibold text-white">Revenue Overview</h3>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                <span className="text-[#555]">Income</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-red-400"></div>
-                <span className="text-gray-400">Refunds</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-orange-400"></div>
+                <span className="text-[#555]">Refunds</span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Donut Chart Visualization */}
             <div className="flex items-center justify-center">
               <div className="relative w-40 h-40">
-                {/* Background circle */}
                 <svg className="w-full h-full transform -rotate-90">
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="20" />
                   <circle
-                    cx="80"
-                    cy="80"
-                    r="60"
-                    fill="none"
-                    stroke="rgba(100, 116, 139, 0.3)"
-                    strokeWidth="20"
-                  />
-                  {/* Net Revenue arc (what you kept) */}
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="60"
-                    fill="none"
-                    stroke="url(#incomeGradient)"
-                    strokeWidth="20"
+                    cx="80" cy="80" r="60" fill="none"
+                    stroke="#22c55e" strokeWidth="20"
                     strokeDasharray={`${grossRevenue > 0 ? ((totalRevenue / grossRevenue) * 377) : 0} 377`}
                     strokeLinecap="round"
                     className="transition-all duration-700"
                   />
-                  {/* Refunds arc */}
                   <circle
-                    cx="80"
-                    cy="80"
-                    r="60"
-                    fill="none"
-                    stroke="url(#refundGradient)"
-                    strokeWidth="20"
+                    cx="80" cy="80" r="60" fill="none"
+                    stroke="#f97316" strokeWidth="20"
                     strokeDasharray={`${grossRevenue > 0 ? ((totalRefunds / grossRevenue) * 377) : 0} 377`}
                     strokeDashoffset={`-${grossRevenue > 0 ? ((totalRevenue / grossRevenue) * 377) : 0}`}
                     strokeLinecap="round"
                     className="transition-all duration-700"
                   />
-                  <defs>
-                    <linearGradient id="incomeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#22c55e" />
-                      <stop offset="100%" stopColor="#10b981" />
-                    </linearGradient>
-                    <linearGradient id="refundGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#f97316" />
-                      <stop offset="100%" stopColor="#ef4444" />
-                    </linearGradient>
-                  </defs>
                 </svg>
-                {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-xs text-gray-400">Net Revenue</p>
-                  <p className={`text-xl font-bold ${totalRevenue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <p className="text-xs text-[#555]">Net Revenue</p>
+                  <p className={`text-xl font-bold ${totalRevenue >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                     ${totalRevenue.toFixed(0)}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Gross Income Card */}
-            <div className="p-5 rounded-xl bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-500/30">
+            <div className="card-base p-5" style={{ background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.15)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-green-500/20">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
+                <div className="p-2 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)' }}>
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
                 </div>
-                <span className="text-gray-400 text-sm">Gross Income</span>
+                <span className="text-[#888] text-sm">Gross Income</span>
               </div>
-              <p className="text-3xl font-bold text-green-400 mb-2">${grossRevenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-emerald-400 mb-2">${grossRevenue.toFixed(2)}</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500"
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                     style={{ width: `${grossRevenue > 0 ? ((totalRevenue / grossRevenue) * 100) : 0}%` }}
                   />
                 </div>
-                <span className="text-xs text-green-400">
+                <span className="text-xs text-emerald-400">
                   {grossRevenue > 0 ? ((totalRevenue / grossRevenue) * 100).toFixed(1) : 0}% kept
                 </span>
               </div>
             </div>
 
-            {/* Refunds Card */}
-            <div className="p-5 rounded-xl bg-gradient-to-br from-orange-900/30 to-red-900/20 border border-orange-500/30">
+            <div className="card-base p-5" style={{ background: 'rgba(249,115,22,0.04)', border: '1px solid rgba(249,115,22,0.15)' }}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-orange-500/20">
-                  <TrendingDown className="w-5 h-5 text-orange-400" />
+                <div className="p-2 rounded-lg" style={{ background: 'rgba(249,115,22,0.1)' }}>
+                  <TrendingDown className="w-4 h-4 text-orange-400" />
                 </div>
-                <span className="text-gray-400 text-sm">Total Refunds</span>
+                <span className="text-[#888] text-sm">Total Refunds</span>
               </div>
-              <p className="text-3xl font-bold text-orange-400 mb-2">${totalRefunds.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-orange-400 mb-2">${totalRefunds.toFixed(2)}</p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-orange-500 to-red-400 rounded-full transition-all duration-500"
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <div
+                    className="h-full bg-orange-500 rounded-full transition-all duration-500"
                     style={{ width: `${grossRevenue > 0 ? ((totalRefunds / grossRevenue) * 100) : 0}%` }}
                   />
                 </div>
@@ -700,15 +618,16 @@ function AdminTransactions() {
         </div>
 
         {/* Filters */}
-        <div className="p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-slate-900/60 to-slate-800/30 border-slate-500/20">
+        <div className="card-base p-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2 z-10" />
-              <Input
+              <Search className="absolute left-3 top-1/2 w-4 h-4 text-[#555] -translate-y-1/2 z-10" />
+              <input
                 placeholder="Search transactions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 text-white bg-slate-800/50 border-slate-600/30"
+                className="w-full pl-10 pr-4 py-2 text-sm text-white rounded-lg outline-none focus:ring-1 focus:ring-[#51a2ff]"
+                style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
               />
             </div>
 
@@ -742,55 +661,54 @@ function AdminTransactions() {
           </div>
         </div>
 
-        {/* ── Cart History View ───────────────────────────────────────── */}
+        {/* Cart History View */}
         {showCartHistory && (
-          <div className="overflow-hidden p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-purple-900/20 to-slate-800/30 border-purple-500/20">
+          <div className="card-base p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-purple-400" />
+              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4 text-[#51a2ff]" />
                 Cart Purchase History
               </h3>
-              {cartHistoryLoading && <RefreshCw className="w-5 h-5 text-purple-400 animate-spin" />}
+              {cartHistoryLoading && <RefreshCw className="w-4 h-4 text-[#51a2ff] animate-spin" />}
             </div>
 
             {cartHistory.length === 0 && !cartHistoryLoading ? (
-              <div className="text-center py-12 text-gray-400">
-                <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <div className="text-center py-12 text-[#555]">
+                <ShoppingCart className="w-10 h-10 mx-auto mb-3 opacity-30" />
                 <p>No cart purchases found</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {cartHistory.map((cart: any) => (
-                  <div key={cart.orderId} className="rounded-xl border border-purple-500/20 bg-purple-900/10 overflow-hidden">
-                    {/* Cart header row */}
+                  <div key={cart.orderId} className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                     <button
                       onClick={() => setExpandedCart(expandedCart === cart.orderId ? null : cart.orderId)}
-                      className="w-full flex flex-wrap items-center justify-between gap-3 p-4 hover:bg-purple-500/10 transition-colors text-left"
+                      className="w-full flex flex-wrap items-center justify-between gap-3 p-4 hover:bg-[#161616] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-500/20 rounded-lg">
-                          <ShoppingCart className="w-4 h-4 text-purple-400" />
+                        <div className="p-2 rounded-lg" style={{ background: 'rgba(81,162,255,0.1)' }}>
+                          <ShoppingCart className="w-4 h-4 text-[#51a2ff]" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-white font-medium">{cart.user?.username || 'Unknown'}</span>
-                            <span className="text-xs text-gray-500">{cart.user?.email}</span>
+                            <span className="text-xs text-[#555]">{cart.user?.email}</span>
                           </div>
-                          <div className="text-xs text-gray-400 font-mono">{String(cart.orderId).substring(0, 24)}…</div>
+                          <div className="text-xs text-[#555] font-mono">{String(cart.orderId).substring(0, 24)}…</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-center">
-                          <p className="text-xs text-gray-400">Items</p>
-                          <p className="font-bold text-purple-300">{Number(cart.itemCount)}</p>
+                          <p className="text-xs text-[#555]">Items</p>
+                          <p className="font-bold text-[#ccc]">{Number(cart.itemCount)}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-400">Total</p>
-                          <p className="font-bold text-green-400">${Number(cart.totalAmount).toFixed(2)}</p>
+                          <p className="text-xs text-[#555]">Total</p>
+                          <p className="font-bold text-[#51a2ff]">${Number(cart.totalAmount).toFixed(2)}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-xs text-gray-400">Date</p>
-                          <p className="text-xs text-white">{cart.createdAt ? new Date(cart.createdAt).toLocaleDateString() : '—'}</p>
+                          <p className="text-xs text-[#555]">Date</p>
+                          <p className="text-xs text-[#ccc]">{cart.createdAt ? new Date(cart.createdAt).toLocaleDateString() : '—'}</p>
                         </div>
                         <div className="flex gap-1">
                           <a
@@ -798,35 +716,33 @@ function AdminTransactions() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            title="View in Stripe"
-                            className="p-1.5 text-gray-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded-md transition-colors"
+                            className="p-1.5 text-[#555] hover:text-[#51a2ff] rounded-md transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
-                          <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${expandedCart === cart.orderId ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`w-4 h-4 text-[#555] transition-transform ${expandedCart === cart.orderId ? 'rotate-90' : ''}`} />
                         </div>
                       </div>
                     </button>
 
-                    {/* Expanded: individual scripts */}
                     {expandedCart === cart.orderId && (
-                      <div className="border-t border-purple-500/20 divide-y divide-purple-500/10">
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                         {(cart.items || []).map((item: any) => (
-                          <div key={item.id} className="flex items-center gap-3 px-5 py-3">
+                          <div key={item.id} className="flex items-center gap-3 px-5 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                             {item.script?.imageUrl && (
                               <img src={item.script.imageUrl} alt={item.script?.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="text-white text-sm font-medium truncate">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
-                              <p className="text-xs text-gray-400">{item.script?.version || '—'} · {item.script?.licenseType || '—'}</p>
+                              <p className="text-xs text-[#555]">{item.script?.version || '—'} · {item.script?.licenseType || '—'}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <p className="text-green-400 font-semibold text-sm">${Number(item.amount).toFixed(2)}</p>
+                              <p className="text-[#51a2ff] font-semibold text-sm">${Number(item.amount).toFixed(2)}</p>
                               {item.license && (
-                                <p className="text-xs text-gray-500 font-mono">{item.license.privateKey?.substring(0, 12)}…</p>
+                                <p className="text-xs text-[#555] font-mono">{item.license.privateKey?.substring(0, 12)}…</p>
                               )}
                             </div>
-                            <Badge className={`${getStatusColor(item.status)} text-xs flex-shrink-0`}>{item.status}</Badge>
+                            <span className={`${getStatusColor(item.status)} text-xs px-2 py-0.5 rounded-full font-medium border flex-shrink-0`}>{item.status}</span>
                           </div>
                         ))}
                       </div>
@@ -836,102 +752,95 @@ function AdminTransactions() {
               </div>
             )}
 
-            {/* Pagination */}
             {cartHistoryTotalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <Button size="sm" variant="outline" disabled={cartHistoryPage === 1} onClick={() => loadCartHistory(cartHistoryPage - 1)} className="text-white border-slate-600/30">
+              <div className="card-base p-4 flex items-center justify-center gap-3 mt-4">
+                <button
+                  className="btn-ghost btn-sm flex items-center gap-1"
+                  disabled={cartHistoryPage === 1}
+                  onClick={() => loadCartHistory(cartHistoryPage - 1)}
+                >
                   <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="text-sm text-gray-400">Page {cartHistoryPage} / {cartHistoryTotalPages}</span>
-                <Button size="sm" variant="outline" disabled={cartHistoryPage === cartHistoryTotalPages} onClick={() => loadCartHistory(cartHistoryPage + 1)} className="text-white border-slate-600/30">
+                </button>
+                <span className="text-sm text-[#555]">Page {cartHistoryPage} / {cartHistoryTotalPages}</span>
+                <button
+                  className="btn-ghost btn-sm flex items-center gap-1"
+                  disabled={cartHistoryPage === cartHistoryTotalPages}
+                  onClick={() => loadCartHistory(cartHistoryPage + 1)}
+                >
                   <ChevronRight className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             )}
           </div>
         )}
 
         {/* Transactions Table */}
-        <div className="overflow-hidden p-6 bg-gradient-to-br rounded-2xl border backdrop-blur-sm from-slate-900/60 to-slate-800/30 border-slate-500/20">
+        <div className="card-base p-6">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-slate-600/20 hover:bg-white/5">
-                  <TableHead className="text-gray-300">Order ID</TableHead>
-                  <TableHead className="text-gray-300">User</TableHead>
-                  <TableHead className="text-gray-300">Script</TableHead>
-                  <TableHead className="text-gray-300">Developer</TableHead>
-                  <TableHead className="text-gray-300">Amount</TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">Date</TableHead>
-                  <TableHead className="text-gray-300">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Order ID</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">User</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Script</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Developer</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Amount</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Status</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Date</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                 {filteredTransactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-32 text-center text-gray-400">
-                      No transactions found
-                    </TableCell>
-                  </TableRow>
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-[#555]">No transactions found</td>
+                  </tr>
                 ) : (
                   filteredTransactions.map((transaction) => (
-                    <TableRow key={transaction.id} className="border-slate-600/20 hover:bg-white/5">
-                      <TableCell className="font-mono text-sm text-gray-300">
+                    <tr key={transaction.id} className="border-b transition-colors hover:bg-[#161616]" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                      <td className="py-3 px-4 text-[#ccc] font-mono text-xs">
                         {transaction.orderId?.substring(0, 16) || 'N/A'}...
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-white">
-                          {transaction.user?.username || 'Unknown'}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {transaction.user?.email || transaction.payerEmail || 'No email'}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-white">
-                        {transaction.script?.name || 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-white">
-                          {transaction.developerName || 'N/A'}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {transaction.type || 'purchase'}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-green-400">
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc]">
+                        <div className="text-white">{transaction.user?.username || 'Unknown'}</div>
+                        <div className="text-xs text-[#555]">{transaction.user?.email || transaction.payerEmail || 'No email'}</div>
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc]">{transaction.script?.name || 'N/A'}</td>
+                      <td className="py-3 px-4 text-[#ccc]">
+                        <div>{transaction.developerName || 'N/A'}</div>
+                        <div className="text-xs text-[#555]">{transaction.type || 'purchase'}</div>
+                      </td>
+                      <td className="py-3 px-4 text-[#51a2ff] font-semibold">
                         ${transaction.amount?.toFixed(2) || '0.00'} {transaction.currency || 'USD'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(transaction.status)} flex items-center gap-1 w-fit`}>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`${getStatusColor(transaction.status)} text-xs px-2 py-0.5 rounded-full font-medium border inline-flex items-center gap-1`}>
                           {getStatusIcon(transaction.status)}
                           {transaction.status?.charAt(0).toUpperCase() + transaction.status?.slice(1) || 'Unknown'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-400">
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-[#ccc]">
                         {transaction.createdAt ? formatDate(transaction.createdAt) : 'N/A'}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td className="py-3 px-4">
                         <div className="flex gap-1 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant="ghost"
+                          <button
                             onClick={() => handleViewDetails(transaction)}
-                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                            className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                            style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                             title="View details"
                           >
                             <Eye className="w-4 h-4" />
-                          </Button>
+                          </button>
                           {(transaction as any).metadata?.isCartPurchase && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                            <button
                               onClick={() => handleViewCart(transaction.orderId!)}
-                              className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
+                              className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                              style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                               title="View cart"
                             >
                               <ShoppingCart className="w-4 h-4" />
-                            </Button>
+                            </button>
                           )}
                           {transaction.paymentId && (
                             <a
@@ -939,283 +848,222 @@ function AdminTransactions() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title="Open in Stripe"
-                              className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded-md transition-colors"
+                              className="p-2 rounded-lg text-[#888] hover:text-white transition-colors inline-flex items-center justify-center"
+                              style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                             >
                               <ExternalLink className="w-4 h-4" />
                             </a>
                           )}
                           {transaction.status === 'completed' && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                            <button
                               onClick={() => handleOpenRefund(transaction)}
-                              className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/20"
+                              className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400"
+                              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                               title="Refund"
                             >
                               <RotateCcw className="w-4 h-4" />
-                            </Button>
+                            </button>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))
                 )}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex gap-2 justify-center items-center mt-6">
-              <Button
+            <div className="card-base p-4 flex items-center justify-center gap-3 mt-6">
+              <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                variant="outline"
-                size="sm"
-                className="text-white border-slate-600/30"
+                className="btn-ghost btn-sm flex items-center gap-1"
               >
+                <ChevronLeft className="w-4 h-4" />
                 Previous
-              </Button>
-              <span className="text-white">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
+              </button>
+              <span className="text-sm text-[#555]">Page {currentPage} of {totalPages}</span>
+              <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                variant="outline"
-                size="sm"
-                className="text-white border-slate-600/30"
+                className="btn-ghost btn-sm flex items-center gap-1"
               >
                 Next
-              </Button>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Transaction Details Dialog */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600/30 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-cyan-400" />
-              Transaction Details
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedTransaction && (
-            <div className="relative">
-              {/* Loading Overlay */}
+      {/* Transaction Details Modal */}
+      {isDetailsOpen && selectedTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-[#51a2ff]" />
+                  <h2 className="text-lg font-bold text-white">Transaction Details</h2>
+                </div>
+                <button onClick={() => setIsDetailsOpen(false)} className="p-2 rounded-lg text-[#888] hover:text-white transition-colors" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
               {detailsLoading && (
-                <div className="absolute inset-0 bg-slate-900/70 rounded-lg flex items-center justify-center z-10">
-                  <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin" />
+                <div className="flex justify-center py-4 mb-4">
+                  <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
                 </div>
               )}
-              
-              {/* Amount & Status Header */}
-              <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-green-900/30 to-emerald-900/20 border border-green-500/20 mb-4">
+
+              {/* Amount & Status */}
+              <div className="flex items-center justify-between p-5 rounded-xl mb-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                 <div>
-                  <p className="text-sm text-gray-400">Amount</p>
-                  <p className="text-4xl font-bold text-green-400">
-                    ${selectedTransaction.amount?.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-gray-500 uppercase mt-1">{selectedTransaction.currency || 'USD'}</p>
+                  <p className="text-sm text-[#555]">Amount</p>
+                  <p className="text-4xl font-bold text-emerald-400">${selectedTransaction.amount?.toFixed(2)}</p>
+                  <p className="text-xs text-[#555] uppercase mt-1">{selectedTransaction.currency || 'USD'}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <Badge className={`${getStatusColor(selectedTransaction.status)} px-4 py-2 text-sm font-medium`}>
+                  <span className={`${getStatusColor(selectedTransaction.status)} text-xs px-3 py-1.5 rounded-full font-medium border inline-flex items-center gap-1.5`}>
                     {getStatusIcon(selectedTransaction.status)}
-                    <span className="ml-1 capitalize">{selectedTransaction.status}</span>
-                  </Badge>
+                    <span className="capitalize">{selectedTransaction.status}</span>
+                  </span>
                   {selectedTransaction.status === 'completed' && (
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setIsDetailsOpen(false)
-                        handleOpenRefund(selectedTransaction)
-                      }}
-                      className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-sm px-4"
+                    <button
+                      onClick={() => { setIsDetailsOpen(false); handleOpenRefund(selectedTransaction) }}
+                      className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-1.5"
+                      style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
+                      <RotateCcw className="w-3.5 h-3.5" />
                       Refund
-                    </Button>
+                    </button>
                   )}
                 </div>
               </div>
 
               {/* Tabs */}
-              <Tabs defaultValue={
-                (selectedTransaction.metadata as any)?.isCartPurchase ? 'cart'
-                : (selectedTransaction.metadata as any)?.invoiceId ? 'invoice'
-                : 'transaction'
-              } className="w-full">
-                <TabsList className="w-full bg-slate-800/50 border border-slate-600/30 mb-4 flex-wrap h-auto gap-1 p-1">
-                  <TabsTrigger value="transaction" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
-                    <FileText className="w-3 h-3 mr-1" />
-                    Transaction
-                  </TabsTrigger>
-                  {(selectedTransaction.metadata as any)?.isCartPurchase && (
-                    <TabsTrigger value="cart" className="flex-1 data-[state=active]:bg-purple-600 text-xs">
-                      <ShoppingCart className="w-3 h-3 mr-1" />
-                      Cart Items
-                    </TabsTrigger>
-                  )}
-                  {(selectedTransaction.metadata as any)?.invoiceId && (
-                    <TabsTrigger value="invoice" className="flex-1 data-[state=active]:bg-blue-600 text-xs">
-                      <Layers className="w-3 h-3 mr-1" />
-                      Invoice
-                    </TabsTrigger>
-                  )}
-                  <TabsTrigger value="user" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
-                    <User className="w-3 h-3 mr-1" />
-                    User
-                  </TabsTrigger>
-                  <TabsTrigger value="script" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
-                    <Package className="w-3 h-3 mr-1" />
-                    Script
-                  </TabsTrigger>
-                  <TabsTrigger value="license" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
-                    <Key className="w-3 h-3 mr-1" />
-                    License
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="flex-1 data-[state=active]:bg-cyan-600 text-xs">
-                    <History className="w-3 h-3 mr-1" />
-                    History
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex flex-wrap gap-1 p-1 rounded-lg mb-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                {detailTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors"
+                    style={activeTab === tab.id
+                      ? { background: 'rgba(81,162,255,0.15)', color: '#51a2ff', border: '1px solid rgba(81,162,255,0.2)' }
+                      : { color: '#555', border: '1px solid transparent' }
+                    }
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
-                {/* Transaction Tab */}
-                <TabsContent value="transaction" className="space-y-2">
-                  <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                      <span className="text-gray-400">Order ID</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs">{selectedTransaction.orderId || 'N/A'}</span>
-                        <button onClick={() => {navigator.clipboard.writeText(selectedTransaction.orderId || ''); toast.success('Copied!')}} className="text-gray-400 hover:text-white">
-                          <Copy className="w-3 h-3" />
-                        </button>
+              {/* Transaction Tab */}
+              {activeTab === 'transaction' && (
+                <div className="rounded-lg p-4 space-y-0" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  {[
+                    { label: 'Order ID', value: <div className="flex items-center gap-2"><span className="font-mono text-xs text-[#ccc]">{selectedTransaction.orderId || 'N/A'}</span><button onClick={() => { navigator.clipboard.writeText(selectedTransaction.orderId || ''); toast.success('Copied!') }} className="text-[#555] hover:text-white"><Copy className="w-3 h-3" /></button></div> },
+                    { label: 'Payment ID', value: <div className="flex items-center gap-2"><span className="font-mono text-xs text-[#ccc]">{selectedTransaction.paymentId || 'N/A'}</span>{selectedTransaction.paymentId && <a href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`} target="_blank" rel="noopener noreferrer" className="text-[#51a2ff] hover:opacity-80"><ExternalLink className="w-3.5 h-3.5" /></a>}</div> },
+                    { label: 'Type', value: <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]">{selectedTransaction.type || 'purchase'}</span> },
+                    { label: 'Developer', value: <span className="text-[#ccc]">{selectedTransaction.developerName || 'N/A'}</span> },
+                    { label: 'Created', value: <span className="text-sm text-[#ccc]">{selectedTransaction.createdAt ? formatDate(selectedTransaction.createdAt) : 'N/A'}</span> },
+                  ].map((row, i) => (
+                    <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span className="text-[#555] text-sm">{row.label}</span>
+                      {row.value}
+                    </div>
+                  ))}
+                  {selectedTransaction.description && (
+                    <div className="py-2.5">
+                      <span className="text-[#555] text-sm block mb-1">Description</span>
+                      <span className="text-sm text-[#ccc]">{selectedTransaction.description}</span>
+                    </div>
+                  )}
+                  {selectedTransaction.status === 'refunded' && (
+                    <div className="p-3 rounded-lg mt-2" style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-orange-400 text-sm">Refunded Amount</span>
+                        <span className="font-bold text-orange-400">${selectedTransaction.refundedAmount?.toFixed(2) || '0.00'}</span>
                       </div>
+                      <p className="text-xs text-[#555] mt-1">{selectedTransaction.refundedAt ? formatDate(selectedTransaction.refundedAt) : ''}</p>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                      <span className="text-gray-400">Payment ID</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs">{selectedTransaction.paymentId || 'N/A'}</span>
-                        {selectedTransaction.paymentId && (
-                          <a
-                            href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Open in Stripe Dashboard"
-                            className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                      <span className="text-gray-400">Type</span>
-                      <Badge className="bg-blue-500/20 text-blue-400">{selectedTransaction.type || 'purchase'}</Badge>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                      <span className="text-gray-400">Developer</span>
-                      <span className="font-medium">{selectedTransaction.developerName || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                      <span className="text-gray-400">Created</span>
-                      <span className="text-sm">{selectedTransaction.createdAt ? formatDate(selectedTransaction.createdAt) : 'N/A'}</span>
-                    </div>
-                    {selectedTransaction.description && (
-                      <div className="py-2">
-                        <span className="text-gray-400 block mb-1">Description</span>
-                        <span className="text-sm text-gray-300">{selectedTransaction.description}</span>
-                      </div>
-                    )}
-                    {selectedTransaction.status === 'refunded' && (
-                      <div className="p-3 rounded-lg bg-orange-900/20 border border-orange-500/30 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-orange-400 text-sm">Refunded Amount</span>
-                          <span className="font-bold text-orange-400">${selectedTransaction.refundedAmount?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {selectedTransaction.refundedAt ? formatDate(selectedTransaction.refundedAt) : ''}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
+                  )}
+                </div>
+              )}
 
-                {/* Cart Items Tab */}
-                <TabsContent value="cart" className="space-y-3">
+              {/* Cart Items Tab */}
+              {activeTab === 'cart' && (
+                <div className="space-y-3">
                   {dialogCartLoading ? (
                     <div className="flex justify-center py-10">
-                      <RefreshCw className="w-7 h-7 text-purple-400 animate-spin" />
+                      <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
                     </div>
                   ) : (
                     <>
-                      {/* Cart summary */}
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/20">
+                      <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'rgba(81,162,255,0.06)', border: '1px solid rgba(81,162,255,0.15)' }}>
                         <div>
-                          <p className="text-xs text-gray-400">Items in Cart</p>
-                          <p className="text-2xl font-bold text-purple-300">{dialogCartItems.length}</p>
+                          <p className="text-xs text-[#555]">Items in Cart</p>
+                          <p className="text-2xl font-bold text-[#51a2ff]">{dialogCartItems.length}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-gray-400">Cart Total</p>
-                          <p className="text-2xl font-bold text-green-400">
+                          <p className="text-xs text-[#555]">Cart Total</p>
+                          <p className="text-2xl font-bold text-emerald-400">
                             ${dialogCartItems.reduce((s: number, i: any) => s + Number(i.amount), 0).toFixed(2)}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-gray-400">Order ID</p>
-                          <p className="font-mono text-xs text-gray-300">{selectedTransaction.orderId?.substring(0, 20)}…</p>
+                          <p className="text-xs text-[#555]">Order ID</p>
+                          <p className="font-mono text-xs text-[#ccc]">{selectedTransaction.orderId?.substring(0, 20)}…</p>
                         </div>
                       </div>
 
-                      {/* Metadata summary */}
                       {(selectedTransaction.metadata as any)?.couponCode && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-500/20 text-xs">
-                          <span className="text-gray-400">Coupon:</span>
-                          <Badge className="bg-yellow-500/20 text-yellow-400">{(selectedTransaction.metadata as any).couponCode}</Badge>
-                          <span className="text-gray-400 ml-auto">Total paid: ${(selectedTransaction.metadata as any)?.totalCartAmount?.toFixed(2) || '—'}</span>
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.2)' }}>
+                          <span className="text-[#555]">Coupon:</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20">{(selectedTransaction.metadata as any).couponCode}</span>
+                          <span className="text-[#555] ml-auto">Total paid: ${(selectedTransaction.metadata as any)?.totalCartAmount?.toFixed(2) || '—'}</span>
                         </div>
                       )}
 
-                      {/* Items list */}
-                      <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-600/30 overflow-hidden">
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                         {dialogCartItems.length === 0 ? (
-                          <div className="p-8 text-center text-gray-400">
+                          <div className="p-8 text-center text-[#555]">
                             <ShoppingCart className="w-10 h-10 mx-auto mb-2 opacity-30" />
                             <p>No cart items found</p>
                           </div>
                         ) : dialogCartItems.map((item: any, idx: number) => (
-                          <div key={item.id} className={`p-4 bg-slate-800/30 ${item.id === selectedTransaction.id ? 'border-l-2 border-purple-400' : ''}`}>
+                          <div key={item.id} className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: item.id === selectedTransaction.id ? 'rgba(81,162,255,0.06)' : '#1a1a1a' }}>
                             <div className="flex items-start gap-3">
-                              <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-500/20 text-xs font-bold text-purple-300">{idx + 1}</span>
-                              {item.script?.imageUrl && (
-                                <img src={item.script.imageUrl} alt={item.script?.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                              )}
+                              <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full text-xs font-bold" style={{ background: 'rgba(81,162,255,0.1)', color: '#51a2ff' }}>{idx + 1}</span>
+                              {item.script?.imageUrl && <img src={item.script.imageUrl} alt={item.script?.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
                                   <div>
                                     <p className="font-semibold text-white">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
                                     <div className="flex gap-2 mt-1 flex-wrap">
-                                      {item.script?.version && <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.script.version}</Badge>}
-                                      {item.script?.licenseType && <Badge className="bg-green-500/20 text-green-400 text-xs">{item.script.licenseType}</Badge>}
-                                      <Badge className={`${getStatusColor(item.status)} text-xs`}>{item.status}</Badge>
-                                      {item.id === selectedTransaction.id && <Badge className="bg-purple-500/20 text-purple-300 text-xs">← this transaction</Badge>}
+                                      {item.script?.version && <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]">{item.script.version}</span>}
+                                      {item.script?.licenseType && <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{item.script.licenseType}</span>}
+                                      <span className={`${getStatusColor(item.status)} text-xs px-2 py-0.5 rounded-full font-medium border`}>{item.status}</span>
+                                      {item.id === selectedTransaction.id && <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]">← this transaction</span>}
                                     </div>
                                   </div>
-                                  <p className="font-bold text-green-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
+                                  <p className="font-bold text-emerald-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
                                 </div>
                                 {item.license && (
-                                  <div className="mt-2 p-2 bg-slate-700/50 rounded-lg flex items-center gap-2">
-                                    <Key className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                                    <code className="text-xs font-mono text-gray-300 flex-1 truncate">{item.license.privateKey}</code>
-                                    <button onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('Copied!') }} className="text-gray-400 hover:text-white flex-shrink-0">
+                                  <div className="mt-2 p-2 rounded-lg flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                                    <Key className="w-3.5 h-3.5 text-[#51a2ff] flex-shrink-0" />
+                                    <code className="text-xs font-mono text-[#ccc] flex-1 truncate">{item.license.privateKey}</code>
+                                    <button onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('Copied!') }} className="text-[#555] hover:text-white flex-shrink-0">
                                       <Copy className="w-3.5 h-3.5" />
                                     </button>
-                                    <Badge className={item.license.isActive && !item.license.isRevoked ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-red-500/20 text-red-400 text-xs'}>
+                                    <span className={item.license.isActive && !item.license.isRevoked ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20'}>
                                       {item.license.isRevoked ? 'Revoked' : item.license.isActive ? 'Active' : 'Inactive'}
-                                    </Badge>
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -1224,110 +1072,79 @@ function AdminTransactions() {
                         ))}
                       </div>
 
-                      {/* Stripe link */}
                       {selectedTransaction.paymentId && (
-                        <a
-                          href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
-                        >
+                        <a href={`https://dashboard.stripe.com/payments/${selectedTransaction.paymentId}`} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 p-3 rounded-xl text-sm text-[#51a2ff] hover:opacity-80 transition-opacity"
+                          style={{ border: '1px solid rgba(81,162,255,0.2)', background: 'rgba(81,162,255,0.06)' }}>
                           <ExternalLink className="w-4 h-4" />
                           View Payment in Stripe Dashboard
                         </a>
                       )}
                     </>
                   )}
-                </TabsContent>
+                </div>
+              )}
 
-                {/* Invoice Tab */}
-                <TabsContent value="invoice" className="space-y-3">
+              {/* Invoice Tab */}
+              {activeTab === 'invoice' && (
+                <div className="space-y-3">
                   {dialogInvoiceLoading ? (
                     <div className="flex justify-center py-10">
-                      <RefreshCw className="w-7 h-7 text-blue-400 animate-spin" />
+                      <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
                     </div>
                   ) : dialogInvoice ? (
                     <>
-                      {/* Invoice header */}
-                      <div className="p-4 rounded-xl bg-blue-900/20 border border-blue-500/20 flex items-start justify-between gap-4">
+                      <div className="p-4 rounded-xl flex items-start justify-between gap-4" style={{ background: 'rgba(81,162,255,0.06)', border: '1px solid rgba(81,162,255,0.15)' }}>
                         <div>
-                          <p className="text-xs text-gray-400 mb-1">Invoice</p>
+                          <p className="text-xs text-[#555] mb-1">Invoice</p>
                           <p className="font-bold text-white text-lg">{dialogInvoice.description}</p>
-                          <p className="text-xs font-mono text-gray-500 mt-1">{dialogInvoice.stripeInvoiceId}</p>
+                          <p className="text-xs font-mono text-[#555] mt-1">{dialogInvoice.stripeInvoiceId}</p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-3xl font-bold text-green-400">${Number(dialogInvoice.amount).toFixed(2)}</p>
-                          <Badge className={
-                            dialogInvoice.status === 'paid' ? 'bg-green-500/20 text-green-400'
-                            : dialogInvoice.status === 'open' ? 'bg-yellow-500/20 text-yellow-400'
-                            : dialogInvoice.status === 'void' ? 'bg-gray-500/20 text-gray-400'
-                            : 'bg-red-500/20 text-red-400'
-                          }>{dialogInvoice.status}</Badge>
+                          <p className="text-3xl font-bold text-emerald-400">${Number(dialogInvoice.amount).toFixed(2)}</p>
+                          <span className={
+                            dialogInvoice.status === 'paid' ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : dialogInvoice.status === 'open' ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(255,255,255,0.05)] text-[#888] border-[rgba(255,255,255,0.07)]'
+                          }>{dialogInvoice.status}</span>
                         </div>
                       </div>
 
-                      <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
-                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                          <span className="text-gray-400">Customer Email</span>
-                          <span className="text-white">{dialogInvoice.customerEmail}</span>
-                        </div>
-                        {dialogInvoice.customerName && (
-                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                            <span className="text-gray-400">Customer Name</span>
-                            <span className="text-white">{dialogInvoice.customerName}</span>
+                      <div className="rounded-lg p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        {[
+                          { label: 'Customer Email', value: dialogInvoice.customerEmail },
+                          ...(dialogInvoice.customerName ? [{ label: 'Customer Name', value: dialogInvoice.customerName }] : []),
+                          { label: 'Currency', value: dialogInvoice.currency?.toUpperCase() },
+                          { label: 'Due Date', value: dialogInvoice.dueDate ? formatDate(dialogInvoice.dueDate) : '—' },
+                          ...(dialogInvoice.paidAt ? [{ label: 'Paid At', value: formatDate(dialogInvoice.paidAt), accent: true }] : []),
+                          { label: 'Created By', value: dialogInvoice.creator?.username || '—' },
+                        ].map((row, i) => (
+                          <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span className="text-[#555] text-sm">{row.label}</span>
+                            <span className={(row as any).accent ? 'text-emerald-400' : 'text-[#ccc]'}>{row.value}</span>
                           </div>
-                        )}
-                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                          <span className="text-gray-400">Currency</span>
-                          <span className="text-white uppercase">{dialogInvoice.currency}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                          <span className="text-gray-400">Due Date</span>
-                          <span className="text-white">{dialogInvoice.dueDate ? formatDate(dialogInvoice.dueDate) : '—'}</span>
-                        </div>
-                        {dialogInvoice.paidAt && (
-                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                            <span className="text-gray-400">Paid At</span>
-                            <span className="text-green-400">{formatDate(dialogInvoice.paidAt)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                          <span className="text-gray-400">Created By</span>
-                          <span className="text-white">{dialogInvoice.creator?.username || '—'}</span>
-                        </div>
-                        {dialogInvoice.notes && (
-                          <div className="py-2 border-b border-slate-700/50">
-                            <span className="text-gray-400 block mb-1">Notes</span>
-                            <span className="text-sm text-gray-300">{dialogInvoice.notes}</span>
-                          </div>
-                        )}
+                        ))}
                         {dialogInvoice.user && (
-                          <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                            <span className="text-gray-400">Linked User</span>
-                            <span className="text-cyan-400">{dialogInvoice.user.username} ({dialogInvoice.user.email})</span>
+                          <div className="flex justify-between items-center py-2.5">
+                            <span className="text-[#555] text-sm">Linked User</span>
+                            <span className="text-[#51a2ff]">{dialogInvoice.user.username} ({dialogInvoice.user.email})</span>
                           </div>
                         )}
                       </div>
 
                       <div className="flex gap-2">
                         {dialogInvoice.paymentUrl && (
-                          <a
-                            href={dialogInvoice.paymentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-blue-500/20 bg-blue-900/10 text-blue-400 hover:bg-blue-500/10 transition-colors text-sm"
-                          >
+                          <a href={dialogInvoice.paymentUrl} target="_blank" rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl text-sm text-[#51a2ff] hover:opacity-80 transition-opacity"
+                            style={{ border: '1px solid rgba(81,162,255,0.2)', background: 'rgba(81,162,255,0.06)' }}>
                             <ExternalLink className="w-4 h-4" />
                             Open Payment Link
                           </a>
                         )}
                         {dialogInvoice.stripeInvoiceId && (
-                          <a
-                            href={`https://dashboard.stripe.com/invoices/${dialogInvoice.stripeInvoiceId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
-                          >
+                          <a href={`https://dashboard.stripe.com/invoices/${dialogInvoice.stripeInvoiceId}`} target="_blank" rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl text-sm text-[#51a2ff] hover:opacity-80 transition-opacity"
+                            style={{ border: '1px solid rgba(81,162,255,0.2)', background: 'rgba(81,162,255,0.06)' }}>
                             <ExternalLink className="w-4 h-4" />
                             View in Stripe
                           </a>
@@ -1335,474 +1152,410 @@ function AdminTransactions() {
                       </div>
                     </>
                   ) : (
-                    <div className="p-8 text-center text-gray-400 bg-slate-800/50 rounded-lg">
-                      <Layers className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <div className="p-8 text-center text-[#555] rounded-lg" style={{ background: '#1a1a1a' }}>
+                      <Layers className="w-12 h-12 mx-auto mb-2 opacity-30" />
                       <p>Invoice details not available</p>
                     </div>
                   )}
-                </TabsContent>
+                </div>
+              )}
 
-                {/* User Tab */}
-                <TabsContent value="user" className="space-y-2">
+              {/* User Tab */}
+              {activeTab === 'user' && (
+                <div>
                   {selectedTransaction.user ? (
-                    <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-700/50">
+                    <div className="rounded-lg p-4 space-y-0" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="flex items-center gap-3 pb-3 mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         {selectedTransaction.user.discordAvatar ? (
-                          <img src={selectedTransaction.user.discordAvatar} alt={`${selectedTransaction.user.username} User Avatar - Transaction Details | FreexStore`} className="w-12 h-12 rounded-full" />
+                          <img src={selectedTransaction.user.discordAvatar} alt={selectedTransaction.user.username} className="w-12 h-12 rounded-full" />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-cyan-600 flex items-center justify-center">
-                            <User className="w-6 h-6" />
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(81,162,255,0.15)' }}>
+                            <User className="w-6 h-6 text-[#51a2ff]" />
                           </div>
                         )}
                         <div>
-                          <p className="font-bold">{selectedTransaction.user.username}</p>
-                          <p className="text-sm text-gray-400">{selectedTransaction.user.email}</p>
+                          <p className="font-bold text-white">{selectedTransaction.user.username}</p>
+                          <p className="text-sm text-[#555]">{selectedTransaction.user.email}</p>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">User ID</span>
-                        <span className="font-mono text-xs">{selectedTransaction.user.id}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Name</span>
-                        <span>{selectedTransaction.user.firstName} {selectedTransaction.user.lastName}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Discord</span>
-                        <span>{selectedTransaction.user.discordUsername || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Role</span>
-                        <Badge className={selectedTransaction.user.role === 'admin' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-gray-500/20 text-gray-400'}>
-                          {selectedTransaction.user.role}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Member Since</span>
-                        <span className="text-sm">{selectedTransaction.user.createdAt ? formatDate(selectedTransaction.user.createdAt) : 'N/A'}</span>
-                      </div>
-                      {/* Current Stripe Cart */}
+                      {[
+                        { label: 'User ID', value: <span className="font-mono text-xs text-[#ccc]">{selectedTransaction.user.id}</span> },
+                        { label: 'Name', value: <span className="text-[#ccc]">{selectedTransaction.user.firstName} {selectedTransaction.user.lastName}</span> },
+                        { label: 'Discord', value: <span className="text-[#ccc]">{selectedTransaction.user.discordUsername || 'N/A'}</span> },
+                        { label: 'Role', value: <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${selectedTransaction.user.role === 'admin' ? 'bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]' : 'bg-[rgba(255,255,255,0.05)] text-[#888] border-[rgba(255,255,255,0.07)]'}`}>{selectedTransaction.user.role}</span> },
+                        { label: 'Member Since', value: <span className="text-sm text-[#ccc]">{selectedTransaction.user.createdAt ? formatDate(selectedTransaction.user.createdAt) : 'N/A'}</span> },
+                      ].map((row, i) => (
+                        <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span className="text-[#555] text-sm">{row.label}</span>
+                          {row.value}
+                        </div>
+                      ))}
                       <div className="pt-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <button
                           onClick={() => fetchUserCurrentCart(selectedTransaction.user.id)}
                           disabled={currentCartLoading}
-                          className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10 mb-3"
+                          className="btn-ghost flex items-center gap-2 w-full justify-center mb-3"
                         >
-                          {currentCartLoading ? <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" /> : <ShoppingCart className="w-3.5 h-3.5 mr-2" />}
+                          {currentCartLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShoppingCart className="w-3.5 h-3.5" />}
                           Check Current Stripe Cart
-                        </Button>
+                        </button>
                         {userCurrentCart && (
-                          <div className="rounded-lg bg-purple-900/20 border border-purple-500/20 p-3 space-y-2">
+                          <div className="rounded-lg p-3 space-y-2" style={{ background: 'rgba(81,162,255,0.06)', border: '1px solid rgba(81,162,255,0.15)' }}>
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-400">Stripe Customer</span>
+                              <span className="text-xs text-[#555]">Stripe Customer</span>
                               {userCurrentCart.customerId ? (
-                                <a
-                                  href={`https://dashboard.stripe.com/customers/${userCurrentCart.customerId}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-                                >
+                                <a href={`https://dashboard.stripe.com/customers/${userCurrentCart.customerId}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#51a2ff] hover:opacity-80 flex items-center gap-1">
                                   {userCurrentCart.customerId}
                                   <ExternalLink className="w-3 h-3" />
                                 </a>
-                              ) : <span className="text-xs text-gray-500">No customer</span>}
+                              ) : <span className="text-xs text-[#555]">No customer</span>}
                             </div>
                             {userCurrentCart.activePaymentIntents?.length > 0 && (
                               <div>
-                                <p className="text-xs text-yellow-400 font-medium mb-1">Active Payment Intents ({userCurrentCart.activePaymentIntents.length})</p>
+                                <p className="text-xs text-amber-400 font-medium mb-1">Active Payment Intents ({userCurrentCart.activePaymentIntents.length})</p>
                                 {userCurrentCart.activePaymentIntents.map((pi: any) => (
-                                  <div key={pi.id} className="flex items-center justify-between p-2 bg-yellow-900/20 rounded border border-yellow-500/20 mb-1">
+                                  <div key={pi.id} className="flex items-center justify-between p-2 rounded mb-1" style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.2)' }}>
                                     <div>
                                       <p className="text-xs font-mono text-white">{pi.id.substring(0, 20)}…</p>
-                                      <p className="text-xs text-gray-400">${pi.amount} · {pi.status}</p>
+                                      <p className="text-xs text-[#555]">${pi.amount} · {pi.status}</p>
                                     </div>
-                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">
-                                      <ExternalLink className="w-3.5 h-3.5" />
-                                    </a>
+                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-[#51a2ff] hover:opacity-80"><ExternalLink className="w-3.5 h-3.5" /></a>
                                   </div>
                                 ))}
                               </div>
                             )}
                             {userCurrentCart.recentSucceeded?.length > 0 && (
                               <div>
-                                <p className="text-xs text-green-400 font-medium mb-1">Recent Payments ({userCurrentCart.recentSucceeded.length})</p>
+                                <p className="text-xs text-emerald-400 font-medium mb-1">Recent Payments ({userCurrentCart.recentSucceeded.length})</p>
                                 {userCurrentCart.recentSucceeded.map((pi: any) => (
-                                  <div key={pi.id} className="flex items-center justify-between p-2 bg-green-900/10 rounded border border-green-500/20 mb-1">
+                                  <div key={pi.id} className="flex items-center justify-between p-2 rounded mb-1" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
                                     <div>
                                       <p className="text-xs font-mono text-white">{pi.id.substring(0, 20)}…</p>
-                                      <p className="text-xs text-gray-400">${pi.amount} · {new Date(pi.created).toLocaleDateString()}</p>
+                                      <p className="text-xs text-[#555]">${pi.amount} · {new Date(pi.created).toLocaleDateString()}</p>
                                     </div>
-                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">
-                                      <ExternalLink className="w-3.5 h-3.5" />
-                                    </a>
+                                    <a href={pi.stripeDashboardUrl} target="_blank" rel="noopener noreferrer" className="text-[#51a2ff] hover:opacity-80"><ExternalLink className="w-3.5 h-3.5" /></a>
                                   </div>
                                 ))}
                               </div>
                             )}
                             {!userCurrentCart.activePaymentIntents?.length && !userCurrentCart.recentSucceeded?.length && (
-                              <p className="text-xs text-gray-500 text-center py-2">No recent payment intents</p>
+                              <p className="text-xs text-[#555] text-center py-2">No recent payment intents</p>
                             )}
                           </div>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <div className="p-8 text-center text-gray-400 bg-slate-800/50 rounded-lg">
-                      <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <div className="p-8 text-center text-[#555] rounded-lg" style={{ background: '#1a1a1a' }}>
+                      <User className="w-12 h-12 mx-auto mb-2 opacity-30" />
                       <p>No user information available</p>
                     </div>
                   )}
-                </TabsContent>
+                </div>
+              )}
 
-                {/* Script Tab */}
-                <TabsContent value="script" className="space-y-2">
+              {/* Script Tab */}
+              {activeTab === 'script' && (
+                <div>
                   {selectedTransaction.script ? (
-                    <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
+                    <div className="rounded-lg p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
                       {selectedTransaction.script.imageUrl && (
-                        <div className="pb-3 border-b border-slate-700/50">
-                          <img src={selectedTransaction.script.imageUrl} alt={`${selectedTransaction.script.name} Script Preview - Transaction Item | FreexStore Premium FiveM Resource`} className="w-full h-32 object-cover rounded-lg" />
+                        <div className="pb-3 mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          <img src={selectedTransaction.script.imageUrl} alt={selectedTransaction.script.name} className="w-full h-32 object-cover rounded-lg" />
                         </div>
                       )}
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Name</span>
-                        <span className="font-bold">{selectedTransaction.script.name}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Script ID</span>
-                        <span className="font-mono text-xs">{selectedTransaction.script.id}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Version</span>
-                        <Badge className="bg-blue-500/20 text-blue-400">{selectedTransaction.script.version || '1.0.0'}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">License Type</span>
-                        <Badge className="bg-green-500/20 text-green-400">{selectedTransaction.script.licenseType || 'forever'}</Badge>
-                      </div>
+                      {[
+                        { label: 'Name', value: <span className="font-bold text-white">{selectedTransaction.script.name}</span> },
+                        { label: 'Script ID', value: <span className="font-mono text-xs text-[#ccc]">{selectedTransaction.script.id}</span> },
+                        { label: 'Version', value: <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]">{selectedTransaction.script.version || '1.0.0'}</span> },
+                        { label: 'License Type', value: <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{selectedTransaction.script.licenseType || 'forever'}</span> },
+                      ].map((row, i) => (
+                        <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span className="text-[#555] text-sm">{row.label}</span>
+                          {row.value}
+                        </div>
+                      ))}
                       {selectedTransaction.script.description && (
-                        <div className="py-2">
-                          <span className="text-gray-400 block mb-1">Description</span>
-                          <span className="text-sm text-gray-300">{selectedTransaction.script.description}</span>
+                        <div className="py-2.5">
+                          <span className="text-[#555] text-sm block mb-1">Description</span>
+                          <span className="text-sm text-[#ccc]">{selectedTransaction.script.description}</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="p-8 text-center text-gray-400 bg-slate-800/50 rounded-lg">
-                      <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <div className="p-8 text-center text-[#555] rounded-lg" style={{ background: '#1a1a1a' }}>
+                      <Package className="w-12 h-12 mx-auto mb-2 opacity-30" />
                       <p>No script information available</p>
                     </div>
                   )}
-                </TabsContent>
+                </div>
+              )}
 
-                {/* License Tab */}
-                <TabsContent value="license" className="space-y-2">
+              {/* License Tab */}
+              {activeTab === 'license' && (
+                <div>
                   {selectedTransaction.license ? (
-                    <div className="p-4 rounded-lg bg-slate-800/50 space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">License ID</span>
-                        <span className="font-mono text-xs">{selectedTransaction.license.id}</span>
+                    <div className="rounded-lg p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span className="text-[#555] text-sm">License ID</span>
+                        <span className="font-mono text-xs text-[#ccc]">{selectedTransaction.license.id}</span>
                       </div>
-                      <div className="py-3 border-b border-slate-700/50">
+                      <div className="py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-gray-400">Private Key</span>
-                          <button 
-                            onClick={() => setShowLicenseKey(!showLicenseKey)}
-                            className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
-                          >
+                          <span className="text-[#555] text-sm">Private Key</span>
+                          <button onClick={() => setShowLicenseKey(!showLicenseKey)} className="flex items-center gap-1 text-xs text-[#51a2ff] hover:opacity-80 transition-opacity">
                             {showLicenseKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             {showLicenseKey ? 'Hide' : 'Show'}
                           </button>
                         </div>
                         <div className="flex items-center gap-2">
-                          <code className="text-sm bg-slate-700/50 px-3 py-2 rounded-lg flex-1 overflow-x-auto font-mono">
-                            {showLicenseKey 
-                              ? selectedTransaction.license.privateKey 
-                              : '••••••••••••••••••••••••••••••••••••'
-                            }
+                          <code className="text-sm px-3 py-2 rounded-lg flex-1 overflow-x-auto font-mono text-[#ccc]" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                            {showLicenseKey ? selectedTransaction.license.privateKey : '••••••••••••••••••••••••••••••••••••'}
                           </code>
-                          <button 
-                            onClick={() => {
-                              navigator.clipboard.writeText(selectedTransaction.license.privateKey || '')
-                              toast.success('License key copied!')
-                            }} 
-                            className="p-2 text-gray-400 hover:text-white hover:bg-slate-600/50 rounded-lg transition-colors"
-                            title="Copy to clipboard"
-                          >
+                          <button onClick={() => { navigator.clipboard.writeText(selectedTransaction.license.privateKey || ''); toast.success('License key copied!') }} className="p-2 rounded-lg text-[#888] hover:text-white transition-colors" style={{ background: '#222', border: '1px solid rgba(255,255,255,0.07)' }}>
                             <Copy className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Status</span>
-                        <Badge className={selectedTransaction.license.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}>
-                          {selectedTransaction.license.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Revoked</span>
-                        <Badge className={selectedTransaction.license.isRevoked ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}>
-                          {selectedTransaction.license.isRevoked ? 'Yes' : 'No'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span className="text-gray-400">Expires</span>
-                        <span>{selectedTransaction.license.expiresAt ? formatDate(selectedTransaction.license.expiresAt) : 'Never'}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-gray-400">Created</span>
-                        <span className="text-sm">{selectedTransaction.license.createdAt ? formatDate(selectedTransaction.license.createdAt) : 'N/A'}</span>
-                      </div>
+                      {[
+                        { label: 'Status', value: <span className={selectedTransaction.license.isActive ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20'}>{selectedTransaction.license.isActive ? 'Active' : 'Inactive'}</span> },
+                        { label: 'Revoked', value: <span className={selectedTransaction.license.isRevoked ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20' : 'text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}>{selectedTransaction.license.isRevoked ? 'Yes' : 'No'}</span> },
+                        { label: 'Expires', value: <span className="text-[#ccc]">{selectedTransaction.license.expiresAt ? formatDate(selectedTransaction.license.expiresAt) : 'Never'}</span> },
+                        { label: 'Created', value: <span className="text-sm text-[#ccc]">{selectedTransaction.license.createdAt ? formatDate(selectedTransaction.license.createdAt) : 'N/A'}</span> },
+                      ].map((row, i) => (
+                        <div key={i} className="flex justify-between items-center py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span className="text-[#555] text-sm">{row.label}</span>
+                          {row.value}
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="p-8 text-center text-gray-400 bg-slate-800/50 rounded-lg">
-                      <Key className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <div className="p-8 text-center text-[#555] rounded-lg" style={{ background: '#1a1a1a' }}>
+                      <Key className="w-12 h-12 mx-auto mb-2 opacity-30" />
                       <p>No license information available</p>
                     </div>
                   )}
-                </TabsContent>
+                </div>
+              )}
 
-                {/* History Tab */}
-                <TabsContent value="history" className="space-y-2">
-                  <div className="p-4 rounded-lg bg-slate-800/50">
-                    <h4 className="text-sm font-semibold text-gray-300 mb-3">User Transaction History</h4>
-                    {historyLoading ? (
-                      <div className="flex justify-center py-8">
-                        <RefreshCw className="w-6 h-6 text-cyan-400 animate-spin" />
-                      </div>
-                    ) : userTransactionHistory.length === 0 ? (
-                      <div className="p-8 text-center text-gray-400">
-                        <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>No transaction history found</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                        {userTransactionHistory.map((tx) => (
-                          <div 
-                            key={tx.id} 
-                            className={`p-3 rounded-lg border transition-colors ${
-                              tx.id === selectedTransaction.id 
-                                ? 'bg-cyan-500/20 border-cyan-500/50' 
-                                : 'bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/50'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium text-sm">{tx.script?.name || 'N/A'}</p>
-                                <p className="text-xs text-gray-400">{tx.createdAt ? formatDate(tx.createdAt) : 'N/A'}</p>
-                              </div>
-                              <div className="text-end">
-                                <p className="font-bold text-green-400">${tx.amount?.toFixed(2)}</p>
-                                <Badge className={`${getStatusColor(tx.status)} text-xs`}>
-                                  {tx.status}
-                                </Badge>
-                              </div>
+              {/* History Tab */}
+              {activeTab === 'history' && (
+                <div className="rounded-lg p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <h4 className="text-sm font-semibold text-[#888] mb-3">User Transaction History</h4>
+                  {historyLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
+                    </div>
+                  ) : userTransactionHistory.length === 0 ? (
+                    <div className="p-8 text-center text-[#555]">
+                      <History className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                      <p>No transaction history found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                      {userTransactionHistory.map((tx) => (
+                        <div key={tx.id} className="p-3 rounded-lg transition-colors" style={{
+                          background: tx.id === selectedTransaction.id ? 'rgba(81,162,255,0.08)' : 'rgba(255,255,255,0.03)',
+                          border: tx.id === selectedTransaction.id ? '1px solid rgba(81,162,255,0.2)' : '1px solid rgba(255,255,255,0.05)'
+                        }}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium text-sm text-[#ccc]">{tx.script?.name || 'N/A'}</p>
+                              <p className="text-xs text-[#555]">{tx.createdAt ? formatDate(tx.createdAt) : 'N/A'}</p>
                             </div>
-                            {tx.id === selectedTransaction.id && (
-                              <p className="text-xs text-cyan-400 mt-1">← Current transaction</p>
-                            )}
+                            <div className="text-end">
+                              <p className="font-bold text-[#51a2ff]">${tx.amount?.toFixed(2)}</p>
+                              <span className={`${getStatusColor(tx.status)} text-xs px-2 py-0.5 rounded-full font-medium border`}>{tx.status}</span>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
+                          {tx.id === selectedTransaction.id && <p className="text-xs text-[#51a2ff] mt-1">← Current transaction</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      {/* Refund Dialog */}
-      <Dialog open={isRefundOpen} onOpenChange={setIsRefundOpen}>
-        <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600/30 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-orange-400">Refund Transaction</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Process a refund for this transaction
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedTransaction && (
-            <div className="space-y-4 mt-4">
-              <div className="p-4 rounded-lg bg-slate-800/50">
+      {/* Refund Modal */}
+      {isRefundOpen && selectedTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-md rounded-xl" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-red-400">Refund Transaction</h2>
+                <button onClick={() => setIsRefundOpen(false)} className="p-2 rounded-lg text-[#888] hover:text-white transition-colors" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-sm text-[#555] mt-1">Process a refund for this transaction</p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 rounded-lg" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-gray-400">Original Amount</Label>
-                    <p className="text-lg font-bold text-green-400">${selectedTransaction.amount?.toFixed(2)}</p>
+                    <p className="text-xs text-[#555] mb-1">Original Amount</p>
+                    <p className="text-lg font-bold text-emerald-400">${selectedTransaction.amount?.toFixed(2)}</p>
                   </div>
                   <div>
-                    <Label className="text-gray-400">Script</Label>
-                    <p>{selectedTransaction.script?.name || 'N/A'}</p>
+                    <p className="text-xs text-[#555] mb-1">Script</p>
+                    <p className="text-[#ccc]">{selectedTransaction.script?.name || 'N/A'}</p>
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <Label htmlFor="refundAmount" className="text-gray-300">Refund Amount</Label>
-                <Input
-                  id="refundAmount"
+                <label className="text-sm text-[#888] block mb-1.5">Refund Amount</label>
+                <input
                   type="number"
                   step="0.01"
                   min="0"
                   max={selectedTransaction.amount}
                   value={refundAmount}
                   onChange={(e) => setRefundAmount(parseFloat(e.target.value) || 0)}
-                  className="mt-1 text-white bg-slate-800/50 border-slate-600/30"
+                  className="w-full px-3 py-2 text-sm text-white rounded-lg outline-none focus:ring-1 focus:ring-[#51a2ff]"
+                  style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                 />
               </div>
-              
+
               <div>
-                <Label htmlFor="refundNotes" className="text-gray-300">Notes (Optional)</Label>
-                <Input
-                  id="refundNotes"
+                <label className="text-sm text-[#888] block mb-1.5">Notes (Optional)</label>
+                <input
                   value={refundNotes}
                   onChange={(e) => setRefundNotes(e.target.value)}
                   placeholder="Reason for refund..."
-                  className="mt-1 text-white bg-slate-800/50 border-slate-600/30"
+                  className="w-full px-3 py-2 text-sm text-white rounded-lg outline-none focus:ring-1 focus:ring-[#51a2ff]"
+                  style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                 />
               </div>
-              
-              <div className="flex gap-3 justify-end mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsRefundOpen(false)}
-                  className="border-slate-600/30 text-gray-300"
-                >
+
+              <div className="flex gap-3 justify-end pt-2">
+                <button onClick={() => setIsRefundOpen(false)} className="btn-ghost flex items-center gap-2">
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleRefund}
                   disabled={isRefunding || refundAmount <= 0 || refundAmount > selectedTransaction.amount}
-                  className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 disabled:opacity-50"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                 >
                   {isRefunding ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
+                    <><RefreshCw className="w-4 h-4 animate-spin" />Processing...</>
                   ) : (
-                    <>
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Refund ${refundAmount.toFixed(2)}
-                    </>
+                    <><RotateCcw className="w-4 h-4" />Refund ${refundAmount.toFixed(2)}</>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-      {/* Cart Details Dialog */}
-      <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600/30 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-purple-400" />
-              Cart Details
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 font-mono text-xs">
-              {cartOrderId}
-            </DialogDescription>
-          </DialogHeader>
+          </div>
+        </div>
+      )}
 
-          {cartLoading ? (
-            <div className="flex justify-center py-12">
-              <RefreshCw className="w-8 h-8 text-purple-400 animate-spin" />
-            </div>
-          ) : cartItems.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-30" />
-              <p>No items found for this cart</p>
-            </div>
-          ) : (
-            <div className="space-y-3 mt-2">
-              {/* Summary */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/20">
-                <div>
-                  <p className="text-sm text-gray-400">Total Items</p>
-                  <p className="text-2xl font-bold text-purple-300">{cartItems.length}</p>
+      {/* Cart Details Modal */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-[#51a2ff]" />
+                  <h2 className="text-lg font-bold text-white">Cart Details</h2>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Cart Total</p>
-                  <p className="text-2xl font-bold text-green-400">
-                    ${cartItems.reduce((s: number, i: any) => s + Number(i.amount), 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400 mb-1">Buyer</p>
-                  <p className="text-sm text-white">{cartItems[0]?.user?.username || 'Unknown'}</p>
-                  <p className="text-xs text-gray-500">{cartItems[0]?.user?.email}</p>
-                </div>
+                <button onClick={() => setIsCartOpen(false)} className="p-2 rounded-lg text-[#888] hover:text-white transition-colors" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <XCircle className="w-4 h-4" />
+                </button>
               </div>
+              <p className="text-xs font-mono text-[#555] mt-1">{cartOrderId}</p>
+            </div>
 
-              {/* Items */}
-              <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-600/30 overflow-hidden">
-                {cartItems.map((item: any, idx: number) => (
-                  <div key={item.id} className="p-4 bg-slate-800/30 hover:bg-slate-700/30 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-300">
-                        {idx + 1}
-                      </div>
-                      {item.script?.imageUrl && (
-                        <img src={item.script.imageUrl} alt={item.script?.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="font-semibold text-white">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
-                            <div className="flex gap-2 mt-1 flex-wrap">
-                              {item.script?.version && <Badge className="bg-blue-500/20 text-blue-400 text-xs">{item.script.version}</Badge>}
-                              {item.script?.licenseType && <Badge className="bg-green-500/20 text-green-400 text-xs">{item.script.licenseType}</Badge>}
-                              <Badge className={`${getStatusColor(item.status)} text-xs`}>{item.status}</Badge>
-                            </div>
-                          </div>
-                          <p className="font-bold text-green-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
-                        </div>
-                        {/* License key */}
-                        {item.license && (
-                          <div className="mt-2 p-2 bg-slate-700/50 rounded-lg flex items-center gap-2">
-                            <Key className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                            <code className="text-xs font-mono text-gray-300 flex-1 truncate">
-                              {item.license.privateKey}
-                            </code>
-                            <button
-                              onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('License key copied!') }}
-                              className="text-gray-400 hover:text-white flex-shrink-0"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                            <Badge className={item.license.isActive && !item.license.isRevoked ? 'bg-green-500/20 text-green-400 text-xs' : 'bg-red-500/20 text-red-400 text-xs'}>
-                              {item.license.isRevoked ? 'Revoked' : item.license.isActive ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
+            <div className="p-6">
+              {cartLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
+                </div>
+              ) : cartItems.length === 0 ? (
+                <div className="p-8 text-center text-[#555]">
+                  <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                  <p>No items found for this cart</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'rgba(81,162,255,0.06)', border: '1px solid rgba(81,162,255,0.15)' }}>
+                    <div>
+                      <p className="text-sm text-[#555]">Total Items</p>
+                      <p className="text-2xl font-bold text-[#51a2ff]">{cartItems.length}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-[#555]">Cart Total</p>
+                      <p className="text-2xl font-bold text-emerald-400">${cartItems.reduce((s: number, i: any) => s + Number(i.amount), 0).toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-[#555] mb-1">Buyer</p>
+                      <p className="text-sm text-white">{cartItems[0]?.user?.username || 'Unknown'}</p>
+                      <p className="text-xs text-[#555]">{cartItems[0]?.user?.email}</p>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Stripe link */}
-              {cartItems[0]?.paymentId && (
-                <a
-                  href={`https://dashboard.stripe.com/payments/${cartItems[0].paymentId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-cyan-500/20 bg-cyan-900/10 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  View Payment in Stripe Dashboard
-                </a>
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    {cartItems.map((item: any, idx: number) => (
+                      <div key={item.id} className="p-4 hover:bg-[#161616] transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: '#1a1a1a' }}>
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(81,162,255,0.1)', color: '#51a2ff' }}>
+                            {idx + 1}
+                          </div>
+                          {item.script?.imageUrl && (
+                            <img src={item.script.imageUrl} alt={item.script?.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-semibold text-white">{item.script?.name || (item.metadata as any)?.scriptName || 'Unknown Script'}</p>
+                                <div className="flex gap-2 mt-1 flex-wrap">
+                                  {item.script?.version && <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-[rgba(81,162,255,0.1)] text-[#51a2ff] border-[rgba(81,162,255,0.2)]">{item.script.version}</span>}
+                                  {item.script?.licenseType && <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{item.script.licenseType}</span>}
+                                  <span className={`${getStatusColor(item.status)} text-xs px-2 py-0.5 rounded-full font-medium border`}>{item.status}</span>
+                                </div>
+                              </div>
+                              <p className="font-bold text-emerald-400 flex-shrink-0">${Number(item.amount).toFixed(2)}</p>
+                            </div>
+                            {item.license && (
+                              <div className="mt-2 p-2 rounded-lg flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                                <Key className="w-3.5 h-3.5 text-[#51a2ff] flex-shrink-0" />
+                                <code className="text-xs font-mono text-[#ccc] flex-1 truncate">{item.license.privateKey}</code>
+                                <button onClick={() => { navigator.clipboard.writeText(item.license.privateKey || ''); toast.success('License key copied!') }} className="text-[#555] hover:text-white flex-shrink-0">
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                                <span className={item.license.isActive && !item.license.isRevoked ? 'text-xs px-2 py-0.5 rounded-full font-medium border bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20'}>
+                                  {item.license.isRevoked ? 'Revoked' : item.license.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {cartItems[0]?.paymentId && (
+                    <a href={`https://dashboard.stripe.com/payments/${cartItems[0].paymentId}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 p-3 rounded-xl text-sm text-[#51a2ff] hover:opacity-80 transition-opacity"
+                      style={{ border: '1px solid rgba(81,162,255,0.2)', background: 'rgba(81,162,255,0.06)' }}>
+                      <ExternalLink className="w-4 h-4" />
+                      View Payment in Stripe Dashboard
+                    </a>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
 
 export default withAdminAuth(AdminTransactions)
-

@@ -6,10 +6,6 @@ import { useTranslations } from 'next-intl'
 import { withAdminAuth } from '@/lib/auth-context'
 import { User } from '@/lib/stores'
 import { safeAdminApi } from '@/lib/admin-api'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Trash2, Shield, Eye, Users, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminFilter, { FilterConfig, FilterValues } from '@/components/admin/admin-filter'
@@ -141,50 +137,62 @@ function AdminUsers() {
   }
 
   const getStatusBadge = (user: User) => {
-    if (!user.isActive) return <Badge variant="destructive">{t('badges.inactive')}</Badge>
-    if (user.isAdmin) return <Badge variant="default" className="bg-cyan-500">{t('badges.admin')}</Badge>
-    return <Badge variant="outline">{t('badges.user')}</Badge>
+    if (!user.isActive) return (
+      <span className="text-xs px-2 py-0.5 rounded-full font-medium border bg-red-500/10 text-red-400 border-red-500/20">
+        {t('badges.inactive')}
+      </span>
+    )
+    if (user.isAdmin) return (
+      <span className="badge-blue text-xs">
+        {t('badges.admin')}
+      </span>
+    )
+    return (
+      <span
+        className="text-xs px-2 py-0.5 rounded-full font-medium border"
+        style={{ background: 'rgba(255,255,255,0.05)', color: '#888', borderColor: 'rgba(255,255,255,0.1)' }}
+      >
+        {t('badges.user')}
+      </span>
+    )
   }
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString()
 
   if (loading && users.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full border-b-2 border-cyan-400 animate-spin"></div>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-hidden relative min-h-screen bg-gradient-to-br via-cyan-900 from-slate-900 to-slate-900">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-      </div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r via-transparent blur-2xl sm:blur-3xl from-cyan-500/10 to-blue-500/10"></div>
-
-      <div className="relative z-10 p-3 sm:p-4 md:p-6 mx-auto space-y-3 sm:space-y-4 md:space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-6 mx-auto space-y-6 max-w-7xl">
         {/* Header */}
-        <div className="p-3 sm:p-4 md:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 w-full sm:w-auto">
-              <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-r rounded-xl border backdrop-blur-sm from-blue-500/20 to-cyan-500/20 border-white/10">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-blue-400" />
+        <div className="card-base p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-4">
+              <div
+                className="p-3 rounded-xl"
+                style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}
+              >
+                <Users className="w-6 h-6 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">{t('title')}</h1>
-                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm text-gray-400">{t('subtitle')}</p>
+                <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+                <p className="mt-1 text-sm text-[#888]">{t('subtitle')}</p>
               </div>
             </div>
-            <Button
+            <button
               onClick={() => router.push('/admin')}
-              className="w-full sm:w-auto text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10 hover:shadow-xl hover:scale-105"
+              className="btn-ghost btn-sm flex items-center gap-2"
             >
-              <ArrowLeft className="mr-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">{t('backToDashboard')}</span>
               <span className="sm:hidden">Back</span>
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -200,83 +208,89 @@ function AdminUsers() {
         />
 
         {/* Users Table */}
-        <div className="p-4 sm:p-5 md:p-6 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all duration-300 bg-white/5 border-white/10 hover:bg-white/10">
-          <div className="mb-4 sm:mb-5 md:mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
+        <div className="card-base p-6">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-white">
               {t('table.users', { count: displayedUsers.length, total })}
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-gray-400">{t('table.listDescription')}</p>
+            <p className="mt-1 text-sm text-[#888]">{t('table.listDescription')}</p>
           </div>
 
-          <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
-                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.user')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.discord')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm">{t('table.role')}</TableHead>
-                  <TableHead className="hidden md:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.joinDate')}</TableHead>
-                  <TableHead className="hidden sm:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.lastLogin')}</TableHead>
-                  <TableHead className="hidden lg:table-cell font-semibold text-gray-300 text-xs sm:text-sm">{t('table.lastIp')}</TableHead>
-                  <TableHead className="font-semibold text-gray-300 text-xs sm:text-sm text-right">{t('table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.user')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.discord')}</th>
+                  <th className="text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.role')}</th>
+                  <th className="hidden md:table-cell text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.joinDate')}</th>
+                  <th className="hidden sm:table-cell text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.lastLogin')}</th>
+                  <th className="hidden lg:table-cell text-left text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.lastIp')}</th>
+                  <th className="text-right text-[#555] font-medium py-3 px-4 text-xs uppercase tracking-wider">{t('table.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
                 {displayedUsers.map((user) => (
-                  <TableRow key={user.id} className="transition-colors border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium text-white text-xs sm:text-sm">{user.username}</TableCell>
-                    <TableCell className="text-gray-300 text-xs sm:text-sm">{user.discordUsername || t('table.na')}</TableCell>
-                    <TableCell>{getStatusBadge(user)}</TableCell>
-                    <TableCell className="hidden md:table-cell text-gray-300 text-xs sm:text-sm">{user.createdAt ? formatDate(user.createdAt) : t('table.na')}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-gray-300 text-xs sm:text-sm">{user.lastLoginAt ? formatDate(user.lastLoginAt) : t('table.neverLoggedIn')}</TableCell>
-                    <TableCell className="hidden lg:table-cell font-mono text-gray-300 text-xs">{(user as any).lastLoginIp || t('table.na')}</TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1 sm:gap-2">
-                        <Button
+                  <tr
+                    key={user.id}
+                    className="border-b transition-colors hover:bg-[#161616]"
+                    style={{ borderColor: 'rgba(255,255,255,0.04)' }}
+                  >
+                    <td className="py-3 px-4 text-white font-medium">{user.username}</td>
+                    <td className="py-3 px-4 text-[#888]">{user.discordUsername || t('table.na')}</td>
+                    <td className="py-3 px-4">{getStatusBadge(user)}</td>
+                    <td className="hidden md:table-cell py-3 px-4 text-[#888]">{user.createdAt ? formatDate(user.createdAt) : t('table.na')}</td>
+                    <td className="hidden sm:table-cell py-3 px-4 text-[#888]">{user.lastLoginAt ? formatDate(user.lastLoginAt) : t('table.neverLoggedIn')}</td>
+                    <td className="hidden lg:table-cell py-3 px-4 font-mono text-[#888] text-xs">{(user as any).lastLoginIp || t('table.na')}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex justify-end gap-2">
+                        <button
                           onClick={() => { setSelectedUserForInfo(user); setShowUserInfoModal(true) }}
-                          size="sm"
-                          className="text-white bg-gradient-to-r from-blue-600 to-blue-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-blue-500 hover:to-blue-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="p-2 rounded-lg text-[#888] hover:text-white transition-colors"
+                          style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                           title={t('table.viewUserDetails')}
                         >
-                          <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                        <Button
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleToggleAdmin(user)}
-                          size="sm"
-                          className={`${user.isAdmin
-                            ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white'
-                            : 'bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white'
-                          } border border-white/10 backdrop-blur-sm shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105`}
+                          className="p-2 rounded-lg transition-colors"
+                          style={
+                            user.isAdmin
+                              ? { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)', color: '#51a2ff' }
+                              : { background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                          }
+                          title={user.isAdmin ? t('badges.admin') : t('badges.user')}
                         >
-                          <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                        <Button
+                          <Shield className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => { setSelectedUser(user); setIsDeleteDialogOpen(true) }}
-                          size="sm"
-                          className="text-white bg-gradient-to-r from-red-600 to-red-500 border shadow-lg backdrop-blur-sm transition-all duration-300 hover:from-red-500 hover:to-red-400 border-white/10 hover:shadow-xl hover:scale-105"
+                          className="p-2 rounded-lg text-red-400 transition-colors"
+                          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                         >
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
                 {displayedUsers.length === 0 && !loading && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-gray-400 py-8">
+                  <tr>
+                    <td colSpan={7} className="text-center text-[#555] py-10">
                       No users found
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 )}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Pagination */}
-        <div className="p-3 sm:p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
-            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+        <div className="card-base p-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p className="text-sm text-[#888] text-center sm:text-left">
               {t('pagination.showing', {
                 from: total === 0 ? 0 : (currentPage - 1) * PAGE_LIMIT + 1,
                 to: Math.min(currentPage * PAGE_LIMIT, total),
@@ -284,49 +298,54 @@ function AdminUsers() {
               })}
             </p>
             <div className="flex items-center gap-2">
-              <Button
+              <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1 || loading}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
+                className="btn-ghost btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('pagination.previous')}
-              </Button>
-              <span className="text-xs text-gray-400 px-1">{currentPage} / {totalPages}</span>
-              <Button
+              </button>
+              <span className="text-xs text-[#555] px-1">{currentPage} / {totalPages}</span>
+              <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages || loading}
-                size="sm"
-                className="text-white bg-gradient-to-r border shadow-lg backdrop-blur-sm transition-all duration-300 from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 disabled:from-slate-800 disabled:to-slate-700 border-white/10 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-xs sm:text-sm"
+                className="btn-ghost btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('pagination.next')}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/90 border-white/10">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">{t('deleteDialog.title')}</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-300">
+        {/* Delete Confirmation Modal */}
+        {isDeleteDialogOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.7)' }}
+          >
+            <div className="card-base p-6 w-full max-w-md space-y-4">
+              <h3 className="text-white font-semibold text-lg">{t('deleteDialog.title')}</h3>
+              <p className="text-[#888] text-sm">
                 {t('deleteDialog.description', { username: selectedUser?.username || '' })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="text-white bg-gradient-to-r border from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 border-white/10">
-                {t('deleteDialog.cancel')}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteUser}
-                className="text-white bg-gradient-to-r from-red-600 to-red-500 border hover:from-red-500 hover:to-red-400 border-white/10"
-              >
-                {t('deleteDialog.confirm')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  className="btn-ghost flex-1"
+                >
+                  {t('deleteDialog.cancel')}
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  className="flex-1 py-2 px-4 rounded-lg text-sm font-medium text-red-400"
+                  style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+                >
+                  {t('deleteDialog.confirm')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* User Info Modal */}
         {selectedUserForInfo && (

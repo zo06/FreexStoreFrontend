@@ -2,13 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { withAdminAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
-} from '@/components/ui/alert-dialog'
 import {
   Shield, RefreshCw, Trash2, ChevronDown, ChevronUp, Search,
   ArrowLeft, Clock, User, Globe, Zap, AlertTriangle, Filter,
@@ -74,8 +67,8 @@ function JsonBlock({ label, raw }: { label: string; raw: string | null }) {
   if (!raw) return null
   return (
     <div>
-      <p className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</p>
-      <pre className="overflow-x-auto p-3 text-xs rounded-lg max-h-48 bg-black/30 text-emerald-300 border border-white/5 whitespace-pre-wrap break-all">
+      <p className="mb-1 text-xs font-semibold text-[#888] uppercase tracking-wider">{label}</p>
+      <pre className="overflow-x-auto p-3 text-xs rounded-lg max-h-48 text-emerald-300 whitespace-pre-wrap break-all" style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)' }}>
         {formatJson(raw)}
       </pre>
     </div>
@@ -200,52 +193,49 @@ function AdminAuditLogs() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-24 h-24 rounded-full border-b-2 border-sky-400 animate-spin" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[rgba(255,255,255,0.07)] border-t-[#51a2ff] rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <main className="overflow-x-hidden relative min-h-screen">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-sky-900/20 to-slate-900 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl bg-sky-500/10 pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl bg-blue-500/10 pointer-events-none" />
-
-      <div className="relative z-10 p-4 sm:p-6 mx-auto space-y-6 max-w-7xl">
+    <main className="min-h-screen bg-[#0a0a0a]">
+      <div className="p-4 sm:p-6 mx-auto space-y-6 max-w-7xl">
 
         {/* Header */}
-        <div className="p-5 rounded-2xl border shadow-2xl backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-sky-500/20 to-blue-500/20 rounded-xl border border-sky-500/30">
-                <Shield className="w-7 h-7 text-sky-400" />
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.2)' }}>
+                <Shield className="w-7 h-7 text-[#51a2ff]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
-                  Admin Audit Logs
-                </h1>
-                <p className="text-sm text-gray-400">Full trail of all admin actions</p>
+                <h1 className="text-2xl font-bold text-white">Admin Audit Logs</h1>
+                <p className="text-sm text-[#888]">Full trail of all admin actions</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => { fetchLogs(true); fetchStats() }}
-                className="bg-white/10 text-white border border-white/10 hover:bg-white/20">
-                <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-              </Button>
-              <Button onClick={exportCsv}
-                className="bg-emerald-600/80 text-white border border-emerald-500/30 hover:bg-emerald-600">
-                <Download className="w-4 h-4 mr-2" /> Export CSV
-              </Button>
-              <Button onClick={() => setClearOldDialogOpen(true)}
-                className="bg-orange-600/80 text-white border border-orange-500/30 hover:bg-orange-600">
-                <Calendar className="w-4 h-4 mr-2" /> Clear 30d+
-              </Button>
-              <Button onClick={() => setClearDialogOpen(true)}
-                className="bg-red-600/80 text-white border border-red-500/30 hover:bg-red-600">
-                <Trash2 className="w-4 h-4 mr-2" /> Clear All
-              </Button>
+              <button onClick={() => { fetchLogs(true); fetchStats() }} className="btn-ghost flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" /> Refresh
+              </button>
+              <button onClick={exportCsv} className="btn-primary flex items-center gap-2">
+                <Download className="w-4 h-4" /> Export CSV
+              </button>
+              <button
+                onClick={() => setClearOldDialogOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg font-medium text-orange-400"
+                style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}
+              >
+                <Calendar className="w-4 h-4" /> Clear 30d+
+              </button>
+              <button
+                onClick={() => setClearDialogOpen(true)}
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+              >
+                <Trash2 className="w-4 h-4" /> Clear All
+              </button>
             </div>
           </div>
         </div>
@@ -253,59 +243,64 @@ function AdminAuditLogs() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Logs', value: stats.total.toLocaleString(), icon: Shield, color: 'from-sky-500 to-blue-600', text: 'text-sky-400' },
-            { label: 'Today', value: stats.todayCount.toLocaleString(), icon: Clock, color: 'from-emerald-500 to-green-600', text: 'text-emerald-400' },
-            { label: '4xx Errors', value: stats.errors4xx.toLocaleString(), icon: AlertTriangle, color: 'from-orange-500 to-amber-600', text: 'text-orange-400' },
-            { label: '5xx Errors', value: stats.errors5xx.toLocaleString(), icon: XCircle, color: 'from-red-500 to-rose-600', text: 'text-red-400' },
+            { label: 'Total Logs', value: stats.total.toLocaleString(), icon: Shield, accent: '#51a2ff', accentBg: 'rgba(81,162,255,0.1)', accentBorder: 'rgba(81,162,255,0.2)' },
+            { label: 'Today', value: stats.todayCount.toLocaleString(), icon: Clock, accent: '#34d399', accentBg: 'rgba(52,211,153,0.1)', accentBorder: 'rgba(52,211,153,0.2)' },
+            { label: '4xx Errors', value: stats.errors4xx.toLocaleString(), icon: AlertTriangle, accent: '#fb923c', accentBg: 'rgba(251,146,60,0.1)', accentBorder: 'rgba(251,146,60,0.2)' },
+            { label: '5xx Errors', value: stats.errors5xx.toLocaleString(), icon: XCircle, accent: '#f87171', accentBg: 'rgba(248,113,113,0.1)', accentBorder: 'rgba(248,113,113,0.2)' },
           ].map((s) => (
-            <div key={s.label} className="p-4 rounded-2xl border backdrop-blur-xl bg-white/5 border-white/10">
+            <div key={s.label} className="card-base p-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 bg-gradient-to-br ${s.color} rounded-xl`}>
-                  <s.icon className="w-4 h-4 text-white" />
+                <div className="p-2 rounded-xl" style={{ background: s.accentBg, border: `1px solid ${s.accentBorder}` }}>
+                  <s.icon className="w-4 h-4" style={{ color: s.accent }} />
                 </div>
-                <span className="text-sm text-gray-400">{s.label}</span>
+                <span className="text-sm text-[#888]">{s.label}</span>
               </div>
-              <p className={`text-2xl font-bold ${s.text}`}>{s.value}</p>
+              <p className="text-2xl font-bold" style={{ color: s.accent }}>{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Filters */}
-        <div className="rounded-2xl border backdrop-blur-xl bg-white/5 border-white/10">
+        <div className="card-base">
           <div className="p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555]" />
+              <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
                 placeholder="Search by path, action, admin, IP..."
-                className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-sky-500/50"
+                className="input-base w-full pl-9"
               />
             </div>
-            <Button
+            <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`shrink-0 border ${showFilters ? 'bg-sky-500/20 border-sky-500/50 text-sky-300' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'}`}
+              className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
+              style={showFilters
+                ? { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.3)', color: '#51a2ff' }
+                : { background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+              }
             >
-              <Filter className="w-4 h-4 mr-2" /> Filters
+              <Filter className="w-4 h-4" /> Filters
               {(methodFilter || statusFilter || dateFrom || dateTo) && (
-                <span className="ml-2 w-2 h-2 rounded-full bg-sky-400 inline-block" />
+                <span className="w-2 h-2 rounded-full bg-[#51a2ff] inline-block" />
               )}
-            </Button>
+            </button>
           </div>
 
           {showFilters && (
-            <div className="px-4 pb-4 pt-0 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-white/10">
+            <div className="px-4 pb-4 pt-0 grid grid-cols-2 sm:grid-cols-4 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {/* Method filter */}
               <div>
-                <p className="mb-1 text-xs text-gray-500">Method</p>
+                <p className="mb-1 text-xs text-[#555]">Method</p>
                 <div className="flex flex-wrap gap-1">
                   {['', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((m) => (
                     <button key={m} onClick={() => { setMethodFilter(m); setCurrentPage(1) }}
-                      className={`px-2 py-1 text-xs rounded-lg border transition-all ${
-                        methodFilter === m
-                          ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                      }`}>
+                      className="px-2 py-1 text-xs rounded-lg transition-all"
+                      style={methodFilter === m
+                        ? { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.3)', color: '#51a2ff' }
+                        : { background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                      }
+                    >
                       {m || 'All'}
                     </button>
                   ))}
@@ -314,15 +309,16 @@ function AdminAuditLogs() {
 
               {/* Status filter */}
               <div>
-                <p className="mb-1 text-xs text-gray-500">Status Code</p>
+                <p className="mb-1 text-xs text-[#555]">Status Code</p>
                 <div className="flex flex-wrap gap-1">
                   {[{ label: 'All', val: '' }, { label: '2xx', val: '200' }, { label: '4xx', val: '400' }, { label: '5xx', val: '500' }].map((s) => (
                     <button key={s.val} onClick={() => { setStatusFilter(s.val); setCurrentPage(1) }}
-                      className={`px-2 py-1 text-xs rounded-lg border transition-all ${
-                        statusFilter === s.val
-                          ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
-                      }`}>
+                      className="px-2 py-1 text-xs rounded-lg transition-all"
+                      style={statusFilter === s.val
+                        ? { background: 'rgba(81,162,255,0.1)', border: '1px solid rgba(81,162,255,0.3)', color: '#51a2ff' }
+                        : { background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', color: '#888' }
+                      }
+                    >
                       {s.label}
                     </button>
                   ))}
@@ -331,45 +327,48 @@ function AdminAuditLogs() {
 
               {/* Date From */}
               <div>
-                <p className="mb-1 text-xs text-gray-500">From</p>
-                <Input type="datetime-local" value={dateFrom}
+                <p className="mb-1 text-xs text-[#555]">From</p>
+                <input type="datetime-local" value={dateFrom}
                   onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1) }}
-                  className="bg-white/5 border-white/10 text-white text-xs h-8" />
+                  className="input-base w-full text-xs h-8" />
               </div>
 
               {/* Date To */}
               <div>
-                <p className="mb-1 text-xs text-gray-500">To</p>
-                <Input type="datetime-local" value={dateTo}
+                <p className="mb-1 text-xs text-[#555]">To</p>
+                <input type="datetime-local" value={dateTo}
                   onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1) }}
-                  className="bg-white/5 border-white/10 text-white text-xs h-8" />
+                  className="input-base w-full text-xs h-8" />
               </div>
             </div>
           )}
         </div>
 
         {/* Table */}
-        <div className="rounded-2xl border backdrop-blur-xl bg-white/5 border-white/10 overflow-hidden">
-          <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="card-base overflow-hidden">
+          <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             <h2 className="font-semibold text-white">
-              Logs <span className="text-gray-400 font-normal text-sm">({pagination.total} total)</span>
+              Logs <span className="text-[#888] font-normal text-sm">({pagination.total} total)</span>
             </h2>
-            <span className="text-xs text-gray-500">Page {pagination.page} / {pagination.totalPages}</span>
+            <span className="text-xs text-[#555]">Page {pagination.page} / {pagination.totalPages}</span>
           </div>
 
           {logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Shield className="w-16 h-16 text-gray-700 mb-4" />
-              <p className="text-gray-400">No audit logs found</p>
-              <p className="text-sm text-gray-600 mt-1">Admin actions will appear here</p>
+              <Shield className="w-16 h-16 text-[#333] mb-4" />
+              <p className="text-[#888]">No audit logs found</p>
+              <p className="text-sm text-[#555] mt-1">Admin actions will appear here</p>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
               {logs.map((log) => (
                 <div key={log.id}>
                   {/* Row */}
                   <div
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 hover:bg-white/5 transition-colors cursor-pointer group"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 cursor-pointer group transition-colors"
+                    style={{ ['--hover-bg' as any]: 'rgba(255,255,255,0.03)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '')}
                     onClick={() => setExpandedId(expandedId === log.id ? null : log.id)}
                   >
                     {/* Method + Status */}
@@ -385,11 +384,11 @@ function AdminAuditLogs() {
                     {/* Path & Action */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white truncate">{log.action ?? log.path}</p>
-                      <p className="text-xs text-gray-500 font-mono truncate">{log.path}</p>
+                      <p className="text-xs text-[#555] font-mono truncate">{log.path}</p>
                     </div>
 
                     {/* Meta */}
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 shrink-0">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#555] shrink-0">
                       <span className="flex items-center gap-1">
                         <User className="w-3 h-3" />
                         {log.admin?.username ?? log.adminUsername}
@@ -412,12 +411,13 @@ function AdminAuditLogs() {
                     <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => handleDeleteOne(log.id)}
-                        className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-lg text-[#555] hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                        style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)' }}
                         title="Delete log"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                      <div className="text-gray-500 cursor-pointer" onClick={() => setExpandedId(expandedId === log.id ? null : log.id)}>
+                      <div className="text-[#555] cursor-pointer" onClick={() => setExpandedId(expandedId === log.id ? null : log.id)}>
                         {expandedId === log.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </div>
                     </div>
@@ -425,10 +425,10 @@ function AdminAuditLogs() {
 
                   {/* Expanded detail */}
                   {expandedId === log.id && (
-                    <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-black/20 border-t border-white/5">
+                    <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                       {/* Log meta */}
                       <div className="space-y-2 pt-4">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Request Details</p>
+                        <p className="text-xs font-semibold text-[#888] uppercase tracking-wider mb-2">Request Details</p>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           {[
                             ['Log ID', log.id],
@@ -440,15 +440,15 @@ function AdminAuditLogs() {
                             ['Status', log.statusCode?.toString() ?? '—'],
                             ['Timestamp', new Date(log.createdAt).toLocaleString()],
                           ].map(([k, v]) => (
-                            <div key={k} className="p-2 rounded-lg bg-white/5 border border-white/5">
-                              <p className="text-gray-500">{k}</p>
+                            <div key={k} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <p className="text-[#555]">{k}</p>
                               <p className="text-white font-mono truncate" title={v}>{v}</p>
                             </div>
                           ))}
                         </div>
                         {log.userAgent && (
-                          <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                            <p className="text-xs text-gray-500 mb-1">User Agent</p>
+                          <div className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <p className="text-xs text-[#555] mb-1">User Agent</p>
                             <p className="text-xs text-white font-mono break-all">{log.userAgent}</p>
                           </div>
                         )}
@@ -459,7 +459,7 @@ function AdminAuditLogs() {
                         <JsonBlock label="Request Body" raw={log.requestBody} />
                         <JsonBlock label="Response Body" raw={log.responseBody} />
                         {!log.requestBody && !log.responseBody && (
-                          <div className="flex items-center gap-2 text-xs text-gray-600 pt-2">
+                          <div className="flex items-center gap-2 text-xs text-[#555] pt-2">
                             <CheckCircle className="w-4 h-4" />
                             No body data captured
                           </div>
@@ -474,25 +474,29 @@ function AdminAuditLogs() {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="p-4 border-t border-white/10 flex items-center justify-between">
-              <p className="text-xs text-gray-500">
+            <div className="card-base p-4 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', borderRadius: 0 }}>
+              <p className="text-xs text-[#555]">
                 {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)}–
                 {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
               </p>
               <div className="flex gap-2">
-                <Button size="sm" disabled={pagination.page === 1}
+                <button
+                  disabled={pagination.page === 1}
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className="bg-white/5 border border-white/10 text-white disabled:opacity-40 hover:bg-white/10 px-3">
-                  <ArrowLeft className="w-3 h-3 mr-1" /> Prev
-                </Button>
-                <span className="flex items-center px-3 text-xs text-gray-400">
+                  className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-40"
+                >
+                  <ArrowLeft className="w-3 h-3" /> Prev
+                </button>
+                <span className="flex items-center px-3 text-xs text-[#888]">
                   {pagination.page} / {pagination.totalPages}
                 </span>
-                <Button size="sm" disabled={pagination.page === pagination.totalPages}
+                <button
+                  disabled={pagination.page === pagination.totalPages}
                   onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
-                  className="bg-white/5 border border-white/10 text-white disabled:opacity-40 hover:bg-white/10 px-3">
-                  Next <ArrowLeft className="w-3 h-3 ml-1 rotate-180" />
-                </Button>
+                  className="btn-ghost btn-sm flex items-center gap-1 disabled:opacity-40"
+                >
+                  Next <ArrowLeft className="w-3 h-3 rotate-180" />
+                </button>
               </div>
             </div>
           )}
@@ -500,48 +504,62 @@ function AdminAuditLogs() {
       </div>
 
       {/* Clear All Dialog */}
-      <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
-        <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-400" /> Delete All Audit Logs
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+      {clearDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-md card-base p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+              <h3 className="text-lg font-semibold text-white">Delete All Audit Logs</h3>
+            </div>
+            <p className="text-[#888] text-sm mb-6">
               This will permanently delete ALL audit log records. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAll} disabled={deleting}
-              className="bg-red-600 text-white hover:bg-red-500 border-0">
-              {deleting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-              Delete Forever
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setClearDialogOpen(false)} className="btn-ghost flex items-center gap-2">
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAll}
+                disabled={deleting}
+                className="px-3 py-1.5 text-sm rounded-lg font-medium text-red-400 flex items-center gap-2 disabled:opacity-50"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
+              >
+                {deleting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Delete Forever
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Clear Old Dialog */}
-      <AlertDialog open={clearOldDialogOpen} onOpenChange={setClearOldDialogOpen}>
-        <AlertDialogContent className="text-white border backdrop-blur-xl bg-slate-900/95 border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-orange-400" /> Delete Logs Older Than 30 Days
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+      {clearOldDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-md card-base p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Calendar className="w-5 h-5 text-orange-400 shrink-0" />
+              <h3 className="text-lg font-semibold text-white">Delete Logs Older Than 30 Days</h3>
+            </div>
+            <p className="text-[#888] text-sm mb-6">
               All audit log entries older than 30 days will be permanently deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteOld} disabled={deleting}
-              className="bg-orange-600 text-white hover:bg-orange-500 border-0">
-              {deleting ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-              Delete Old Logs
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setClearOldDialogOpen(false)} className="btn-ghost flex items-center gap-2">
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteOld}
+                disabled={deleting}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg font-medium text-orange-400 disabled:opacity-50"
+                style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}
+              >
+                {deleting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Delete Old Logs
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
